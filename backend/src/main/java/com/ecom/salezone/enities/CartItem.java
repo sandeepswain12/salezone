@@ -1,10 +1,7 @@
 package com.ecom.salezone.enities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,17 +10,50 @@ import lombok.Setter;
 @Entity
 @Table(name = "cart_items")
 public class CartItem {
+
+    /**
+     * Primary key for CartItem
+     */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "c_i_id")
     private int cartItemId;
-    @OneToOne
-    @JoinColumn(name = "product_id")
+
+    /**
+     * Product added to cart
+     * Many cart items can reference the same product
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
-    @Column(name = "c_i_quantity")
-    private  int quantity;
-    @Column(name = "c_i_totalprice")
-    private  int totalPrice;
+
+    /**
+     * Quantity of the product in cart
+     */
+    @Column(name = "c_i_quantity", nullable = false)
+    private int quantity;
+
+    /**
+     * Total price for this cart item
+     * (product price × quantity)
+     */
+    @Column(name = "c_i_totalprice", nullable = false)
+    private int totalPrice;
+
+    /**
+     * Cart to which this item belongs
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id")
-    private  Cart cart;
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
+
+    /**
+     * Automatically calculate total price
+     * whenever cart item is created or updated
+     */
+    @PrePersist
+    @PreUpdate
+    protected void calculateTotalPrice() {
+        this.totalPrice = this.product.getDiscountedPrice() * this.quantity;
+    }
 }

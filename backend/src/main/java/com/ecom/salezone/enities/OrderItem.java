@@ -1,10 +1,7 @@
 package com.ecom.salezone.enities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,19 +10,56 @@ import lombok.Setter;
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
+
+    /**
+     * Primary key for OrderItem
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private  int orderItemId;
+    @Column(name = "oi_id")
+    private int orderItemId;
 
-    private  int quantity;
+    /**
+     * Quantity of product ordered
+     */
+    @Column(name = "oi_quantity", nullable = false)
+    private int quantity;
 
-    private  int totalPrice;
+    /**
+     * Price of product at the time of order
+     * (snapshot, not current product price)
+     */
+    @Column(name = "oi_price", nullable = false)
+    private int price;
 
-    @OneToOne
-    @JoinColumn(name = "product_id")
-    private  Product product;
+    /**
+     * Total price for this order item
+     * price * quantity
+     */
+    @Column(name = "oi_total_price", nullable = false)
+    private int totalPrice;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private  Order order;
+    /**
+     * Product associated with this order item
+     * Many order items can refer to same product
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    /**
+     * Order to which this item belongs
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    /**
+     * Automatically calculate total price before saving
+     */
+    @PrePersist
+    @PreUpdate
+    protected void calculateTotalPrice() {
+        this.totalPrice = this.price * this.quantity;
+    }
 }

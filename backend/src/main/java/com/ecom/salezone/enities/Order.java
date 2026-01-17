@@ -1,13 +1,10 @@
 package com.ecom.salezone.enities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @AllArgsConstructor
@@ -17,28 +14,86 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 public class Order {
+
+    /**
+     * Primary key for Order
+     */
     @Id
     @Column(name = "o_id")
     private String orderId;
+
+    /**
+     * Current status of order
+     * (PENDING, DISPATCHED, DELIVERED, etc.)
+     */
+    @Enumerated(EnumType.STRING)
     @Column(name = "o_status")
-    private String orderStatus;
+    private OrderStatus orderStatus;
+
+    /**
+     * Payment status of order
+     * (PAID, NOT_PAID, FAILED)
+     */
+    @Enumerated(EnumType.STRING)
     @Column(name = "p_status")
-    private String paymentStatus;
-    @Column(name = "b_address")
+    private PaymentStatus paymentStatus;
+
+    /**
+     * Billing address for the order
+     */
+    @Column(name = "b_address", length = 1000)
     private String billingAddress;
-    @Column(name = "b_phone")
+
+    /**
+     * Billing phone number
+     */
+    @Column(name = "b_phone", length = 15)
     private String billingPhone;
-    @Column(name = "o_date")
-    private Date orderDate;
+
+    /**
+     * Date when order was placed
+     */
+    @Column(name = "o_date", updatable = false)
+    private LocalDateTime orderDate;
+
+    /**
+     * Date when order was delivered
+     */
     @Column(name = "d_date")
-    private Date deliveredDate;
+    private LocalDateTime deliveredDate;
+
+    /**
+     * Razorpay order ID (used for payment gateway)
+     */
     @Column(name = "r_o_id")
     private String razorpayOrderId;
+
+    /**
+     * Payment ID received from gateway
+     */
     @Column(name = "p_id")
     private String paymentId;
+
+    /**
+     * User who placed the order
+     */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "u_id")
+    @JoinColumn(name = "u_id", nullable = false)
     private User user;
-    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER , cascade = CascadeType.ALL)
+
+    /**
+     * Items included in this order
+     */
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    /**
+     * Set default values before order creation
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.orderDate = LocalDateTime.now();
+        this.orderStatus = OrderStatus.PENDING;
+        this.paymentStatus = PaymentStatus.NOT_PAID;
+    }
 }

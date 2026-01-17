@@ -1,13 +1,7 @@
 package com.ecom.salezone.enities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,9 +10,19 @@ import lombok.Setter;
 @Entity
 @Table(name = "roles")
 public class Role {
+
+    /**
+     * Primary key for Role
+     * Example: ROLE_USER, ROLE_ADMIN
+     */
     @Id
     @Column(name = "r_id")
     private String roleId;
-    @Column(name = "r_name")
+
+    /**
+     * Human readable role name
+     * Example: USER, ADMIN
+     */
+    @Column(name = "r_name", nullable = false, unique = true)
     private String roleName;
 }
