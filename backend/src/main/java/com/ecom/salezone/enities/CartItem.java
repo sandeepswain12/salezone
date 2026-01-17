@@ -10,21 +10,11 @@ import lombok.*;
 @Entity
 @Table(name = "cart_items")
 public class CartItem {
-
-    /**
-     * Primary key for CartItem
-     */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "c_i_id")
     private int cartItemId;
-
-    /**
-     * Product added to cart
-     * Many cart items can reference the same product
-     */
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "product_id", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "product_id")
     private Product product;
 
     /**
