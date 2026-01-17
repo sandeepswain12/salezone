@@ -70,23 +70,23 @@ public class Product {
     @Column(name = "p_imagename")
     private String productImageName;
 
-    /**
-     * Brand of the product (e.g., Apple, Samsung)
-     */
-    @Column(name = "p_brand")
-    private String brand;
-
-    /**
-     * Average product rating (0–5)
-     */
-    @Column(name = "p_rating")
-    private double rating;
-
-    /**
-     * Total number of reviews
-     */
-    @Column(name = "p_total_reviews")
-    private int totalReviews;
+//    /**
+//     * Brand of the product (e.g., Apple, Samsung)
+//     */
+//    @Column(name = "p_brand")
+//    private String brand;
+//
+//    /**
+//     * Average product rating (0–5)
+//     */
+//    @Column(name = "p_rating")
+//    private double rating;
+//
+//    /**
+//     * Total number of reviews
+//     */
+//    @Column(name = "p_total_reviews")
+//    private int totalReviews;
 
     /**
      * Date when product was added

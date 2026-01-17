@@ -1,4 +1,4 @@
-package com.ecom.salezone.enities;
+package com.ecom.salezone.enums;
 
 public enum OrderStatus {
     PENDING,

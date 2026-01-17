@@ -25,12 +25,12 @@ public class OrderItem {
     @Column(name = "oi_quantity", nullable = false)
     private int quantity;
 
-    /**
-     * Price of product at the time of order
-     * (snapshot, not current product price)
-     */
-    @Column(name = "oi_price", nullable = false)
-    private int price;
+//    /**
+//     * Price of product at the time of order
+//     * (snapshot, not current product price)
+//     */
+//    @Column(name = "oi_price", nullable = false)
+//    private int price;
 
     /**
      * Total price for this order item
@@ -54,12 +54,12 @@ public class OrderItem {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    /**
-     * Automatically calculate total price before saving
-     */
-    @PrePersist
-    @PreUpdate
-    protected void calculateTotalPrice() {
-        this.totalPrice = this.price * this.quantity;
-    }
+//    /**
+//     * Automatically calculate total price before saving
+//     */
+//    @PrePersist
+//    @PreUpdate
+//    protected void calculateTotalPrice() {
+//        this.totalPrice = this.price * this.quantity;
+//    }
 }

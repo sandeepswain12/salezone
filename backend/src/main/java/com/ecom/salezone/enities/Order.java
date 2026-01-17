@@ -1,5 +1,7 @@
 package com.ecom.salezone.enities;
 
+import com.ecom.salezone.enums.OrderStatus;
+import com.ecom.salezone.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

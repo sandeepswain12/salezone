@@ -37,13 +37,13 @@ public class CartItem {
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
-    /**
-     * Automatically calculate total price
-     * whenever cart item is created or updated
-     */
-    @PrePersist
-    @PreUpdate
-    protected void calculateTotalPrice() {
-        this.totalPrice = this.product.getDiscountedPrice() * this.quantity;
-    }
+//    /**
+//     * Automatically calculate total price
+//     * whenever cart item is created or updated
+//     */
+//    @PrePersist
+//    @PreUpdate
+//    protected void calculateTotalPrice() {
+//        this.totalPrice = this.product.getDiscountedPrice() * this.quantity;
+//    }
 }
