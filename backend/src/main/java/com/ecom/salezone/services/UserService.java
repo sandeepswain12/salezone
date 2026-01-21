@@ -9,17 +9,17 @@ public interface UserService {
     /**
      * Create a new user
      */
-    UserDto createUser(UserDto userDto);
+    UserDto createUser(UserDto userDto , String logkey);
 
     /**
      * Update existing user by userId
      */
-    UserDto updateUser(UserDto userDto, String userId);
+    UserDto updateUser(UserDto userDto, String userId, String logkey);
 
     /**
      * Delete user by userId
      */
-    void deleteUser(String userId);
+    void deleteUser(String userId, String logkey);
 
     /**
      * Get all users with pagination & sorting
@@ -28,27 +28,28 @@ public interface UserService {
             int pageNumber,
             int pageSize,
             String sortBy,
-            String sortDir
+            String sortDir,
+            String logkey
     );
 
     /**
      * Get single user by userId
      */
-    UserDto getUserById(String userId);
+    UserDto getUserById(String userId, String logkey);
 
     /**
      * Get single user by email
      */
-    UserDto getUserByEmail(String email);
+    UserDto getUserByEmail(String email, String logkey);
 
     /**
      * Search users by keyword (name/email)
      */
-    List<UserDto> searchUsers(String keyword);
+    List<UserDto> searchUsers(String keyword, String logkey);
 
     /**
      * Check whether user exists by email
      * (used internally for validation)
      */
-    boolean existsByEmail(String email);
+    boolean existsByEmail(String email, String logkey);
 }

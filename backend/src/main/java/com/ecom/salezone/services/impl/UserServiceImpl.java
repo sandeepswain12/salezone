@@ -38,26 +38,29 @@ public class UserServiceImpl implements UserService {
     private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserDto createUser(UserDto userDto, String logkey) {
         String userId = UUID.randomUUID().toString();
+        logger.info("{} : USER ID CREATED : {}", logkey, userId);
         userDto.setUserId(userId);
         User user = dtoToEntity(userDto);
+        logger.info("{} : USERDTO MAPPED TO USER : {}", logkey, user);
         Role roleUser = roleRepository.findById("ROLE_USER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role USER not found"));
-
-        logger.info("ROLE USER CREATED --------------> :{}", roleUser);
-
+        logger.info("{} : ROLE SET FOR USER : {}", logkey, roleUser);
         user.getRoles().add(roleUser);
         User savedUser = userRepository.save(user);
-
-        return entityToDto(savedUser);
+        logger.info("{} : USER SAVED : {}", logkey, savedUser);
+        UserDto savedUserDto = modelMapper.map(savedUser, UserDto.class);
+        logger.info("{} : USER MAPPED TO USERDTO : {}", logkey, savedUserDto);
+        return savedUserDto;
     }
 
 
     @Override
-    public UserDto updateUser(UserDto updatedUserDto, String userId) {
+    public UserDto updateUser(UserDto updatedUserDto, String userId, String logkey) {
         User exuser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found......!!!"));
+        logger.info("{} : FETCHED EXISTING USER FROM DB WITH ID : {} EXISTING_USER : {}", logkey, userId, exuser);
         exuser.setUserName(updatedUserDto.getUserName());
         exuser.setEmail(updatedUserDto.getEmail());
         exuser.setPassword(updatedUserDto.getPassword());
@@ -66,47 +69,65 @@ public class UserServiceImpl implements UserService {
         exuser.setPhoneNumber(updatedUserDto.getPhoneNumber());
         exuser.setImageName(updatedUserDto.getImageName());
         User savedUser = userRepository.save(exuser);
-        return entityToDto(savedUser);
+        logger.info("{} : EXISTING USER UPDATED WITH NEW DATA : {}", logkey, savedUser);
+        UserDto savedUserDto = modelMapper.map(savedUser, UserDto.class);
+        logger.info("{} : USER MAPPED TO USERDTO : {}", logkey, savedUserDto);
+        return savedUserDto;
     }
 
     @Override
-    public void deleteUser(String userId) {
+    public void deleteUser(String userId, String logkey) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found......!!!"));
+        logger.info("{} : FETCHED USER FROM DB WITH ID : {} USER : {}", logkey, userId, user);
         userRepository.delete(user);
+        logger.info("{} : USER DELETED SUCCESSFULLY : {}", logkey, user);
     }
 
     @Override
-    public PageableResponse<UserDto> getAllUsers(int pageNumber, int pageSize, String sortBy, String sortDir) {
+    public PageableResponse<UserDto> getAllUsers(int pageNumber, int pageSize, String sortBy, String sortDir, String logkey) {
         Sort sort = sortDir.equalsIgnoreCase("desc") ? (Sort.by(sortBy)).descending() : Sort.by(sortBy).ascending();
+        logger.info("{} : USER SORTED BY ORDER AND DIRECTION : {}", logkey, sort);
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        logger.info("{} : PAGEABLE OBJECT CREATE WITH PAGE REQUEST ", logkey);
         Page<User> page = userRepository.findAll(pageable);
-        PageableResponse<UserDto> response = Helper.getPageableResponse(page, UserDto.class);
+        logger.info("{} : FETCHED ALL USERS FROM DB : {} ", logkey , page);
+        PageableResponse<UserDto> response = Helper.getPageableResponse(page, UserDto.class , logkey);
+        logger.info("{} : MAPPED TO PAGEABLE_RESPONSE : {} ", logkey , response);
         return response;
     }
 
     @Override
-    public UserDto getUserById(String userId) {
+    public UserDto getUserById(String userId, String logkey) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found......!!!"));
-        return entityToDto(user);
+        logger.info("{} : FETCHED USER FROM DB WITH ID : {} USER : {}", logkey, userId, user);
+        UserDto userDto = entityToDto(user);
+        logger.info("{} : USER MAPPED TO USERDTO : {}", logkey, userDto);
+        return userDto;
     }
 
     @Override
-    public UserDto getUserByEmail(String email) {
+    public UserDto getUserByEmail(String email, String logkey) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found......!!!"));
-        return entityToDto(user);
+        logger.info("{} : FETCHED USER FROM DB WITH EMAIL : {} USER : {}", logkey, email, user);
+        UserDto userDto = entityToDto(user);
+        logger.info("{} : USER MAPPED TO USERDTO : {}", logkey, userDto);
+        return userDto;
     }
 
     @Override
-    public List<UserDto> searchUsers(String keyword) {
+    public List<UserDto> searchUsers(String keyword, String logkey) {
         List<User> users = userRepository.findByUserNameContaining(keyword);
-        return users.stream().map(user -> entityToDto(user)).collect(Collectors.toList());
+        logger.info("{} : FETCHED USERS WITH KEYWORDS FROM DB WITH ID : {} USER : {}", logkey, keyword, users);
+        List<UserDto> userDtos = users.stream().map(user -> entityToDto(user)).collect(Collectors.toList());
+        logger.info("{} : LIST OF USERS ARE MAPPED TO LIST USERDTOS : {}", logkey, userDtos);
+        return userDtos;
     }
 
     @Override
-    public boolean existsByEmail(String email) {
+    public boolean existsByEmail(String email, String logkey) {
         return false;
     }
 
