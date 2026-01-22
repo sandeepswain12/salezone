@@ -40,7 +40,7 @@ public class UserController {
     private Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/create")
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
         String logkey = LogKeyGenerator.generateLogKey();
         logger.info("{} : REQUEST FOR CREATE USER --> , USER_DTO : {}" , logkey , userDto);
         UserDto savedUser = userService.createUser(userDto, logkey);
