@@ -1,90 +1,101 @@
-import { ShoppingCart, Star } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ShoppingCart } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
-import { useState } from "react";
+import { getProductById } from "../services/ProductService";
+import ProductDetailsSkeleton from "./ProductDetailsSkeleton";
+import BackButton from "./BackButton";
 
 const ProductDetails = () => {
+  const { id: productId } = useParams();
   const { theme } = useTheme();
-  const [qty, setQty] = useState(1);
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+
+    getProductById(productId)
+      .then((data) => setProduct(data))
+      .catch(() => setError("Product not found"))
+      .finally(() => setLoading(false));
+  }, [productId]);
+
+  if (loading) return <ProductDetailsSkeleton />;
+
+  if (error) return <p className="text-center py-20 text-red-500">{error}</p>;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12">
-      <div className="grid gap-10 md:grid-cols-2">
-        {/* IMAGE */}
-        <div
-          className={`rounded-xl p-6
+    <section className="max-w-7xl mx-auto px-4 py-6">
+      <BackButton label="Back" />
+      <section className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        <div className="grid gap-8 md:grid-cols-2">
+          {/* IMAGE */}
+          <div
+            className={`rounded-xl p-4 sm:p-6
+            
             ${theme === "dark" ? "bg-[#0f0f0f]" : "bg-gray-100"}
           `}
-        >
-          <img
-            src="https://images.unsplash.com/photo-1695048133142-1a20484d2568?q=80&w=800"
-            alt="Product"
-            className="w-full h-400px object-cover rounded-lg"
-          />
-        </div>
-
-        {/* INFO */}
-        <div>
-          <h1 className="text-3xl font-bold mb-3">iPhone 15 Pro Max</h1>
-
-          {/* RATING */}
-          <div className="flex items-center gap-1 mb-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Star key={i} size={18} className="text-yellow-500" />
-            ))}
-            <span className="ml-2 text-sm opacity-70">(4.9)</span>
+          >
+            <img
+              src={`http://localhost:8089/salezone/ecom/products/image/${product.productId}`}
+              alt={product.title}
+              loading="lazy"
+              className="w-full h-64 sm:h-80 md:h-[400px] object-contain"
+            />
           </div>
 
-          {/* PRICE */}
-          <p className="text-2xl font-semibold mb-6">₹1,39,999</p>
+          {/* INFO */}
+          <div className="flex flex-col">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-3">
+              {product.title}
+            </h1>
 
-          {/* DESCRIPTION */}
-          <p className="mb-6 leading-relaxed opacity-90">
-            Experience the power of the latest A-series chip, stunning camera
-            system, and premium design with iPhone 15 Pro Max.
-          </p>
+            <p className="opacity-70 mb-4">
+              Category: {product.category?.title}
+            </p>
 
-          {/* QUANTITY */}
-          <div className="flex items-center gap-4 mb-6">
-            <span className="font-medium">Quantity:</span>
-            <div className="flex items-center border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setQty(qty > 1 ? qty - 1 : 1)}
-                className="px-4 py-2"
-              >
-                −
-              </button>
-              <span className="px-4">{qty}</span>
-              <button onClick={() => setQty(qty + 1)} className="px-4 py-2">
-                +
-              </button>
+            {/* PRICE */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <span className="text-2xl font-bold">
+                ₹{product.discountedPrice}
+              </span>
+              <span className="line-through opacity-60">₹{product.price}</span>
             </div>
-          </div>
 
-          {/* ACTIONS */}
-          <div className="flex gap-4">
-            <button
-              className="flex-1 py-3 rounded-lg
-              bg-blue-600 text-white font-medium
-              hover:bg-blue-700 transition"
-            >
-              Buy Now
-            </button>
+            <p className="leading-relaxed mb-6">{product.description}</p>
 
-            <button
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg
+            <p className="mb-6">
+              Stock:{" "}
+              <span className="font-semibold">
+                {product.quantity > 0 ? "Available" : "Out of stock"}
+              </span>
+            </p>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button className="w-full sm:flex-1 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+                Buy Now
+              </button>
+
+              <button
+                className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition
                 ${
                   theme === "dark"
                     ? "bg-[#1a1a1a] hover:bg-[#222]"
                     : "bg-gray-200 hover:bg-gray-300"
                 }
               `}
-            >
-              <ShoppingCart size={18} />
-              Add to Cart
-            </button>
+              >
+                <ShoppingCart size={18} />
+                Add to Cart
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </section>
   );
 };

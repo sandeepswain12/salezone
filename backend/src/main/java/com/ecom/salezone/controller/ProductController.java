@@ -22,8 +22,8 @@ import java.io.InputStream;
 
 @RestController
 //@SecurityRequirement(name="scheme1")
-@RequestMapping("/products")
-//@CrossOrigin(origins = "*")
+@RequestMapping("/salezone/ecom/products")
+@CrossOrigin(origins = "http://localhost:5173/")
 public class ProductController {
 
     @Autowired
@@ -37,7 +37,7 @@ public class ProductController {
 
     //create
 //    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
         ProductDto createdProduct = productService.create(productDto);
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
@@ -45,7 +45,7 @@ public class ProductController {
 
     //update
 //    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{productId}")
+    @PutMapping("update/{productId}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable String productId, @RequestBody ProductDto productDto) {
         ProductDto updatedProduct = productService.update(productDto, productId);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
@@ -54,7 +54,7 @@ public class ProductController {
 
     //delete
 //    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("delete/{productId}")
     public ResponseEntity<ApiResponseMessage> delete(@PathVariable String productId) {
         productService.delete(productId);
         ApiResponseMessage responseMessage = ApiResponseMessage.builder().message("Product is deleted successfully !!").status(HttpStatus.OK).success(true).build();
