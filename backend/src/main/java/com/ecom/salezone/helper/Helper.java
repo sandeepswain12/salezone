@@ -11,21 +11,45 @@ import java.util.stream.Collectors;
 
 public class Helper<V> {
 
-    public static <U,V> PageableResponse<V> getPageableResponse(Page<U> page, Class<V> type,String logkey){
-        Logger logger = LoggerFactory.getLogger(Helper.class);
-        logger.info("{} : MAPPED PAGE TO PAGEABLE_RESPONSE PAGE : {} ", logkey, page);
+    private static final Logger logger = LoggerFactory.getLogger(Helper.class);
+
+    public static <U, V> PageableResponse<V> getPageableResponse(
+            Page<U> page,
+            Class<V> type,
+            String logkey) {
+
+        logger.info("[{}] START MAPPING PAGE → PAGEABLE_RESPONSE", logkey);
+        logger.debug("[{}] PAGE DETAILS | number={} size={} totalElements={} totalPages={}",
+                logkey,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
+
         List<U> entity = page.getContent();
-        logger.info("{} : ENTITY : {} ", logkey, entity);
-        List<V> userDtos = entity.stream().map(object -> new ModelMapper().map(object,type)).collect(Collectors.toList());
-        logger.info("{} : USERDTOS : {} ", logkey, userDtos);
+        logger.debug("[{}] PAGE CONTENT FETCHED | entityCount={}", logkey, entity.size());
+
+        List<V> userDtos = entity.stream()
+                .map(object -> new ModelMapper().map(object, type))
+                .collect(Collectors.toList());
+
+        logger.debug("[{}] ENTITY LIST MAPPED TO DTO LIST | dtoCount={}",
+                logkey, userDtos.size());
+
         PageableResponse<V> response = new PageableResponse<>();
         response.setContent(userDtos);
-        response.setPageNumber(page.getNumber()+1);
+        response.setPageNumber(page.getNumber() + 1);
         response.setPageSize(page.getSize());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
         response.setLastPage(page.isLast());
-        logger.info("{} : MAPPED COMPLETED : {} ", logkey, response);
+
+        logger.info("[{}] PAGEABLE_RESPONSE CREATED SUCCESSFULLY | pageNumber={} pageSize={} lastPage={}",
+                logkey,
+                response.getPageNumber(),
+                response.getPageSize(),
+                response.isLastPage());
+
         return response;
     }
 }

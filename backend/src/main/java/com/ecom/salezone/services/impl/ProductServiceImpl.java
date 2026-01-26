@@ -11,6 +11,8 @@ import com.ecom.salezone.repository.CategoryRepository;
 import com.ecom.salezone.repository.ProductRepository;
 import com.ecom.salezone.services.ProductService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,11 +20,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.UUID;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
+
     @Autowired
     private ProductRepository productRepository;
 
@@ -32,27 +36,36 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    //other dependency
+    // ================= CREATE PRODUCT =================
     @Override
     public ProductDto create(ProductDto productDto) {
 
+        log.info("Creating product with title: {}", productDto.getTitle());
 
         Product product = mapper.map(productDto, Product.class);
 
-        //product id
         String productId = UUID.randomUUID().toString();
         product.setProductId(productId);
-        //added
-//        product.setAddedDate(new Date());
+
         Product saveProduct = productRepository.save(product);
+
+        log.info("Product created successfully with ID: {}", productId);
+
         return mapper.map(saveProduct, ProductDto.class);
     }
 
+    // ================= UPDATE PRODUCT =================
     @Override
     public ProductDto update(ProductDto productDto, String productId) {
 
-        //fetch the product of given id
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found of given Id !!"));
+        log.info("Updating product with ID: {}", productId);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("Product not found for update. ID: {}", productId);
+                    return new ResourceNotFoundException("Product not found of given Id !!");
+                });
+
         product.setTitle(productDto.getTitle());
         product.setDescription(productDto.getDescription());
         product.setPrice(productDto.getPrice());
@@ -62,85 +75,185 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(productDto.isStock());
         product.setProductImageName(productDto.getProductImageName());
 
-//        save the entity
         Product updatedProduct = productRepository.save(product);
+
+        log.info("Product updated successfully with ID: {}", productId);
+
         return mapper.map(updatedProduct, ProductDto.class);
     }
 
+    // ================= DELETE PRODUCT =================
     @Override
     public void delete(String productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found of given Id !!"));
+
+        log.warn("Deleting product with ID: {}", productId);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("Product not found for delete. ID: {}", productId);
+                    return new ResourceNotFoundException("Product not found of given Id !!");
+                });
+
         productRepository.delete(product);
+
+        log.info("Product deleted successfully with ID: {}", productId);
     }
 
+    // ================= GET PRODUCT =================
     @Override
     public ProductDto get(String productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found of given Id !!"));
+
+        log.debug("Fetching product with ID: {}", productId);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("Product not found. ID: {}", productId);
+                    return new ResourceNotFoundException("Product not found of given Id !!");
+                });
+
+        log.info("Product fetched successfully with ID: {}", productId);
+
         return mapper.map(product, ProductDto.class);
     }
 
+    // ================= GET ALL PRODUCTS =================
     @Override
     public PageableResponse<ProductDto> getAll(int pageNumber, int pageSize, String sortBy, String sortDir) {
+
         String logkey = LogKeyGenerator.generateLogKey();
-        Sort sort = (sortDir.equalsIgnoreCase("desc")) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
+
+        log.debug("[{}] Fetching all products | page={} size={} sortBy={} sortDir={}",
+                logkey, pageNumber, pageSize, sortBy, sortDir);
+
+        Sort sort = (sortDir.equalsIgnoreCase("desc"))
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Product> page = productRepository.findAll(pageable);
-        return Helper.getPageableResponse(page, ProductDto.class,logkey);
+
+        log.info("[{}] Total products fetched: {}", logkey, page.getNumberOfElements());
+
+        return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
 
+    // ================= GET ALL LIVE PRODUCTS =================
     @Override
     public PageableResponse<ProductDto> getAllLive(int pageNumber, int pageSize, String sortBy, String sortDir) {
+
         String logkey = LogKeyGenerator.generateLogKey();
-        Sort sort = (sortDir.equalsIgnoreCase("desc")) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
+
+        log.debug("[{}] Fetching live products | page={} size={} sortBy={} sortDir={}",
+                logkey, pageNumber, pageSize, sortBy, sortDir);
+
+        Sort sort = (sortDir.equalsIgnoreCase("desc"))
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Product> page = productRepository.findByLiveTrue(pageable);
-        return Helper.getPageableResponse(page, ProductDto.class,logkey);
+
+        log.info("[{}] Live products fetched: {}", logkey, page.getNumberOfElements());
+
+        return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
 
+    // ================= SEARCH PRODUCT =================
     @Override
     public PageableResponse<ProductDto> searchByTitle(String subTitle, int pageNumber, int pageSize, String sortBy, String sortDir) {
+
         String logkey = LogKeyGenerator.generateLogKey();
-        Sort sort = (sortDir.equalsIgnoreCase("desc")) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
+
+        log.debug("[{}] Searching products with title '{}' | page={} size={}",
+                logkey, subTitle, pageNumber, pageSize);
+
+        Sort sort = (sortDir.equalsIgnoreCase("desc"))
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Product> page = productRepository.findByTitleContaining(subTitle, pageable);
-        return Helper.getPageableResponse(page, ProductDto.class,logkey);
+
+        log.info("[{}] Search results count: {}", logkey, page.getNumberOfElements());
+
+        return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
 
+    // ================= CREATE PRODUCT WITH CATEGORY =================
     @Override
     public ProductDto createWithCategory(ProductDto productDto, String categoryId) {
-        //fetch the category from db:
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category not found !!"));
+
+        log.info("Creating product with category ID: {}", categoryId);
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> {
+                    log.error("Category not found. ID: {}", categoryId);
+                    return new ResourceNotFoundException("Category not found !!");
+                });
+
         Product product = mapper.map(productDto, Product.class);
 
-        //product id
         String productId = UUID.randomUUID().toString();
         product.setProductId(productId);
-        //added
-//        product.setAddedDate(new Date());
         product.setCategory(category);
+
         Product saveProduct = productRepository.save(product);
+
+        log.info("Product created with ID: {} under category ID: {}", productId, categoryId);
+
         return mapper.map(saveProduct, ProductDto.class);
-
-
     }
 
+    // ================= UPDATE PRODUCT CATEGORY =================
     @Override
     public ProductDto updateCategory(String productId, String categoryId) {
-        //product fetch
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product of given id not found !!"));
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category of given id not found !!"));
+
+        log.info("Updating category for product ID: {}", productId);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("Product not found. ID: {}", productId);
+                    return new ResourceNotFoundException("Product of given id not found !!");
+                });
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> {
+                    log.error("Category not found. ID: {}", categoryId);
+                    return new ResourceNotFoundException("Category of given id not found !!");
+                });
+
         product.setCategory(category);
         Product savedProduct = productRepository.save(product);
+
+        log.info("Category updated successfully for product ID: {}", productId);
+
         return mapper.map(savedProduct, ProductDto.class);
     }
 
+    // ================= GET PRODUCTS BY CATEGORY =================
     @Override
     public PageableResponse<ProductDto> getAllOfCategory(String categoryId, int pageNumber, int pageSize, String sortBy, String sortDir) {
+
         String logkey = LogKeyGenerator.generateLogKey();
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category of given id not found !!"));
-        Sort sort = (sortDir.equalsIgnoreCase("desc")) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
+
+        log.debug("[{}] Fetching products for category ID: {}", logkey, categoryId);
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> {
+                    log.error("[{}] Category not found. ID: {}", logkey, categoryId);
+                    return new ResourceNotFoundException("Category of given id not found !!");
+                });
+
+        Sort sort = (sortDir.equalsIgnoreCase("desc"))
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Product> page = productRepository.findByCategory(category, pageable);
-        return Helper.getPageableResponse(page, ProductDto.class,logkey);
+
+        log.info("[{}] Products fetched for category {} : {}",
+                logkey, categoryId, page.getNumberOfElements());
+
+        return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
 }
