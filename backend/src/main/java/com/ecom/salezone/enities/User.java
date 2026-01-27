@@ -2,6 +2,9 @@ package com.ecom.salezone.enities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -13,8 +16,7 @@ import java.util.*;
 @Entity
 @ToString
 @Table(name = "users")
-public class User {
-
+public class User implements UserDetails {
     /**
      * Primary key for User
      * UUID or custom generated ID is preferred
@@ -131,4 +133,38 @@ public class User {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
+                .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        // Spring Security uses this for login
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // you are not tracking expiry
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return Boolean.TRUE.equals(this.isActive);
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return Boolean.TRUE.equals(this.isActive);
+    }
+
 }

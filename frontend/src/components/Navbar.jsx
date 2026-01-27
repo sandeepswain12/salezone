@@ -113,7 +113,7 @@ const Navbar = ({ isLoggedIn = false }) => {
             {/* THEME TOGGLE */}
             <button
               onClick={toggleTheme}
-              className={`w-11 h-5 rounded-full px-1 flex items-center cursor-pointer
+              className={`w-11 h-5 rounded-full px-1 flex items-center cursor-pointerA
                 ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"}
               `}
             >

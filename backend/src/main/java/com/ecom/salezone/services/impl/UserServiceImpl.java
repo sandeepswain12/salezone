@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -43,6 +44,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Value("${user.profile.image.path}")
     private String imagePath;
 
@@ -54,6 +58,7 @@ public class UserServiceImpl implements UserService {
         logger.info("[{}] GENERATED USER ID={}", logkey, userId);
 
         userDto.setUserId(userId);
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         User user = dtoToEntity(userDto);
         logger.debug("[{}] USERDTO → USER ENTITY | {}", logkey, user);
@@ -84,7 +89,8 @@ public class UserServiceImpl implements UserService {
 
         exuser.setUserName(updatedUserDto.getUserName());
         exuser.setEmail(updatedUserDto.getEmail());
-        exuser.setPassword(updatedUserDto.getPassword());
+        if (!updatedUserDto.getPassword().equalsIgnoreCase(exuser.getPassword()))
+            exuser.setPassword(passwordEncoder.encode(updatedUserDto.getPassword()));
         exuser.setAbout(updatedUserDto.getAbout());
         exuser.setGender(updatedUserDto.getGender());
         exuser.setPhoneNumber(updatedUserDto.getPhoneNumber());
