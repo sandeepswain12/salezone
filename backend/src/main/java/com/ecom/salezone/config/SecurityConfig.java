@@ -17,6 +17,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(req -> req
 
                         // USERS - ADMIN ONLY
@@ -29,6 +30,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/salezone/ecom/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/salezone/ecom/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/products/**").hasRole("ADMIN")
+
+                        // Orders - ADMIN ONLY (write)
+                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/orders/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT, "/salezone/ecom/orders/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/orders/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/orders/**").hasRole("USER")
 
                         // PUBLIC READ APIs
                         .requestMatchers(HttpMethod.GET, "/salezone/ecom/products/**").permitAll()

@@ -14,6 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name = "orders")
 public class Order {
 
@@ -52,11 +53,14 @@ public class Order {
     @Column(name = "b_phone", length = 15)
     private String billingPhone;
 
+    private String billingName;
+
+    private int orderAmount;
     /**
      * Date when order was placed
      */
     @Column(name = "o_date", updatable = false)
-    private LocalDateTime orderDate;
+    private LocalDateTime orderedDate;
 
     /**
      * Date when order was delivered
@@ -94,7 +98,7 @@ public class Order {
      */
     @PrePersist
     protected void onCreate() {
-        this.orderDate = LocalDateTime.now();
+        this.orderedDate = LocalDateTime.now();
         this.orderStatus = OrderStatus.PENDING;
         this.paymentStatus = PaymentStatus.NOT_PAID;
     }

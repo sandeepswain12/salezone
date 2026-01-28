@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name = "order_items")
 public class OrderItem {
 
@@ -15,9 +16,8 @@ public class OrderItem {
      * Primary key for OrderItem
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "oi_id")
-    private int orderItemId;
+    private String orderItemId;
 
     /**
      * Quantity of product ordered
