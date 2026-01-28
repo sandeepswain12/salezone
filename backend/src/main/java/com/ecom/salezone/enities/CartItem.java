@@ -12,7 +12,7 @@ import lombok.*;
 public class CartItem {
     @Id
     @Column(name = "c_i_id")
-    private int cartItemId;
+    private String cartItemId;
     @OneToOne
     @JoinColumn(name = "product_id")
     private Product product;
