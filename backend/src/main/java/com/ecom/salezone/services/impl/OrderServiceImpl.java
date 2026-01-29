@@ -14,12 +14,12 @@ import com.ecom.salezone.repository.OrderRepository;
 import com.ecom.salezone.repository.UserRepository;
 import com.ecom.salezone.services.OrderService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    // Logger for order service operations
+    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -40,37 +43,61 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private CartRepository cartRepository;
 
+    /**
+     * Fetch order by orderId
+     */
     @Override
     public OrderDto getOrder(String orderId) {
-        Order order = this.orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found !!"));
-        return this.modelMapper.map(order, OrderDto.class);
+
+        log.info("Fetching order details | orderId={}", orderId);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    log.error("Order not found | orderId={}", orderId);
+                    return new ResourceNotFoundException("Order not found !!");
+                });
+
+        return modelMapper.map(order, OrderDto.class);
     }
 
+    /**
+     * Create order from cart
+     */
     @Override
     public OrderDto createOrder(CreateOrderRequest orderDto) {
 
+        log.info("Create order request received | request={}", orderDto);
+
         String userId = orderDto.getUserId();
         String cartId = orderDto.getCartId();
-        //fetch user
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with given id !!"));
 
-        //fetch cart
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new ResourceNotFoundException("Cart with given id not found on server !!"));
+        // Fetch user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found | userId={}", userId);
+                    return new ResourceNotFoundException("User not found with given id !!");
+                });
+
+        // Fetch cart
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> {
+                    log.error("Cart not found | cartId={}", cartId);
+                    return new ResourceNotFoundException("Cart with given id not found on server !!");
+                });
 
         List<CartItem> cartItems = cart.getItems();
 
+        // Validate cart items
         if (cartItems.size() <= 0) {
+            log.error("Cart is empty | cartId={}", cartId);
             throw new BadApiRequestException("Invalid number of items in cart !!");
-
         }
 
-        //other checks
-
+        // Create order entity
         Order order = Order.builder()
                 .billingName(orderDto.getBillingName())
                 .billingPhone(orderDto.getBillingPhone())
                 .billingAddress(orderDto.getBillingAddress())
-//                .orderedDate(new Date())
                 .deliveredDate(null)
                 .paymentStatus(orderDto.getPaymentStatus())
                 .orderStatus(orderDto.getOrderStatus())
@@ -78,73 +105,135 @@ public class OrderServiceImpl implements OrderService {
                 .user(user)
                 .build();
 
-//        orderItems,amount
-
+        // Calculate order amount and convert CartItem -> OrderItem
         AtomicReference<Integer> orderAmount = new AtomicReference<>(0);
+
         List<OrderItem> orderItems = cartItems.stream().map(cartItem -> {
-//            CartItem->OrderItem
+
             OrderItem orderItem = OrderItem.builder()
                     .quantity(cartItem.getQuantity())
                     .product(cartItem.getProduct())
-                    .totalPrice(cartItem.getQuantity() * cartItem.getProduct().getDiscountedPrice())
+                    .totalPrice(cartItem.getQuantity()
+                            * cartItem.getProduct().getDiscountedPrice())
                     .order(order)
                     .build();
 
+            // Accumulate order amount
             orderAmount.set(orderAmount.get() + orderItem.getTotalPrice());
+
             return orderItem;
         }).collect(Collectors.toList());
 
-
+        // Attach items and total amount to order
         order.setOrderItems(orderItems);
         order.setOrderAmount(orderAmount.get());
 
-        System.out.println(order.getOrderItems().size());
+        log.info("Order items created | totalItems={}, totalAmount={}",
+                orderItems.size(), orderAmount.get());
 
-        //
+        // Clear cart after order creation
         cart.getItems().clear();
         cartRepository.save(cart);
+
+        // Save order
         Order savedOrder = orderRepository.save(order);
+
+        log.info("Order created successfully | orderId={}", savedOrder.getOrderId());
+
         return modelMapper.map(savedOrder, OrderDto.class);
     }
 
+    /**
+     * Remove order by orderId
+     */
     @Override
     public void removeOrder(String orderId) {
 
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("order is not found !!"));
+        log.info("Remove order request | orderId={}", orderId);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    log.error("Order not found for deletion | orderId={}", orderId);
+                    return new ResourceNotFoundException("order is not found !!");
+                });
+
         orderRepository.delete(order);
 
+        log.info("Order removed successfully | orderId={}", orderId);
     }
 
+    /**
+     * Get all orders of a user
+     */
     @Override
     public List<OrderDto> getOrdersOfUser(String userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found !!"));
+
+        log.info("Fetching orders of user | userId={}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found | userId={}", userId);
+                    return new ResourceNotFoundException("User not found !!");
+                });
+
         List<Order> orders = orderRepository.findByUser(user);
-        List<OrderDto> orderDtos = orders.stream().map(order -> modelMapper.map(order, OrderDto.class)).collect(Collectors.toList());
-        return orderDtos;
+
+        log.info("Total orders found | userId={}, count={}", userId, orders.size());
+
+        return orders.stream()
+                .map(order -> modelMapper.map(order, OrderDto.class))
+                .collect(Collectors.toList());
     }
 
-
+    /**
+     * Get paginated orders
+     */
     @Override
-    public PageableResponse<OrderDto> getOrders(int pageNumber, int pageSize, String sortBy, String sortDir) {
-        String logkey = LogKeyGenerator.generateLogKey();
-        Sort sort = (sortDir.equalsIgnoreCase("desc")) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
+    public PageableResponse<OrderDto> getOrders(
+            int pageNumber,
+            int pageSize,
+            String sortBy,
+            String sortDir) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+        log.info("Fetching paginated orders | logKey={}, page={}, size={}, sortBy={}, sortDir={}",
+                logKey, pageNumber, pageSize, sortBy, sortDir);
+
+        Sort sort = (sortDir.equalsIgnoreCase("desc"))
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Order> page = orderRepository.findAll(pageable);
-        return Helper.getPageableResponse(page, OrderDto.class,logkey);
+
+        return Helper.getPageableResponse(page, OrderDto.class, logKey);
     }
 
+    /**
+     * Update order details
+     */
     @Override
     public OrderDto updateOrder(String orderId, OrderUpdateRequest request) {
 
-        //get the order
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new BadApiRequestException("Invalid update data"));
+        log.info("Update order request | orderId={}, request={}", orderId, request);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    log.error("Invalid order update attempt | orderId={}", orderId);
+                    return new BadApiRequestException("Invalid update data");
+                });
+
         order.setBillingName(request.getBillingName());
         order.setBillingPhone(request.getBillingPhone());
         order.setBillingAddress(request.getBillingAddress());
         order.setPaymentStatus(request.getPaymentStatus());
         order.setOrderStatus(request.getOrderStatus());
         order.setDeliveredDate(request.getDeliveredDate());
+
         Order updatedOrder = orderRepository.save(order);
+
+        log.info("Order updated successfully | orderId={}", orderId);
+
         return modelMapper.map(updatedOrder, OrderDto.class);
     }
 

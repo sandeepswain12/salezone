@@ -42,7 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/salezone/ecom/categories/**").permitAll()
 
                         // EVERYTHING ELSE
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
 
         http.httpBasic(Customizer.withDefaults());

@@ -8,11 +8,13 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name = "cart_items")
 public class CartItem {
     @Id
     @Column(name = "c_i_id")
-    private String cartItemId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int cartItemId;
     @OneToOne
     @JoinColumn(name = "product_id")
     private Product product;

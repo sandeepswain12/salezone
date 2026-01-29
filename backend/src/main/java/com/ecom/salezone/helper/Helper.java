@@ -11,44 +11,51 @@ import java.util.stream.Collectors;
 
 public class Helper<V> {
 
-    private static final Logger logger = LoggerFactory.getLogger(Helper.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(Helper.class);
 
+    /**
+     * Converts Page<U> into PageableResponse<V>
+     */
     public static <U, V> PageableResponse<V> getPageableResponse(
             Page<U> page,
             Class<V> type,
             String logkey) {
 
-        logger.info("[{}] START MAPPING PAGE → PAGEABLE_RESPONSE", logkey);
-        logger.debug("[{}] PAGE DETAILS | number={} size={} totalElements={} totalPages={}",
-                logkey,
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages());
+        // Entry log – mapping operation
+        log.info("[{}] Mapping pageable response | page={} size={}",
+                logkey, page.getNumber(), page.getSize());
 
-        List<U> entity = page.getContent();
-        logger.debug("[{}] PAGE CONTENT FETCHED | entityCount={}", logkey, entity.size());
+        List<U> entities = page.getContent();
 
-        List<V> userDtos = entity.stream()
+        log.debug("[{}] Page content fetched | entityCount={}",
+                logkey, entities.size());
+
+        // Map entity list to DTO list
+        List<V> dtoList = entities.stream()
                 .map(object -> new ModelMapper().map(object, type))
                 .collect(Collectors.toList());
 
-        logger.debug("[{}] ENTITY LIST MAPPED TO DTO LIST | dtoCount={}",
-                logkey, userDtos.size());
+        log.debug("[{}] Entities mapped to DTOs | dtoCount={}",
+                logkey, dtoList.size());
 
+        // Build pageable response
         PageableResponse<V> response = new PageableResponse<>();
-        response.setContent(userDtos);
+        response.setContent(dtoList);
         response.setPageNumber(page.getNumber() + 1);
         response.setPageSize(page.getSize());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
         response.setLastPage(page.isLast());
 
-        logger.info("[{}] PAGEABLE_RESPONSE CREATED SUCCESSFULLY | pageNumber={} pageSize={} lastPage={}",
+        // Exit log – final response info
+        log.info(
+                "[{}] Pageable response created | pageNumber={} totalPages={} lastPage={}",
                 logkey,
                 response.getPageNumber(),
-                response.getPageSize(),
-                response.isLastPage());
+                response.getTotalPages(),
+                response.isLastPage()
+        );
 
         return response;
     }

@@ -17,7 +17,8 @@ public class OrderItem {
      */
     @Id
     @Column(name = "oi_id")
-    private String orderItemId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int orderItemId;
 
     /**
      * Quantity of product ordered
