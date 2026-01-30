@@ -31,15 +31,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/salezone/ecom/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/products/**").hasRole("ADMIN")
 
-                        // Orders - ADMIN ONLY (write)
-                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/orders/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.PUT, "/salezone/ecom/orders/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/orders/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/orders/**").hasRole("USER")
+//                        // Orders - ADMIN ONLY (write)
+//                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/orders/**").hasRole("USER")
+//                        .requestMatchers(HttpMethod.PUT, "/salezone/ecom/orders/**").hasRole("USER")
+//                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/orders/**").hasRole("USER")
+//                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/orders/**").hasRole("USER")
 
-                        // PUBLIC READ APIs
-                        .requestMatchers(HttpMethod.GET, "/salezone/ecom/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/salezone/ecom/categories/**").permitAll()
+//                        // PUBLIC READ APIs
+//                        .requestMatchers(HttpMethod.GET, "/salezone/ecom/products/**").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/salezone/ecom/categories/**").permitAll()
 
                         // EVERYTHING ELSE
                         .anyRequest().permitAll()

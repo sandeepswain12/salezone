@@ -7,12 +7,19 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository for User entity.
+ */
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
 
+    // Fetch user by email
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByEmailAndPassword(String email,String password);
+    // Fetch user by email and password
+    Optional<User> findByEmailAndPassword(String email, String password);
 
+    // Search users by username keyword
     List<User> findByUserNameContaining(String keywords);
 }
+
