@@ -1,6 +1,7 @@
 package com.ecom.salezone.services.impl;
 
 import com.ecom.salezone.dtos.PageableResponse;
+import com.ecom.salezone.dtos.SignupRequestDto;
 import com.ecom.salezone.dtos.UserDto;
 import com.ecom.salezone.enities.Role;
 import com.ecom.salezone.enities.User;
@@ -49,7 +50,7 @@ public class UserServiceImpl implements UserService {
      * Create new user
      */
     @Override
-    public UserDto createUser(UserDto userDto, String logKey) {
+    public UserDto createUser(SignupRequestDto userDto, String logKey) {
 
         log.info("Create user request received | logKey={}", logKey);
 
@@ -57,9 +58,14 @@ public class UserServiceImpl implements UserService {
         userDto.setUserId(userId);
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
+        log.info("User name received | username={}", userDto.getUserName());
+
         log.info("Generated userId | userId={}", userId);
 
         User user = modelMapper.map(userDto, User.class);
+        user.setUserName(user.getUserName());
+
+        log.info("UserDto mapped to User | username ={}", user.getUsername());
 
         // Fetch ROLE_USER
         Role roleUser = roleRepository.findById("ROLE_USER")
@@ -72,6 +78,7 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
 
+        log.info("User saved | savedUser={}", savedUser);
         log.info("User created successfully | userId={}, logKey={}",
                 savedUser.getUserId(), logKey);
 

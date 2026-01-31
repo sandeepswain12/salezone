@@ -1,6 +1,7 @@
 package com.ecom.salezone.services;
 
 import com.ecom.salezone.dtos.PageableResponse;
+import com.ecom.salezone.dtos.SignupRequestDto;
 import com.ecom.salezone.dtos.UserDto;
 
 import java.util.List;
@@ -9,7 +10,7 @@ public interface UserService {
     /**
      * Create a new user
      */
-    UserDto createUser(UserDto userDto , String logkey);
+    UserDto createUser(SignupRequestDto userDto , String logkey);
 
     /**
      * Update existing user by userId

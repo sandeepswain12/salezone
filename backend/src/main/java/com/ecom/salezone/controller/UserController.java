@@ -43,19 +43,19 @@ public class UserController {
     /**
      * Create new user
      */
-    @PostMapping("/create")
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
-
-        String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Create User | logKey={} payload={}", logKey, userDto);
-
-        UserDto savedUser = userService.createUser(userDto, logKey);
-
-        log.info("API RESPONSE: User Created | logKey={} userId={}",
-                logKey, savedUser.getUserId());
-
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-    }
+//    @PostMapping("/create")
+//    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
+//
+//        String logKey = LogKeyGenerator.generateLogKey();
+//        log.info("API CALL: Create User | logKey={} payload={}", logKey, userDto);
+//
+//        UserDto savedUser = userService.createUser(userDto, logKey);
+//
+//        log.info("API RESPONSE: User Created | logKey={} userId={}",
+//                logKey, savedUser.getUserId());
+//
+//        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+//    }
 
     /**
      * Get all users with pagination
