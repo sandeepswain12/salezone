@@ -182,7 +182,7 @@ public class UserController {
         log.info("API CALL: Upload User Image | logKey={} userId={} fileName={}",
                 logKey, userId, image.getOriginalFilename());
 
-        String imageName = fileService.uploadFile(image, imageUploadPath);
+        String imageName = fileService.uploadFile(image, imageUploadPath, logKey);
 
         UserDto user = userService.getUserById(userId, logKey);
         user.setImageName(imageName);
@@ -214,7 +214,7 @@ public class UserController {
         UserDto user = userService.getUserById(userId, logKey);
 
         InputStream resource =
-                fileService.getResource(imageUploadPath, user.getImageName());
+                fileService.getResource(imageUploadPath, user.getImageName(), logKey);
 
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
         StreamUtils.copy(resource, response.getOutputStream());

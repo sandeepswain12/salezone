@@ -33,9 +33,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     // ================= CREATE CATEGORY =================
     @Override
-    public CategoryDto create(CategoryDto categoryDto) {
+    public CategoryDto create(CategoryDto categoryDto, String logkey) {
 
-        log.info("Creating category with title: {}", categoryDto.getTitle());
+        log.info("{} Creating category with title: {}",logkey, categoryDto.getTitle());
 
         String categoryId = UUID.randomUUID().toString();
         categoryDto.setCategoryId(categoryId);
@@ -43,20 +43,20 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = dtoToEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);
 
-        log.info("Category created successfully with ID: {}", categoryId);
+        log.info("{} Category created successfully with ID: {}",logkey, categoryId);
 
         return entityToDto(savedCategory);
     }
 
     // ================= UPDATE CATEGORY =================
     @Override
-    public CategoryDto update(CategoryDto categoryDto, String categoryId) {
+    public CategoryDto update(CategoryDto categoryDto, String categoryId, String logkey) {
 
-        log.info("Updating category with ID: {}", categoryId);
+        log.info("{} Updating category with ID: {}",logkey, categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> {
-                    log.error("Category not found for update. ID: {}", categoryId);
+                    log.error("{} Category not found for update. ID: {}",logkey, categoryId);
                     return new ResourceNotFoundException("Category not found with given id !!");
                 });
 
@@ -66,26 +66,26 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category updatedCategory = categoryRepository.save(category);
 
-        log.info("Category updated successfully with ID: {}", categoryId);
+        log.info("{} Category updated successfully with ID: {}",logkey, categoryId);
 
         return entityToDto(updatedCategory);
     }
 
     // ================= DELETE CATEGORY =================
     @Override
-    public void delete(String categoryId) {
+    public void delete(String categoryId, String logkey) {
 
-        log.warn("Deleting category with ID: {}", categoryId);
+        log.warn("{} Deleting category with ID: {}",logkey, categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> {
-                    log.error("Category not found for delete. ID: {}", categoryId);
+                    log.error("{} Category not found for delete. ID: {}",logkey, categoryId);
                     return new ResourceNotFoundException("Category not found with given id !!");
                 });
 
         categoryRepository.delete(category);
 
-        log.info("Category deleted successfully with ID: {}", categoryId);
+        log.info("{} Category deleted successfully with ID: {}",logkey, categoryId);
     }
 
     // ================= GET ALL CATEGORIES =================
@@ -94,11 +94,10 @@ public class CategoryServiceImpl implements CategoryService {
             int pageNumber,
             int pageSize,
             String sortBy,
-            String sortDir) {
+            String sortDir,
+            String logkey) {
 
-        String logkey = LogKeyGenerator.generateLogKey();
-
-        log.debug("[{}] Fetching all categories | page={} size={} sortBy={} sortDir={}",
+        log.debug("{} Fetching all categories | page={} size={} sortBy={} sortDir={}",
                 logkey, pageNumber, pageSize, sortBy, sortDir);
 
         Sort sort = (sortDir.equalsIgnoreCase("desc"))
@@ -108,7 +107,7 @@ public class CategoryServiceImpl implements CategoryService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Category> page = categoryRepository.findAll(pageable);
 
-        log.info("[{}] Categories fetched count: {}", logkey, page.getNumberOfElements());
+        log.info("{} Categories fetched count: {}", logkey, page.getNumberOfElements());
 
         PageableResponse<CategoryDto> pageableResponse =
                 Helper.getPageableResponse(page, CategoryDto.class, logkey);
@@ -118,9 +117,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     // ================= GET SINGLE CATEGORY =================
     @Override
-    public CategoryDto get(String categoryId) {
+    public CategoryDto get(String categoryId, String logkey) {
 
-        log.debug("Fetching category with ID: {}", categoryId);
+        log.debug("{} Fetching category with ID: {}",logkey, categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> {
@@ -128,7 +127,7 @@ public class CategoryServiceImpl implements CategoryService {
                     return new ResourceNotFoundException("Category not found with given id !!");
                 });
 
-        log.info("Category fetched successfully with ID: {}", categoryId);
+        log.info("{} Category fetched successfully with ID: {}",logkey, categoryId);
 
         return entityToDto(category);
     }

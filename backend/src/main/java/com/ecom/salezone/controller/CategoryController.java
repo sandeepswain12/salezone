@@ -4,6 +4,7 @@ import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.CategoryDto;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.dtos.ProductDto;
+import com.ecom.salezone.helper.LogKeyGenerator;
 import com.ecom.salezone.services.CategoryService;
 import com.ecom.salezone.services.ProductService;
 import jakarta.validation.Valid;
@@ -37,14 +38,15 @@ public class CategoryController {
     public ResponseEntity<CategoryDto> createCategory(
             @Valid @RequestBody CategoryDto categoryDto) {
 
-        log.info("API CALL: Create category | title={}",
-                categoryDto.getTitle());
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Create category | categoryRequest={} ",
+                logkey, categoryDto);
 
         CategoryDto createdCategory =
-                categoryService.create(categoryDto);
+                categoryService.create(categoryDto,logkey);
 
-        log.info("Category created successfully | categoryId={}",
-                createdCategory.getCategoryId());
+        log.info("{} Category created successfully | categoryResponse={}",
+                logkey, createdCategory);
 
         return new ResponseEntity<>(
                 createdCategory,
@@ -61,12 +63,13 @@ public class CategoryController {
             @PathVariable String categoryId,
             @RequestBody CategoryDto categoryDto) {
 
-        log.info("API CALL: Update category | categoryId={}", categoryId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Update category | categoryId={} categoryRequest = {}",logkey, categoryId , categoryDto);
 
         CategoryDto updatedCategory =
-                categoryService.update(categoryDto, categoryId);
+                categoryService.update(categoryDto, categoryId, logkey);
 
-        log.info("Category updated successfully | categoryId={}", categoryId);
+        log.info("{} Category updated successfully | categoryId={} categoryResponse = {}",logkey, categoryId, updatedCategory);
 
         return new ResponseEntity<>(
                 updatedCategory,
@@ -82,9 +85,10 @@ public class CategoryController {
     public ResponseEntity<ApiResponseMessage> deleteCategory(
             @PathVariable String categoryId) {
 
-        log.info("API CALL: Delete category | categoryId={}", categoryId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Delete category | categoryId={}",logkey, categoryId);
 
-        categoryService.delete(categoryId);
+        categoryService.delete(categoryId,logkey);
 
         ApiResponseMessage responseMessage =
                 ApiResponseMessage.builder()
@@ -93,7 +97,7 @@ public class CategoryController {
                         .success(true)
                         .build();
 
-        log.info("Category deleted successfully | categoryId={}", categoryId);
+        log.info("{} Category deleted successfully | categoryId={}",logkey, categoryId);
 
         return new ResponseEntity<>(
                 responseMessage,
@@ -113,16 +117,17 @@ public class CategoryController {
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
     ) throws InterruptedException {
 
-        log.info("API CALL: Get all categories | page={} size={}",
-                pageNumber, pageSize);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get all categories | page={} size={}",
+                logkey, pageNumber, pageSize);
 
         Thread.sleep(1000); // existing logic (unchanged)
 
         PageableResponse<CategoryDto> response =
-                categoryService.getAll(pageNumber, pageSize, sortBy, sortDir);
+                categoryService.getAll(pageNumber, pageSize, sortBy, sortDir, logkey);
 
-        log.info("Categories fetched successfully | count={}",
-                response.getContent().size());
+        log.info("{} Categories fetched successfully | count={}",
+                logkey, response.getContent().size());
 
         return new ResponseEntity<>(
                 response,
@@ -138,12 +143,13 @@ public class CategoryController {
     public ResponseEntity<CategoryDto> getSingle(
             @PathVariable String categoryId) {
 
-        log.info("API CALL: Get category | categoryId={}", categoryId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get category | categoryId={}",logkey, categoryId);
 
         CategoryDto categoryDto =
-                categoryService.get(categoryId);
+                categoryService.get(categoryId,logkey);
 
-        log.info("Category fetched successfully | categoryId={}", categoryId);
+        log.info("{} Category fetched successfully | categoryId={}",logkey, categoryId);
 
         return ResponseEntity.ok(categoryDto);
     }
@@ -157,14 +163,15 @@ public class CategoryController {
             @PathVariable String categoryId,
             @RequestBody ProductDto dto) {
 
-        log.info("API CALL: Create product with category | categoryId={}",
-                categoryId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Create product with category | categoryId={}",
+                logkey, categoryId);
 
         ProductDto productWithCategory =
-                productService.createWithCategory(dto, categoryId);
+                productService.createWithCategory(dto, categoryId, logkey);
 
-        log.info("Product created under category | categoryId={}",
-                categoryId);
+        log.info("{} Product created under category | categoryId={}",
+                logkey, categoryId);
 
         return new ResponseEntity<>(
                 productWithCategory,
@@ -181,14 +188,15 @@ public class CategoryController {
             @PathVariable String categoryId,
             @PathVariable String productId) {
 
-        log.info("API CALL: Update product category | productId={} categoryId={}",
-                productId, categoryId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Update product category | productId={} categoryId={}",
+                logkey, productId, categoryId);
 
         ProductDto productDto =
-                productService.updateCategory(productId, categoryId);
+                productService.updateCategory(productId, categoryId,logkey);
 
-        log.info("Product category updated successfully | productId={}",
-                productId);
+        log.info("{} Product category updated successfully | productId={}",
+                logkey, productId);
 
         return new ResponseEntity<>(
                 productDto,
@@ -209,16 +217,17 @@ public class CategoryController {
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
     ) {
 
-        log.info("API CALL: Get products of category | categoryId={} page={} size={}",
-                categoryId, pageNumber, pageSize);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get products of category | categoryId={} page={} size={}",
+                logkey, categoryId, pageNumber, pageSize);
 
         PageableResponse<ProductDto> response =
                 productService.getAllOfCategory(
-                        categoryId, pageNumber, pageSize, sortBy, sortDir
+                        categoryId, pageNumber, pageSize, sortBy, sortDir,logkey
                 );
 
-        log.info("Products fetched successfully | categoryId={} count={}",
-                categoryId, response.getContent().size());
+        log.info("{} Products fetched successfully | categoryId={} count={}",
+                logkey, categoryId, response.getContent().size());
 
         return new ResponseEntity<>(
                 response,

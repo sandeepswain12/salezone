@@ -47,13 +47,13 @@ public class OrderServiceImpl implements OrderService {
      * Fetch order by orderId
      */
     @Override
-    public OrderDto getOrder(String orderId) {
+    public OrderDto getOrder(String orderId, String logkey) {
 
-        log.info("Fetching order details | orderId={}", orderId);
+        log.info("{} Fetching order details | orderId={}", logkey, orderId);
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> {
-                    log.error("Order not found | orderId={}", orderId);
+                    log.error("{} Order not found | orderId={}", logkey, orderId);
                     return new ResourceNotFoundException("Order not found !!");
                 });
 
@@ -64,9 +64,9 @@ public class OrderServiceImpl implements OrderService {
      * Create order from cart
      */
     @Override
-    public OrderDto createOrder(CreateOrderRequest orderDto) {
+    public OrderDto createOrder(CreateOrderRequest orderDto, String logkey) {
 
-        log.info("Create order request received | request={}", orderDto);
+        log.info("{} Create order request received | request={}", logkey, orderDto);
 
         String userId = orderDto.getUserId();
         String cartId = orderDto.getCartId();
@@ -74,14 +74,14 @@ public class OrderServiceImpl implements OrderService {
         // Fetch user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found | userId={}", userId);
+                    log.error("{} User not found | userId={}", logkey, userId);
                     return new ResourceNotFoundException("User not found with given id !!");
                 });
 
         // Fetch cart
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> {
-                    log.error("Cart not found | cartId={}", cartId);
+                    log.error("{} Cart not found | cartId={}", logkey, cartId);
                     return new ResourceNotFoundException("Cart with given id not found on server !!");
                 });
 
@@ -89,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Validate cart items
         if (cartItems.size() <= 0) {
-            log.error("Cart is empty | cartId={}", cartId);
+            log.error("{} Cart is empty | cartId={}", logkey, cartId);
             throw new BadApiRequestException("Invalid number of items in cart !!");
         }
 
@@ -128,8 +128,8 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
         order.setOrderAmount(orderAmount.get());
 
-        log.info("Order items created | totalItems={}, totalAmount={}",
-                orderItems.size(), orderAmount.get());
+        log.info("{} Order items created | totalItems={}, totalAmount={}",
+                logkey, orderItems.size(), orderAmount.get());
 
         // Clear cart after order creation
         cart.getItems().clear();
@@ -138,7 +138,7 @@ public class OrderServiceImpl implements OrderService {
         // Save order
         Order savedOrder = orderRepository.save(order);
 
-        log.info("Order created successfully | orderId={}", savedOrder.getOrderId());
+        log.info("{} Order created successfully | orderId={}", logkey, savedOrder.getOrderId());
 
         return modelMapper.map(savedOrder, OrderDto.class);
     }
@@ -147,38 +147,38 @@ public class OrderServiceImpl implements OrderService {
      * Remove order by orderId
      */
     @Override
-    public void removeOrder(String orderId) {
+    public void removeOrder(String orderId, String logkey) {
 
-        log.info("Remove order request | orderId={}", orderId);
+        log.info("{} Remove order request | orderId={}", logkey, orderId);
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> {
-                    log.error("Order not found for deletion | orderId={}", orderId);
+                    log.error("{} Order not found for deletion | orderId={}", logkey, orderId);
                     return new ResourceNotFoundException("order is not found !!");
                 });
 
         orderRepository.delete(order);
 
-        log.info("Order removed successfully | orderId={}", orderId);
+        log.info("{} Order removed successfully | orderId={}", logkey, orderId);
     }
 
     /**
      * Get all orders of a user
      */
     @Override
-    public List<OrderDto> getOrdersOfUser(String userId) {
+    public List<OrderDto> getOrdersOfUser(String userId, String logkey) {
 
-        log.info("Fetching orders of user | userId={}", userId);
+        log.info("{} Fetching orders of user | userId={}", logkey, userId);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found | userId={}", userId);
+                    log.error("{} User not found | userId={}", logkey, userId);
                     return new ResourceNotFoundException("User not found !!");
                 });
 
         List<Order> orders = orderRepository.findByUser(user);
 
-        log.info("Total orders found | userId={}, count={}", userId, orders.size());
+        log.info("{} Total orders found | userId={}, count={}", logkey, userId, orders.size());
 
         return orders.stream()
                 .map(order -> modelMapper.map(order, OrderDto.class))
@@ -193,10 +193,11 @@ public class OrderServiceImpl implements OrderService {
             int pageNumber,
             int pageSize,
             String sortBy,
-            String sortDir) {
+            String sortDir,
+            String logkey) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("Fetching paginated orders | logKey={}, page={}, size={}, sortBy={}, sortDir={}",
+        log.info("{} Fetching paginated orders | page={}, size={}, sortBy={}, sortDir={}",
                 logKey, pageNumber, pageSize, sortBy, sortDir);
 
         Sort sort = (sortDir.equalsIgnoreCase("desc"))
@@ -213,13 +214,13 @@ public class OrderServiceImpl implements OrderService {
      * Update order details
      */
     @Override
-    public OrderDto updateOrder(String orderId, OrderUpdateRequest request) {
+    public OrderDto updateOrder(String orderId, OrderUpdateRequest request, String logkey) {
 
-        log.info("Update order request | orderId={}, request={}", orderId, request);
+        log.info("{} Update order request | orderId={}, request={}", logkey, orderId, request);
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> {
-                    log.error("Invalid order update attempt | orderId={}", orderId);
+                    log.error("{} Invalid order update attempt | orderId={}", logkey, orderId);
                     return new BadApiRequestException("Invalid update data");
                 });
 
@@ -232,13 +233,13 @@ public class OrderServiceImpl implements OrderService {
 
         Order updatedOrder = orderRepository.save(order);
 
-        log.info("Order updated successfully | orderId={}", orderId);
+        log.info("{} Order updated successfully | orderId={}", logkey, orderId);
 
         return modelMapper.map(updatedOrder, OrderDto.class);
     }
 
     @Override
-    public OrderDto updateOrder(String orderId, OrderDto request) {
+    public OrderDto updateOrder(String orderId, OrderDto request, String logkey) {
         return null;
     }
 }

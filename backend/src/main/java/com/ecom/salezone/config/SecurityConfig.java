@@ -25,19 +25,21 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(req -> req
-                                .requestMatchers("/salezone/ecom/auth/**").permitAll()
+//                                .requestMatchers("/salezone/ecom/auth/**").permitAll()
+//                                .requestMatchers("/salezone/ecom/categories/**").permitAll()
+//                                .requestMatchers("/salezone/ecom/products/**").permitAll()
 
-                        // USERS - ADMIN ONLY
-                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/salezone/ecom/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/salezone/ecom/users/**").hasRole("ADMIN")
-
-                        // PRODUCTS - ADMIN ONLY (write)
-                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/products/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/salezone/ecom/products/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/products/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/salezone/ecom/products/**").hasRole("USER")
+//                        // USERS - ADMIN ONLY
+//                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/users/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/salezone/ecom/users/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/users/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/salezone/ecom/users/**").hasRole("ADMIN")
+//
+//                        // PRODUCTS - ADMIN ONLY (write)
+//                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/products/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/salezone/ecom/products/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/salezone/ecom/products/**").hasRole("ADMIN")
+//                                .requestMatchers(HttpMethod.GET, "/salezone/ecom/products/**").hasRole("USER")
 
 //                        // Orders - ADMIN ONLY (write)
 //                        .requestMatchers(HttpMethod.POST, "/salezone/ecom/orders/**").hasRole("USER")
@@ -50,7 +52,7 @@ public class SecurityConfig {
 //                        .requestMatchers(HttpMethod.GET, "/salezone/ecom/categories/**").permitAll()
 
                         // EVERYTHING ELSE
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
 
         http.httpBasic(Customizer.withDefaults());

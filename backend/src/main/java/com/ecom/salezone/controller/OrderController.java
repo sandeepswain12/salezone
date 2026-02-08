@@ -1,6 +1,7 @@
 package com.ecom.salezone.controller;
 
 import com.ecom.salezone.dtos.*;
+import com.ecom.salezone.helper.LogKeyGenerator;
 import com.ecom.salezone.services.OrderService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -31,11 +32,12 @@ public class OrderController {
     public ResponseEntity<OrderDto> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {
 
-        log.info("API CALL: Create Order | payload={}", request);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Create Order | payload={}",logkey, request);
 
-        OrderDto order = orderService.createOrder(request);
+        OrderDto order = orderService.createOrder(request, logkey);
 
-        log.info("API RESPONSE: Order Created | orderId={}", order.getOrderId());
+        log.info("{} API RESPONSE: Order Created | response={}",logkey, order);
 
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
@@ -49,9 +51,10 @@ public class OrderController {
     public ResponseEntity<ApiResponseMessage> removeOrder(
             @PathVariable String orderId) {
 
-        log.warn("API CALL: Remove Order | orderId={}", orderId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.warn("{} API CALL: Remove Order | orderId={}",logkey, orderId);
 
-        orderService.removeOrder(orderId);
+        orderService.removeOrder(orderId, logkey);
 
         ApiResponseMessage responseMessage = ApiResponseMessage.builder()
                 .status(HttpStatus.OK)
@@ -59,7 +62,7 @@ public class OrderController {
                 .success(true)
                 .build();
 
-        log.info("API RESPONSE: Order Removed | orderId={}", orderId);
+        log.info("{} API RESPONSE: Order Removed | orderId={}",logkey, orderId);
 
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
@@ -72,12 +75,13 @@ public class OrderController {
     public ResponseEntity<List<OrderDto>> getOrdersOfUser(
             @PathVariable String userId) {
 
-        log.info("API CALL: Get Orders Of User | userId={}", userId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get Orders Of User | userId={}",logkey, userId);
 
-        List<OrderDto> ordersOfUser = orderService.getOrdersOfUser(userId);
+        List<OrderDto> ordersOfUser = orderService.getOrdersOfUser(userId, logkey);
 
-        log.info("API RESPONSE: Orders Fetched For User | userId={} count={}",
-                userId, ordersOfUser.size());
+        log.info("{} API RESPONSE: Orders Fetched For User | userId={} count={}",
+                logkey, userId, ordersOfUser.size());
 
         return new ResponseEntity<>(ordersOfUser, HttpStatus.OK);
     }
@@ -93,14 +97,15 @@ public class OrderController {
             @RequestParam(value = "sortBy", defaultValue = "orderedDate", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
 
-        log.info("API CALL: Get Orders (Paginated) | page={} size={} sortBy={} sortDir={}",
-                pageNumber, pageSize, sortBy, sortDir);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get Orders (Paginated) | page={} size={} sortBy={} sortDir={}",
+                logkey, pageNumber, pageSize, sortBy, sortDir);
 
         PageableResponse<OrderDto> orders =
-                orderService.getOrders(pageNumber, pageSize, sortBy, sortDir);
+                orderService.getOrders(pageNumber, pageSize, sortBy, sortDir, logkey);
 
-        log.info("API RESPONSE: Orders Fetched | count={}",
-                orders.getContent().size());
+        log.info("{} API RESPONSE: Orders Fetched | count={}",
+                logkey, orders.getContent().size());
 
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
@@ -114,11 +119,12 @@ public class OrderController {
             @PathVariable("orderId") String orderId,
             @RequestBody OrderUpdateRequest request) {
 
-        log.info("API CALL: Update Order | orderId={} payload={}", orderId, request);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Update Order | orderId={} payload={}",logkey, orderId, request);
 
-        OrderDto dto = orderService.updateOrder(orderId, request);
+        OrderDto dto = orderService.updateOrder(orderId, request, logkey);
 
-        log.info("API RESPONSE: Order Updated | orderId={}", orderId);
+        log.info("{} API RESPONSE: Order Updated | orderId={}",logkey, orderId);
 
         return ResponseEntity.ok(dto);
     }

@@ -4,6 +4,7 @@ import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.ImageResponse;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.dtos.ProductDto;
+import com.ecom.salezone.helper.LogKeyGenerator;
 import com.ecom.salezone.services.FileService;
 import com.ecom.salezone.services.ProductService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,14 +48,15 @@ public class ProductController {
     public ResponseEntity<ProductDto> createProduct(
             @RequestBody ProductDto productDto) {
 
-        log.info("API CALL: Create product | title={}",
-                productDto.getTitle());
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Create product | productRequest = {} ",logkey,
+                productDto);
 
         ProductDto createdProduct =
-                productService.create(productDto);
+                productService.create(productDto,logkey);
 
-        log.info("Product created successfully | productId={}",
-                createdProduct.getProductId());
+        log.info("{} Product created successfully | productResponse = {}",logkey,
+                createdProduct);
 
         return new ResponseEntity<>(
                 createdProduct,
@@ -71,12 +73,13 @@ public class ProductController {
             @PathVariable String productId,
             @RequestBody ProductDto productDto) {
 
-        log.info("API CALL: Update product | productId={}", productId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Update product | productId={} productRequest = {}",logkey, productId,productDto);
 
         ProductDto updatedProduct =
-                productService.update(productDto, productId);
+                productService.update(productDto, productId,logkey);
 
-        log.info("Product updated successfully | productId={}", productId);
+        log.info("{} Product updated successfully | productId={} productRespone = {}",logkey, productId,updatedProduct);
 
         return new ResponseEntity<>(
                 updatedProduct,
@@ -92,9 +95,10 @@ public class ProductController {
     public ResponseEntity<ApiResponseMessage> delete(
             @PathVariable String productId) {
 
-        log.info("API CALL: Delete product | productId={}", productId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Delete product | productId={}",logkey, productId);
 
-        productService.delete(productId);
+        productService.delete(productId,logkey);
 
         ApiResponseMessage responseMessage =
                 ApiResponseMessage.builder()
@@ -103,7 +107,7 @@ public class ProductController {
                         .success(true)
                         .build();
 
-        log.info("Product deleted successfully | productId={}", productId);
+        log.info("{} Product deleted successfully | productId={}",logkey, productId);
 
         return new ResponseEntity<>(
                 responseMessage,
@@ -119,10 +123,11 @@ public class ProductController {
     public ResponseEntity<ProductDto> getProduct(
             @PathVariable String productId) {
 
+        String logkey = LogKeyGenerator.generateLogKey();
         log.info("API CALL: Get product | productId={}", productId);
 
         ProductDto productDto =
-                productService.get(productId);
+                productService.get(productId,logkey);
 
         log.info("Product fetched successfully | productId={}", productId);
 
@@ -143,13 +148,14 @@ public class ProductController {
             @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
 
-        log.info("API CALL: Get all products | page={} size={}",
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get all products | page={} size={}",logkey,
                 pageNumber, pageSize);
 
         PageableResponse<ProductDto> response =
-                productService.getAll(pageNumber, pageSize, sortBy, sortDir);
+                productService.getAll(pageNumber, pageSize, sortBy, sortDir,logkey);
 
-        log.info("Products fetched successfully | count={}",
+        log.info("{} Products fetched successfully | count={}",logkey,
                 response.getContent().size());
 
         return new ResponseEntity<>(
@@ -169,14 +175,15 @@ public class ProductController {
             @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
 
-        log.info("API CALL: Get all live products | page={} size={}",
-                pageNumber, pageSize);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get all live products | page={} size={}",
+                logkey, pageNumber, pageSize);
 
         PageableResponse<ProductDto> response =
-                productService.getAllLive(pageNumber, pageSize, sortBy, sortDir);
+                productService.getAllLive(pageNumber, pageSize, sortBy, sortDir,logkey);
 
-        log.info("Live products fetched successfully | count={}",
-                response.getContent().size());
+        log.info("{} Live products fetched successfully | count={}",
+                logkey, response.getContent().size());
 
         return new ResponseEntity<>(
                 response,
@@ -196,16 +203,17 @@ public class ProductController {
             @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
 
-        log.info("API CALL: Search product | query={} page={} size={}",
-                query, pageNumber, pageSize);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Search product | query={} page={} size={}",
+                logkey, query, pageNumber, pageSize);
 
         PageableResponse<ProductDto> response =
                 productService.searchByTitle(
-                        query, pageNumber, pageSize, sortBy, sortDir
+                        query, pageNumber, pageSize, sortBy, sortDir,logkey
                 );
 
-        log.info("Product search completed | resultCount={}",
-                response.getContent().size());
+        log.info("{} Product search completed | resultCount={}",
+                logkey, response.getContent().size());
 
         return new ResponseEntity<>(
                 response,
@@ -223,17 +231,18 @@ public class ProductController {
             @RequestParam("productImage") MultipartFile image)
             throws IOException {
 
-        log.info("API CALL: Upload product image | productId={} fileName={}",
-                productId, image.getOriginalFilename());
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Upload product image | productId={} fileName={}",
+                logkey, productId, image.getOriginalFilename());
 
         String fileName =
-                fileService.uploadFile(image, imagePath);
+                fileService.uploadFile(image, imagePath, logkey);
 
         ProductDto productDto =
-                productService.get(productId);
+                productService.get(productId,logkey);
         productDto.setProductImageName(fileName);
 
-        productService.update(productDto, productId);
+        productService.update(productDto, productId,logkey);
 
         ImageResponse response =
                 ImageResponse.builder()
@@ -243,7 +252,7 @@ public class ProductController {
                         .success(true)
                         .build();
 
-        log.info("Product image uploaded successfully | productId={}",
+        log.info("{} Product image uploaded successfully | productId={}",logkey,
                 productId);
 
         return new ResponseEntity<>(
@@ -262,20 +271,22 @@ public class ProductController {
             HttpServletResponse response)
             throws IOException {
 
-        log.info("API CALL: Serve product image | productId={}", productId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Serve product image | productId={}",logkey, productId);
 
         ProductDto productDto =
-                productService.get(productId);
+                productService.get(productId,logkey);
 
         InputStream resource =
                 fileService.getResource(
                         imagePath,
-                        productDto.getProductImageName()
+                        productDto.getProductImageName(),
+                        logkey
                 );
 
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
         StreamUtils.copy(resource, response.getOutputStream());
 
-        log.info("Product image served successfully | productId={}", productId);
+        log.info("{} Product image served successfully | productId={}",logkey, productId);
     }
 }

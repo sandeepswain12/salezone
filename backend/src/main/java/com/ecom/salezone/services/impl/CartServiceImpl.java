@@ -53,30 +53,30 @@ public class CartServiceImpl implements CartService {
      * - Else → add new item
      */
     @Override
-    public CartDto addItemToCart(String userId, AddItemToCartRequest request) {
+    public CartDto addItemToCart(String userId, AddItemToCartRequest request, String logkey) {
 
-        log.info("Add item to cart called for userId={}, request={}", userId, request);
+        log.info("{} Add item to cart called for userId={}, request={}",logkey, userId, request);
 
         int quantity = request.getQuantity();
         String productId = request.getProductId();
 
         // Validate requested quantity
         if (quantity <= 0) {
-            log.error("Invalid quantity {} requested for productId={}", quantity, productId);
+            log.error("{} Invalid quantity {} requested for productId={}",logkey, quantity, productId);
             throw new BadApiRequestException("Requested quantity is not valid !!");
         }
 
         // Fetch product from DB
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> {
-                    log.error("Product not found with id={}", productId);
+                    log.error("{} Product not found with id={}",logkey, productId);
                     return new ResourceNotFoundException("Product not found in database !!");
                 });
 
         // Fetch user from DB
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found with id={}", userId);
+                    log.error("{} User not found with id={}",logkey, userId);
                     return new ResourceNotFoundException("user not found in database!!");
                 });
 
@@ -84,9 +84,9 @@ public class CartServiceImpl implements CartService {
         Cart cart = null;
         try {
             cart = cartRepository.findByUser(user).get();
-            log.info("Existing cart found for userId={}", userId);
+            log.info("{} Existing cart found for userId={}",logkey, userId);
         } catch (NoSuchElementException e) {
-            log.info("No cart found for userId={}, creating new cart", userId);
+            log.info("{} No cart found for userId={}, creating new cart",logkey, userId);
             cart = new Cart();
             cart.setCartId(UUID.randomUUID().toString());
         }
@@ -99,7 +99,7 @@ public class CartServiceImpl implements CartService {
         items = items.stream().map(item -> {
 
             if (item.getProduct().getProductId().equals(productId)) {
-                log.info("Product already exists in cart. Updating quantity and price");
+                log.info("{} Product already exists in cart. Updating quantity and price",logkey);
 
                 // Update quantity & total price
                 item.setQuantity(quantity);
@@ -113,7 +113,7 @@ public class CartServiceImpl implements CartService {
 
         // If product not present in cart, create new CartItem
         if (!updated.get()) {
-            log.info("Product not present in cart. Adding new item");
+            log.info("{} Product not present in cart. Adding new item",logkey);
 
             CartItem cartItem = CartItem.builder()
                     .quantity(quantity)
@@ -131,7 +131,7 @@ public class CartServiceImpl implements CartService {
         // Save cart (JPA will handle cascading)
         Cart updatedCart = cartRepository.save(cart);
 
-        log.info("Cart updated successfully for userId={}", userId);
+        log.info("{} Cart updated successfully for userId={}",logkey, userId);
 
         // Convert entity to DTO and return
         return mapper.map(updatedCart, CartDto.class);
@@ -141,42 +141,42 @@ public class CartServiceImpl implements CartService {
      * Removes a single item from cart
      */
     @Override
-    public void removeItemFromCart(String userId, int cartItem) {
+    public void removeItemFromCart(String userId, int cartItem, String logkey) {
 
-        log.info("Remove item from cart called. userId={}, cartItemId={}", userId, cartItem);
+        log.info("{} Remove item from cart called. userId={}, cartItemId={}",logkey, userId, cartItem);
 
         // Fetch cart item
         CartItem cartItem1 = cartItemRepository.findById(cartItem)
                 .orElseThrow(() -> {
-                    log.error("Cart item not found with id={}", cartItem);
+                    log.error("{} Cart item not found with id={}",logkey, cartItem);
                     return new ResourceNotFoundException("Cart Item not found !!");
                 });
 
         // Delete cart item
         cartItemRepository.delete(cartItem1);
 
-        log.info("Cart item removed successfully. cartItemId={}", cartItem);
+        log.info("{} Cart item removed successfully. cartItemId={}",logkey, cartItem);
     }
 
     /**
      * Clears all items from user's cart
      */
     @Override
-    public void clearCart(String userId) {
+    public void clearCart(String userId, String logkey) {
 
-        log.info("Clear cart called for userId={}", userId);
+        log.info("{} Clear cart called for userId={}",logkey, userId);
 
         // Fetch user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found with id={}", userId);
+                    log.error("{} User not found with id={}",logkey, userId);
                     return new ResourceNotFoundException("user not found in database!!");
                 });
 
         // Fetch cart
         Cart cart = cartRepository.findByUser(user)
                 .orElseThrow(() -> {
-                    log.error("Cart not found for userId={}", userId);
+                    log.error("{} Cart not found for userId={}",logkey, userId);
                     return new ResourceNotFoundException("Cart of given user not found !!");
                 });
 
@@ -184,32 +184,32 @@ public class CartServiceImpl implements CartService {
         cart.getItems().clear();
         cartRepository.save(cart);
 
-        log.info("Cart cleared successfully for userId={}", userId);
+        log.info("{} Cart cleared successfully for userId={}",logkey, userId);
     }
 
     /**
      * Fetches cart details of a user
      */
     @Override
-    public CartDto getCartByUser(String userId) {
+    public CartDto getCartByUser(String userId, String logkey) {
 
-        log.info("Get cart by user called. userId={}", userId);
+        log.info("{} Get cart by user called. userId={}",logkey, userId);
 
         // Fetch user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found with id={}", userId);
+                    log.error("{} User not found with id={}",logkey, userId);
                     return new ResourceNotFoundException("user not found in database!!");
                 });
 
         // Fetch cart
         Cart cart = cartRepository.findByUser(user)
                 .orElseThrow(() -> {
-                    log.error("Cart not found for userId={}", userId);
+                    log.error("{} Cart not found for userId={}",logkey, userId);
                     return new ResourceNotFoundException("Cart of given user not found !!");
                 });
 
-        log.info("Cart fetched successfully for userId={}", userId);
+        log.info("{} Cart fetched successfully for userId={}",logkey, userId);
 
         return mapper.map(cart, CartDto.class);
     }

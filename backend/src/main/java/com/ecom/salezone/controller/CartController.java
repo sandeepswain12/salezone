@@ -3,6 +3,7 @@ package com.ecom.salezone.controller;
 import com.ecom.salezone.dtos.AddItemToCartRequest;
 import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.CartDto;
+import com.ecom.salezone.helper.LogKeyGenerator;
 import com.ecom.salezone.services.CartService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +31,13 @@ public class CartController {
             @PathVariable String userId,
             @RequestBody AddItemToCartRequest request) {
 
-        log.info("API CALL: Add item to cart | userId={}, request={}", userId, request);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Add item to cart | userId={}, request={}",logkey, userId, request);
 
         // Delegate business logic to service layer
-        CartDto cartDto = cartService.addItemToCart(userId, request);
+        CartDto cartDto = cartService.addItemToCart(userId, request, logkey);
 
-        log.info("Item added/updated successfully in cart | userId={}", userId);
+        log.info("{} Item added/updated successfully in cart | userId={} response={}",logkey, userId, cartDto);
 
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
@@ -49,10 +51,11 @@ public class CartController {
             @PathVariable String userId,
             @PathVariable int itemId) {
 
-        log.info("API CALL: Remove item from cart | userId={}, itemId={}", userId, itemId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Remove item from cart | userId={}, itemId={}",logkey, userId, itemId);
 
         // Call service to remove cart item
-        cartService.removeItemFromCart(userId, itemId);
+        cartService.removeItemFromCart(userId, itemId, logkey);
 
         ApiResponseMessage response = ApiResponseMessage.builder()
                 .message("Item is removed !!")
@@ -60,7 +63,7 @@ public class CartController {
                 .status(HttpStatus.OK)
                 .build();
 
-        log.info("Item removed successfully | userId={}, itemId={}", userId, itemId);
+        log.info("{} Item removed successfully | userId={}, itemId={}",logkey, userId, itemId);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -72,10 +75,11 @@ public class CartController {
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponseMessage> clearCart(@PathVariable String userId) {
 
-        log.info("API CALL: Clear cart | userId={}", userId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Clear cart | userId={}",logkey, userId);
 
         // Delegate clear operation to service layer
-        cartService.clearCart(userId);
+        cartService.clearCart(userId, logkey);
 
         ApiResponseMessage response = ApiResponseMessage.builder()
                 .message("Now cart is blank !!")
@@ -83,7 +87,7 @@ public class CartController {
                 .status(HttpStatus.OK)
                 .build();
 
-        log.info("Cart cleared successfully | userId={}", userId);
+        log.info("{} Cart cleared successfully | userId={}",logkey, userId);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -95,12 +99,13 @@ public class CartController {
     @GetMapping("/{userId}")
     public ResponseEntity<CartDto> getCart(@PathVariable String userId) {
 
-        log.info("API CALL: Get cart by user | userId={}", userId);
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("{} API CALL: Get cart by user | userId={}",logkey, userId);
 
         // Fetch cart from service layer
-        CartDto cartDto = cartService.getCartByUser(userId);
+        CartDto cartDto = cartService.getCartByUser(userId, logkey);
 
-        log.info("Cart fetched successfully | userId={}", userId);
+        log.info("{} Cart fetched successfully | userId={} response={}",logkey, userId, cartDto);
 
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }

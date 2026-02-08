@@ -52,25 +52,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(SignupRequestDto userDto, String logKey) {
 
-        log.info("Create user request received | logKey={}", logKey);
+        log.info("{} Create user request received ", logKey);
 
         String userId = UUID.randomUUID().toString();
         userDto.setUserId(userId);
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-        log.info("User name received | username={}", userDto.getUserName());
+        log.info("{} User name received | username={}",logKey, userDto.getUserName());
 
-        log.info("Generated userId | userId={}", userId);
+        log.info("{} Generated userId | userId={}",logKey, userId);
 
         User user = modelMapper.map(userDto, User.class);
         user.setUserName(user.getUserName());
 
-        log.info("UserDto mapped to User | username ={}", user.getUsername());
+        log.info("{} UserDto mapped to User | username ={}",logKey, user.getUsername());
 
         // Fetch ROLE_USER
         Role roleUser = roleRepository.findById("ROLE_USER")
                 .orElseThrow(() -> {
-                    log.error("ROLE_USER not found | logKey={}", logKey);
+                    log.error("{} ROLE_USER not found ", logKey);
                     return new ResourceNotFoundException("Role USER not found");
                 });
 
@@ -78,9 +78,9 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
 
-        log.info("User saved | savedUser={}", savedUser);
-        log.info("User created successfully | userId={}, logKey={}",
-                savedUser.getUserId(), logKey);
+        log.info("{} User saved | savedUser={}",logKey, savedUser);
+        log.info("{} User created successfully | userId={}",
+                logKey, savedUser.getUserId());
 
         return modelMapper.map(savedUser, UserDto.class);
     }
@@ -91,11 +91,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto updatedUserDto, String userId, String logKey) {
 
-        log.info("Update user request | userId={}, logKey={}", userId, logKey);
+        log.info("{} Update user request | userId={}",logKey, userId);
 
         User exUser = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found for update | userId={}", userId);
+                    log.error("{} User not found for update | userId={}",logKey, userId);
                     return new ResourceNotFoundException("User not found......!!!");
                 });
 
@@ -113,8 +113,8 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(exUser);
 
-        log.info("User updated successfully | userId={}, logKey={}",
-                savedUser.getUserId(), logKey);
+        log.info("{} User updated successfully | userId={}",
+                logKey, savedUser.getUserId());
 
         return modelMapper.map(savedUser, UserDto.class);
     }
@@ -125,11 +125,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(String userId, String logKey) {
 
-        log.info("Delete user request | userId={}, logKey={}", userId, logKey);
+        log.info("{} Delete user request | userId={} ",logKey, userId);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found for delete | userId={}", userId);
+                    log.error("{} User not found for delete | userId={}",logKey, userId);
                     return new ResourceNotFoundException("User not found......!!!");
                 });
 
@@ -138,16 +138,16 @@ public class UserServiceImpl implements UserService {
 
         try {
             Files.delete(Paths.get(fullPath));
-            log.info("User image deleted | path={}", fullPath);
+            log.info("{} User image deleted | path={}",logKey, fullPath);
         } catch (NoSuchFileException ex) {
-            log.warn("User image not found | path={}", fullPath);
+            log.warn("{} User image not found | path={}",logKey, fullPath);
         } catch (IOException e) {
-            log.error("Error deleting user image | path={}", fullPath, e);
+            log.error("{} Error deleting user image | path={}",logKey, fullPath, e);
         }
 
         userRepository.delete(user);
 
-        log.info("User deleted successfully | userId={}, logKey={}", userId, logKey);
+        log.info("{} User deleted successfully | userId={}",logKey, userId);
     }
 
     /**
@@ -161,8 +161,8 @@ public class UserServiceImpl implements UserService {
             String sortDir,
             String logKey) {
 
-        log.info("Fetch all users | page={}, size={}, sortBy={}, sortDir={}, logKey={}",
-                pageNumber, pageSize, sortBy, sortDir, logKey);
+        log.info("{} Fetch all users | page={}, size={}, sortBy={}, sortDir={}",
+                logKey, pageNumber, pageSize, sortBy, sortDir);
 
         Sort sort = sortDir.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
@@ -171,8 +171,8 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<User> page = userRepository.findAll(pageable);
 
-        log.info("Users fetched | count={}, logKey={}",
-                page.getNumberOfElements(), logKey);
+        log.info("{} Users fetched | count={}",
+                logKey, page.getNumberOfElements());
 
         return Helper.getPageableResponse(page, UserDto.class, logKey);
     }
@@ -183,11 +183,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(String userId, String logKey) {
 
-        log.info("Fetch user by id | userId={}, logKey={}", userId, logKey);
+        log.info("{} Fetch user by id | userId={}",logKey, userId);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found | userId={}", userId);
+                    log.error("{} User not found | userId={}",logKey, userId);
                     return new ResourceNotFoundException("User not found......!!!");
                 });
 
@@ -200,11 +200,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserByEmail(String email, String logKey) {
 
-        log.info("Fetch user by email | email={}, logKey={}", email, logKey);
+        log.info("{} Fetch user by email | email={} ",logKey, email);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    log.error("User not found | email={}", email);
+                    log.error("{} User not found | email={}",logKey, email);
                     return new ResourceNotFoundException("User not found......!!!");
                 });
 
@@ -217,11 +217,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> searchUsers(String keyword, String logKey) {
 
-        log.info("Search users | keyword={}, logKey={}", keyword, logKey);
+        log.info("{} Search users | keyword={}, logKey={}",logKey, keyword, logKey);
 
         List<User> users = userRepository.findByUserNameContaining(keyword);
 
-        log.info("Users found | keyword={}, count={}", keyword, users.size());
+        log.info("{} Users found | keyword={}, count={}",logKey, keyword, users.size());
 
         return users.stream()
                 .map(user -> modelMapper.map(user, UserDto.class))
@@ -231,7 +231,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email, String logKey) {
 
-        log.info("Check email existence | email={}, logKey={}", email, logKey);
+        log.info("{} Check email existence | email={}", logKey, email);
         return false;
     }
 }

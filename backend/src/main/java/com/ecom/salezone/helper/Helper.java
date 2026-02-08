@@ -23,12 +23,12 @@ public class Helper<V> {
             String logkey) {
 
         // Entry log – mapping operation
-        log.info("[{}] Mapping pageable response | page={} size={}",
+        log.info("{} Mapping pageable response | page={} size={}",
                 logkey, page.getNumber(), page.getSize());
 
         List<U> entities = page.getContent();
 
-        log.debug("[{}] Page content fetched | entityCount={}",
+        log.debug("{} Page content fetched | entityCount={}",
                 logkey, entities.size());
 
         // Map entity list to DTO list
@@ -36,7 +36,7 @@ public class Helper<V> {
                 .map(object -> new ModelMapper().map(object, type))
                 .collect(Collectors.toList());
 
-        log.debug("[{}] Entities mapped to DTOs | dtoCount={}",
+        log.debug("{} Entities mapped to DTOs | dtoCount={}",
                 logkey, dtoList.size());
 
         // Build pageable response
@@ -50,7 +50,7 @@ public class Helper<V> {
 
         // Exit log – final response info
         log.info(
-                "[{}] Pageable response created | pageNumber={} totalPages={} lastPage={}",
+                "{} Pageable response created | pageNumber={} totalPages={} lastPage={}",
                 logkey,
                 response.getPageNumber(),
                 response.getTotalPages(),
