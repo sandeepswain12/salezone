@@ -3,10 +3,8 @@ package com.ecom.salezone.dtos;
 import com.ecom.salezone.enums.OrderStatus;
 import com.ecom.salezone.enums.PaymentStatus;
 import lombok.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+
 
 @Getter
 @Setter
