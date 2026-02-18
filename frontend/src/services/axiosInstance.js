@@ -1,4 +1,5 @@
 import axios from "axios";
+import authService from "./authService";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8089/salezone/ecom",
@@ -8,16 +9,20 @@ const axiosInstance = axios.create({
   },
 });
 
-// 🔥 optional: request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    // later: attach JWT token here
+    const authHeader = authService.getAuthHeader(); // "Basic xxx"
+
+    if (authHeader) {
+      config.headers.Authorization = authHeader;
+      console.log("Sending Authorization:", authHeader);
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// 🔥 optional: response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

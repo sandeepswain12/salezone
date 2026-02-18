@@ -4,7 +4,7 @@ import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.ImageResponse;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.dtos.UserDto;
-import com.ecom.salezone.helper.LogKeyGenerator;
+import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.FileService;
 import com.ecom.salezone.services.UserService;
 import jakarta.servlet.http.HttpServletResponse;

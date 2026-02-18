@@ -4,7 +4,7 @@ import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.CategoryDto;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.dtos.ProductDto;
-import com.ecom.salezone.helper.LogKeyGenerator;
+import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.CategoryService;
 import com.ecom.salezone.services.ProductService;
 import jakarta.validation.Valid;

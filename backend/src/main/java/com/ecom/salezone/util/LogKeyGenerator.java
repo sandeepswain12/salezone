@@ -1,4 +1,4 @@
-package com.ecom.salezone.helper;
+package com.ecom.salezone.util;
 
 import java.security.SecureRandom;
 

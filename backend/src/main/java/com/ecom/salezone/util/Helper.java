@@ -1,4 +1,4 @@
-package com.ecom.salezone.helper;
+package com.ecom.salezone.util;
 
 import com.ecom.salezone.dtos.PageableResponse;
 import org.modelmapper.ModelMapper;

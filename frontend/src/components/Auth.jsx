@@ -1,12 +1,70 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { FcGoogle } from "react-icons/fc";
+import authService from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const { theme } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  // useEffect(() => {
+  //   if (authService.isLoggedIn()) {
+
+  //   }
+  // }, [navigate]);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // 🔐 LOGIN
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const msg = await authService.login(formData.email, formData.password);
+
+      alert(msg);
+      navigate("/");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // 🔓 SIGNUP
+  const handleSignup = async (e) => {
+    e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      await authService.signup({
+        userName: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      alert("Signup successful, please login");
+      setIsLogin(true);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // 🌐 GOOGLE LOGIN
   const handleGoogleLogin = () => {
-    // later this will hit backend OAuth endpoint
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
@@ -17,17 +75,20 @@ const Auth = () => {
           ${theme === "dark" ? "bg-[#0f0f0f]" : "bg-white shadow-lg"}
         `}
       >
-        {/* TITLE */}
         <h2 className="text-2xl font-bold mb-6 text-center">
           {isLogin ? "Login to SaleZone" : "Create your SaleZone account"}
         </h2>
 
-        {/* FORM */}
-        <form className="space-y-4">
+        <form
+          className="space-y-4"
+          onSubmit={isLogin ? handleLogin : handleSignup}
+        >
           {!isLogin && (
             <input
               type="text"
+              name="name"
               placeholder="Full Name"
+              onChange={handleChange}
               className={`w-full p-3 rounded border outline-none
                 ${theme === "dark" ? "bg-black border-gray-700" : "bg-white"}
               `}
@@ -36,7 +97,9 @@ const Auth = () => {
 
           <input
             type="email"
+            name="email"
             placeholder="Email"
+            onChange={handleChange}
             className={`w-full p-3 rounded border outline-none
               ${theme === "dark" ? "bg-black border-gray-700" : "bg-white"}
             `}
@@ -44,7 +107,9 @@ const Auth = () => {
 
           <input
             type="password"
+            name="password"
             placeholder="Password"
+            onChange={handleChange}
             className={`w-full p-3 rounded border outline-none
               ${theme === "dark" ? "bg-black border-gray-700" : "bg-white"}
             `}
@@ -53,7 +118,9 @@ const Auth = () => {
           {!isLogin && (
             <input
               type="password"
+              name="confirmPassword"
               placeholder="Confirm Password"
+              onChange={handleChange}
               className={`w-full p-3 rounded border outline-none
                 ${theme === "dark" ? "bg-black border-gray-700" : "bg-white"}
               `}
@@ -74,30 +141,32 @@ const Auth = () => {
           <button
             onClick={() => setIsLogin(!isLogin)}
             className="ml-2 text-blue-600 font-medium"
+            type="button"
           >
             {isLogin ? "Sign Up" : "Login"}
           </button>
-          <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700" />
-            <span className="text-sm opacity-60">OR</span>
-            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700" />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleGoogleLogin()}
-            className={`w-full flex items-center justify-center gap-3 py-3 rounded-lg border
-    ${
-      theme === "dark"
-        ? "border-gray-700 hover:bg-[#1a1a1a]"
-        : "border-gray-300 hover:bg-gray-100"
-    }
-  `}
-          >
-            <FcGoogle size={22} />
-            <span className="font-medium">Continue with Google</span>
-          </button>
         </p>
+
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700" />
+          <span className="text-sm opacity-60">OR</span>
+          <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700" />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className={`w-full flex items-center justify-center gap-3 py-3 rounded-lg border
+            ${
+              theme === "dark"
+                ? "border-gray-700 hover:bg-[#1a1a1a]"
+                : "border-gray-300 hover:bg-gray-100"
+            }
+          `}
+        >
+          <FcGoogle size={22} />
+          <span className="font-medium">Continue with Google</span>
+        </button>
       </div>
     </div>
   );

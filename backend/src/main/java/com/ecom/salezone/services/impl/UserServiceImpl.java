@@ -6,7 +6,7 @@ import com.ecom.salezone.dtos.UserDto;
 import com.ecom.salezone.enities.Role;
 import com.ecom.salezone.enities.User;
 import com.ecom.salezone.exceptions.ResourceNotFoundException;
-import com.ecom.salezone.helper.Helper;
+import com.ecom.salezone.util.Helper;
 import com.ecom.salezone.repository.RoleRepository;
 import com.ecom.salezone.repository.UserRepository;
 import com.ecom.salezone.services.UserService;
@@ -56,7 +56,6 @@ public class UserServiceImpl implements UserService {
 
         String userId = UUID.randomUUID().toString();
         userDto.setUserId(userId);
-        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         log.info("{} User name received | username={}",logKey, userDto.getUserName());
 

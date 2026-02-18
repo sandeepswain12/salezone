@@ -3,7 +3,7 @@ package com.ecom.salezone.controller;
 import com.ecom.salezone.dtos.AddItemToCartRequest;
 import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.CartDto;
-import com.ecom.salezone.helper.LogKeyGenerator;
+import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.CartService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
