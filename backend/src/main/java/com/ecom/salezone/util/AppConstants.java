@@ -6,7 +6,7 @@ public class AppConstants {
             "/salezone/ecom/categories/**",
             "/salezone/ecom/products/**",
             "/swagger-ui.html",
-            "/salezone/ecom/users/**",
+//            "/salezone/ecom/users/**",
             "/swagger-ui/**"
     };
 

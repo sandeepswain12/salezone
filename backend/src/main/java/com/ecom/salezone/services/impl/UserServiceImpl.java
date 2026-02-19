@@ -56,6 +56,7 @@ public class UserServiceImpl implements UserService {
 
         String userId = UUID.randomUUID().toString();
         userDto.setUserId(userId);
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         log.info("{} User name received | username={}",logKey, userDto.getUserName());
 

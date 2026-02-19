@@ -4,13 +4,16 @@ import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.ImageResponse;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.dtos.UserDto;
-import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.FileService;
 import com.ecom.salezone.services.UserService;
+import com.ecom.salezone.util.LogKeyGenerator;
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -28,7 +31,6 @@ import java.util.List;
 @RequestMapping("/salezone/ecom/users")
 public class UserController {
 
-    // Controller-level logger
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
@@ -41,47 +43,82 @@ public class UserController {
     private String imageUploadPath;
 
     /**
-     * Create new user
-     */
-//    @PostMapping("/create")
-//    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
-//
-//        String logKey = LogKeyGenerator.generateLogKey();
-//        log.info("API CALL: Create User | logKey={} payload={}", logKey, userDto);
-//
-//        UserDto savedUser = userService.createUser(userDto, logKey);
-//
-//        log.info("API RESPONSE: User Created | logKey={} userId={}",
-//                logKey, savedUser.getUserId());
-//
-//        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-//    }
-
-    /**
-     * Get all users with pagination
+     * Get all users with pagination and sorting.
      */
     @GetMapping
-    public ResponseEntity<PageableResponse<UserDto>> getAllUser(
+    public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
             @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(value = "sortBy", defaultValue = "userName") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Get All Users | logKey={} page={} size={} sortBy={} sortDir={}",
+
+        log.info("LogKey: {} - GetAllUsers request | page={} size={} sortBy={} sortDir={}",
                 logKey, pageNumber, pageSize, sortBy, sortDir);
 
         PageableResponse<UserDto> response =
                 userService.getAllUsers(pageNumber, pageSize, sortBy, sortDir, logKey);
 
-        log.info("API RESPONSE: Users Fetched | logKey={} count={}",
+        log.info("LogKey: {} - GetAllUsers completed | resultCount={}",
                 logKey, response.getContent().size());
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     /**
-     * Update user
+     * Get user by ID.
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable String userId) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        log.info("LogKey: {} - GetUserById request | userId={}", logKey, userId);
+
+        UserDto userDto = userService.getUserById(userId, logKey);
+
+        log.info("LogKey: {} - GetUserById completed | userId={}", logKey, userId);
+
+        return ResponseEntity.ok(userDto);
+    }
+
+    /**
+     * Get user by email.
+     */
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        log.info("LogKey: {} - GetUserByEmail request | email={}", logKey, email);
+
+        UserDto userDto = userService.getUserByEmail(email, logKey);
+
+        log.info("LogKey: {} - GetUserByEmail completed", logKey);
+
+        return ResponseEntity.ok(userDto);
+    }
+
+    /**
+     * Search users using keywords.
+     */
+    @GetMapping("/search/{keywords}")
+    public ResponseEntity<List<UserDto>> searchUsers(@PathVariable String keywords) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        log.info("LogKey: {} - SearchUsers request | keywords={}", logKey, keywords);
+
+        List<UserDto> users = userService.searchUsers(keywords, logKey);
+
+        log.info("LogKey: {} - SearchUsers completed | resultCount={}", logKey, users.size());
+
+        return ResponseEntity.ok(users);
+    }
+
+    /**
+     * Update user.
      */
     @PutMapping("/update/{userId}")
     public ResponseEntity<UserDto> updateUser(
@@ -89,73 +126,25 @@ public class UserController {
             @Valid @RequestBody UserDto userDto) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Update User | logKey={} userId={} payload={}",
-                logKey, userId, userDto);
+
+        log.info("LogKey: {} - UpdateUser request | userId={}", logKey, userId);
 
         UserDto updatedUser = userService.updateUser(userDto, userId, logKey);
 
-        log.info("API RESPONSE: User Updated | logKey={} userId={}", logKey, userId);
+        log.info("LogKey: {} - UpdateUser completed | userId={}", logKey, userId);
 
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        return ResponseEntity.ok(updatedUser);
     }
 
     /**
-     * Get user by ID
-     */
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> getUser(@PathVariable String userId) {
-
-        String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Get User By ID | logKey={} userId={}", logKey, userId);
-
-        UserDto userDto = userService.getUserById(userId, logKey);
-
-        log.info("API RESPONSE: User Fetched | logKey={} userId={}", logKey, userId);
-
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
-    }
-
-    /**
-     * Get user by email
-     */
-    @GetMapping("/email/{email}")
-    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
-
-        String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Get User By Email | logKey={} email={}", logKey, email);
-
-        UserDto userDto = userService.getUserByEmail(email, logKey);
-
-        log.info("API RESPONSE: User Fetched By Email | logKey={}", logKey);
-
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
-    }
-
-    /**
-     * Search users
-     */
-    @GetMapping("/search/{keywords}")
-    public ResponseEntity<List<UserDto>> searchUser(@PathVariable String keywords) {
-
-        String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Search Users | logKey={} keywords={}", logKey, keywords);
-
-        List<UserDto> users = userService.searchUsers(keywords, logKey);
-
-        log.info("API RESPONSE: Search Completed | logKey={} resultCount={}",
-                logKey, users.size());
-
-        return new ResponseEntity<>(users, HttpStatus.OK);
-    }
-
-    /**
-     * Delete user
+     * Delete user by ID.
      */
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<ApiResponseMessage> deleteUser(@PathVariable String userId) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.warn("API CALL: Delete User | logKey={} userId={}", logKey, userId);
+
+        log.info("LogKey: {} - DeleteUser request | userId={}", logKey, userId);
 
         userService.deleteUser(userId, logKey);
 
@@ -165,13 +154,13 @@ public class UserController {
                 .status(HttpStatus.OK)
                 .build();
 
-        log.info("API RESPONSE: User Deleted | logKey={} userId={}", logKey, userId);
+        log.info("LogKey: {} - DeleteUser completed | userId={}", logKey, userId);
 
-        return new ResponseEntity<>(message, HttpStatus.OK);
+        return ResponseEntity.ok(message);
     }
 
     /**
-     * Upload user profile image
+     * Upload profile image for user.
      */
     @PostMapping("/image/{userId}")
     public ResponseEntity<ImageResponse> uploadUserImage(
@@ -179,7 +168,8 @@ public class UserController {
             @PathVariable String userId) throws IOException {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Upload User Image | logKey={} userId={} fileName={}",
+
+        log.info("LogKey: {} - UploadUserImage request | userId={} fileName={}",
                 logKey, userId, image.getOriginalFilename());
 
         String imageName = fileService.uploadFile(image, imageUploadPath, logKey);
@@ -191,17 +181,17 @@ public class UserController {
         ImageResponse imageResponse = ImageResponse.builder()
                 .imageName(imageName)
                 .success(true)
-                .message("image is uploaded successfully ")
+                .message("Image uploaded successfully")
                 .status(HttpStatus.CREATED)
                 .build();
 
-        log.info("API RESPONSE: Image Uploaded | logKey={} userId={}", logKey, userId);
+        log.info("LogKey: {} - UploadUserImage completed | userId={}", logKey, userId);
 
         return new ResponseEntity<>(imageResponse, HttpStatus.CREATED);
     }
 
     /**
-     * Serve user profile image
+     * Serve user profile image.
      */
     @GetMapping("/image/{userId}")
     public void serveUserImage(
@@ -209,7 +199,8 @@ public class UserController {
             HttpServletResponse response) throws IOException {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Serve User Image | logKey={} userId={}", logKey, userId);
+
+        log.info("LogKey: {} - ServeUserImage request | userId={}", logKey, userId);
 
         UserDto user = userService.getUserById(userId, logKey);
 
@@ -219,6 +210,6 @@ public class UserController {
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
         StreamUtils.copy(resource, response.getOutputStream());
 
-        log.info("API RESPONSE: User Image Served | logKey={} userId={}", logKey, userId);
+        log.info("LogKey: {} - ServeUserImage completed | userId={}", logKey, userId);
     }
 }
