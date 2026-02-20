@@ -92,10 +92,11 @@ public class AuthController {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - Login attempt | email={}", logKey, loginRequest.getEmail());
+        log.info("LogKey: {} - Login attempt | credential = {}", logKey, loginRequest);
 
         // Authenticate credentials
-        authenticate(loginRequest, logKey);
+        Authentication authenticate = authenticate(loginRequest, logKey);
+        log.info("LogKey: {} - Login Successful | credential = {}", logKey, authenticate);
 
         // Fetch user from DB
         User user = userRepository.findByEmail(loginRequest.getEmail())
@@ -112,6 +113,7 @@ public class AuthController {
 
         // Create refresh token entry (DB persistence)
         String jti = UUID.randomUUID().toString();
+        log.info("LogKey: {} - Refresh token id generated = {} ", logKey, jti);
 
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .jti(jti)
@@ -122,18 +124,20 @@ public class AuthController {
                 .build();
 
         refreshTokenRepository.save(refreshTokenEntity);
+        log.info("LogKey: {} - Refresh token data saved successfully in DB = {} ", logKey, refreshTokenEntity);
 
         log.debug("LogKey: {} - Refresh token persisted | jti={}", logKey, jti);
 
         // Generate JWT tokens
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user, jti);
-
-        log.info("LogKey: {} - Login successful | userId={}", logKey, user.getUserId());
+        String accessToken = jwtService.generateAccessToken(user,logKey);
+        log.info("LogKey: {} - Access token generated successfully = {} ", logKey, accessToken);
+        String refreshToken = jwtService.generateRefreshToken(user, jti,logKey);
+        log.info("LogKey: {} - Refresh token generated successfully = {} ", logKey, refreshToken);
 
         // use cookie service to attach refresh token in cookie
-        cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTtlSeconds());
+        cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTtlSeconds(),logKey);
         cookieService.addNoStoreHeaders(response);
+        log.info("LogKey: {} - Refresh token attached in cookie = {} ", logKey, refreshToken);
 
         // Build response
         TokenResponse tokenResponse = new TokenResponse();
@@ -141,6 +145,7 @@ public class AuthController {
         tokenResponse.setRefreshToken(refreshToken);
         tokenResponse.setExpiresIn(jwtService.getAccessTtlSeconds());
         tokenResponse.setUser(modelMapper.map(user, UserDto.class));
+        log.info("LogKey: {} - Login successful | payload = {}", logKey, tokenResponse);
 
         return ResponseEntity.ok(tokenResponse);
     }
@@ -157,16 +162,17 @@ public class AuthController {
     ) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("LogKey: {} - Refresh request received", logKey);
+        log.info("LogKey: {} - Refresh token request received", logKey);
 
-        // Step 1: Extract refresh token
-        String refreshToken = readRefreshTokenFromRequest(body, request)
+        // Extract refresh token
+        String refreshToken = readRefreshTokenFromRequest(body, request,logKey)
                 .orElseThrow(() -> {
                     log.error("LogKey: {} - Refresh token missing", logKey);
                     return new BadCredentialsException("Refresh token is missing");
                 });
+        log.info("LogKey: {} - Got refresh token = {}",logKey,refreshToken);
 
-        // Step 2: Validate token type
+        // Validate token type
         if (!jwtService.isRefreshToken(refreshToken)) {
             log.warn("LogKey: {} - Invalid refresh token type", logKey);
             throw new BadCredentialsException("Invalid Refresh Token Type");
@@ -174,17 +180,17 @@ public class AuthController {
 
         String jti = jwtService.getJti(refreshToken);
         String userId = jwtService.getUserId(refreshToken);
-
         log.debug("LogKey: {} - Refresh token parsed | jti={} userId={}", logKey, jti, userId);
 
-        // Step 3: Fetch stored token from DB
+        // Fetch stored token from DB
         RefreshToken storedRefreshToken = refreshTokenRepository.findByJti(jti)
                 .orElseThrow(() -> {
                     log.error("LogKey: {} - Refresh token not recognized | jti={}", logKey, jti);
                     return new BadCredentialsException("Refresh token not recognized");
                 });
+        log.info("LogKey: {} - Fetched stored refresh token from DB = {}",logKey,storedRefreshToken);
 
-        // Step 4: Validate stored token
+        // Validate stored token
         if (storedRefreshToken.isRevoked()) {
             log.warn("LogKey: {} - Refresh token revoked | jti={}", logKey, jti);
             throw new BadCredentialsException("Refresh token expired or revoked");
@@ -200,7 +206,7 @@ public class AuthController {
             throw new BadCredentialsException("Refresh token does not belong to this user");
         }
 
-        // Step 5: Rotate refresh token
+        // Rotate refresh token
         storedRefreshToken.setRevoked(true);
         String newJti = UUID.randomUUID().toString();
         storedRefreshToken.setReplacedByToken(newJti);
@@ -220,22 +226,26 @@ public class AuthController {
                 .build();
 
         refreshTokenRepository.save(newRefreshTokenOb);
+        log.info("LogKey: {} - New refresh token saved in DB = {}",logKey,newRefreshTokenOb);
 
-        // Step 6: Generate new tokens
-        String newAccessToken = jwtService.generateAccessToken(user);
-        String newRefreshToken = jwtService.generateRefreshToken(user, newJti);
+        // Generate new tokens
+        String newAccessToken = jwtService.generateAccessToken(user,logKey);
+        log.info("LogKey: {} - New access token generated = {}",logKey,newAccessToken);
+        String newRefreshToken = jwtService.generateRefreshToken(user, newJti,logKey);
+        log.info("LogKey: {} - New refresh token generated = {}",logKey,newRefreshToken);
 
         cookieService.attachRefreshCookie(response, newRefreshToken,
-                (int) jwtService.getRefreshTtlSeconds());
+                (int) jwtService.getRefreshTtlSeconds(),logKey);
         cookieService.addNoStoreHeaders(response);
-
-        log.info("LogKey: {} - Refresh successful | userId={}", logKey, user.getUserId());
+        log.info("LogKey: {} - New Refresh token attached to cookie = {}",logKey,jti);
 
         TokenResponse tokenResponse = new TokenResponse();
         tokenResponse.setAccessToken(newAccessToken);
         tokenResponse.setRefreshToken(newRefreshToken);
         tokenResponse.setExpiresIn(jwtService.getAccessTtlSeconds());
         tokenResponse.setUser(modelMapper.map(user, UserDto.class));
+
+        log.info("LogKey: {} - Refresh successful | userId={}", logKey, user.getUserId());
 
         return ResponseEntity.ok(tokenResponse);
     }
@@ -252,10 +262,10 @@ public class AuthController {
         String logKey = LogKeyGenerator.generateLogKey();
         log.info("LogKey: {} - Logout request received", logKey);
 
-        readRefreshTokenFromRequest(null, request).ifPresent(token -> {
+        readRefreshTokenFromRequest(null, request , logKey).ifPresent(token -> {
             try {
                 if (jwtService.isRefreshToken(token)) {
-
+                    log.info("LogKey: {} - Validating refresh token | token = {}", logKey, token);
                     String jti = jwtService.getJti(token);
 
                     refreshTokenRepository.findByJti(jti).ifPresent(rt -> {
@@ -272,7 +282,10 @@ public class AuthController {
 
         cookieService.clearRefreshCookie(response);
         cookieService.addNoStoreHeaders(response);
+        log.info("LogKey: {} - Cleared refresh token from cookie ", logKey);
+
         SecurityContextHolder.clearContext();
+        log.info("LogKey: {} - Cleared context holder", logKey);
 
         log.info("LogKey: {} - Logout completed", logKey);
 
@@ -289,11 +302,14 @@ public class AuthController {
      */
     private Optional<String> readRefreshTokenFromRequest(
             RefreshTokenRequest body,
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            String logKey) {
+
+        log.info("LogKey: {} - Entry into readRefreshTokenFromRequest with body = {} request = {}", logKey,body,request);
 
         // Prefer cookie
         if (request.getCookies() != null) {
-
+            log.info("LogKey: {} - Getting token from cookie = {}",logKey,request.getCookies());
             Optional<String> fromCookie = Arrays.stream(request.getCookies())
                     .filter(c -> cookieService.getRefreshTokenCookieName().equals(c.getName()))
                     .map(Cookie::getValue)
@@ -308,18 +324,21 @@ public class AuthController {
         // Request body
         if (body != null && body.getRefreshToken() != null
                 && !body.getRefreshToken().isBlank()) {
+            log.info("LogKey: {} - Getting token from body = {}",logKey,body);
             return Optional.of(body.getRefreshToken());
         }
 
         // Custom header
         String refreshHeader = request.getHeader("X-Refresh-Token");
         if (refreshHeader != null && !refreshHeader.isBlank()) {
+            log.info("LogKey: {} - Getting token from header = {}",logKey,refreshHeader);
             return Optional.of(refreshHeader.trim());
         }
 
         // Authorization header fallback
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            log.info("LogKey: {} - Getting token from auth header = {}",logKey,authHeader);
             String candidate = authHeader.substring(7).trim();
             if (!candidate.isEmpty()) {
                 try {
@@ -341,6 +360,7 @@ public class AuthController {
     private Authentication authenticate(LoginRequest loginRequest, String logKey) {
 
         try {
+            log.info("LogKey: {} - Entry into authenticate with login credential = {}", logKey,loginRequest);
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),

@@ -1,7 +1,9 @@
 package com.ecom.salezone.enities;
 
+import com.ecom.salezone.enums.Provider;
 import jakarta.persistence.*;
 //import lombok.*;
+import lombok.Builder;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +18,7 @@ import java.util.*;
 //@Setter
 @Entity
 //@ToString
+@Builder
 @Table(name = "users")
 public class User implements UserDetails {
     /**
@@ -76,6 +79,10 @@ public class User implements UserDetails {
      */
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @Enumerated(EnumType.STRING)
+    private Provider provider = Provider.LOCAL;
+    private  String providerId;
 
     /**
      * Indicates whether email is verified
@@ -265,11 +272,26 @@ public class User implements UserDetails {
         this.cart = cart;
     }
 
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
 
     public User() {
     }
 
-    public User(String userId, String userName, String email, String password, String gender, String about, String imageName, String phoneNumber, Boolean isActive, Boolean emailVerified, LocalDateTime createdAt, LocalDateTime updatedAt, List<Order> orders, Set<Role> roles, Cart cart) {
+    public User(String userId, String userName, String email, String password, String gender, String about, String imageName, String phoneNumber, Boolean isActive, Provider provider, String providerId, Boolean emailVerified, LocalDateTime createdAt, LocalDateTime updatedAt, List<Order> orders, Set<Role> roles, Cart cart) {
         this.userId = userId;
         this.userName = userName;
         this.email = email;
@@ -279,6 +301,8 @@ public class User implements UserDetails {
         this.imageName = imageName;
         this.phoneNumber = phoneNumber;
         this.isActive = isActive;
+        this.provider = provider;
+        this.providerId = providerId;
         this.emailVerified = emailVerified;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -325,6 +349,8 @@ public class User implements UserDetails {
                 ", imageName='" + imageName + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", isActive=" + isActive +
+                ", provider=" + provider +
+                ", providerId='" + providerId + '\'' +
                 ", emailVerified=" + emailVerified +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +

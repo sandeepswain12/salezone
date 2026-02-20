@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class ImageResponse {
 
     /**

@@ -1,5 +1,6 @@
 package com.ecom.salezone.dtos;
 
+import com.ecom.salezone.enums.Provider;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -29,5 +30,7 @@ public class SignupRequestDto {
     private String password;
 
     private String phoneNumber; // optional
+
+    private Provider provider = Provider.LOCAL;
 }
 

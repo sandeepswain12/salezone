@@ -1,10 +1,12 @@
 package com.ecom.salezone.security;
 
-import com.ecom.salezone.util.AppConstants;
+import com.ecom.salezone.dtos.ApiError;
+import com.ecom.salezone.util.SalezoneConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -18,7 +20,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.ObjectMapper;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +32,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
 
     /**
      * Main Spring Security configuration.
@@ -48,11 +55,35 @@ public class SecurityConfig {
 
                 // Authorization rules
                 .authorizeHttpRequests(req -> req
-                                .requestMatchers(AppConstants.AUTH_PUBLIC_URLS).permitAll()
-//                      .requestMatchers(AppConstants.AUTH_ADMIN_URLS).hasRole(AppConstants.ADMIN_ROLE)
-//                      .requestMatchers(AppConstants.AUTH_USER_URLS).hasRole(AppConstants.USER_ROLE)
+                                .requestMatchers(SalezoneConstants.AUTH_PUBLIC_URLS).permitAll()
+//                      .requestMatchers(SalezoneConstants.AUTH_ADMIN_URLS).hasRole(SalezoneConstants.ADMIN_ROLE)
+//                      .requestMatchers(SalezoneConstants.AUTH_USER_URLS).hasRole(SalezoneConstants.USER_ROLE)
                                 .anyRequest().authenticated()
+                ).oauth2Login(oauth ->
+                        oauth.successHandler(oAuth2SuccessHandler)
+                                .failureHandler(null)
                 )
+                .logout(AbstractHttpConfigurer::disable)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
+                    //error message
+                    e.printStackTrace();
+                    response.setStatus(401);
+                    response.setContentType("application/json");
+                    String message = e.getMessage();
+                    String error = (String) request.getAttribute("error");
+                    if (error != null) {
+                        message = error;
+                    }
+//                    Map<String, Object> errorMap = Map.of("message", message, "statusCode",404);
+                    ApiError apiError = new ApiError();
+                    apiError.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    apiError.setMessage(message);
+                    apiError.setTimestamp(OffsetDateTime.now());
+                    apiError.setPath(request.getRequestURI());
+                    apiError.setError("Unauthorized Access");
+                    var objectMapper = new ObjectMapper();
+                    response.getWriter().write(objectMapper.writeValueAsString(apiError));
+                }))
 
                 // Add JWT filter before Spring's default authentication filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

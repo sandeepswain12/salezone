@@ -30,7 +30,7 @@ import java.util.UUID;
 @Setter
 public class JwtService {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
 
     private final SecretKey secretKey;
     private final long accessTtlSeconds;
@@ -57,15 +57,16 @@ public class JwtService {
         this.refreshTtlSeconds = refreshTtlSeconds;
         this.issuer = issuer;
 
-        logger.info("JWT Service initialized with issuer: {}", issuer);
+        log.info("JWT Service initialized with issuer: {}", issuer);
     }
 
     /**
      * Generates JWT Access Token.
      * Includes userId, email and roles.
      */
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(User user,String logKey) {
 
+        log.info("LogKey: {} - Entry into generateAccessToken with user = {} }", logKey, user);
         Instant now = Instant.now();
 
         List<String> roles = user.getRoles() == null
@@ -89,7 +90,7 @@ public class JwtService {
                 .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
 
-        logger.debug("Access token generated for userId: {}", user.getUserId());
+        log.debug("Access token generated for userId: {}", user.getUserId());
 
         return token;
     }
@@ -97,7 +98,9 @@ public class JwtService {
     /**
      * Generates Refresh Token.
      */
-    public String generateRefreshToken(User user, String jti) {
+    public String generateRefreshToken(User user, String jti,String logKey) {
+
+        log.info("LogKey: {} - Entry into generateRefreshToken with  jti = {} and user = {}}", logKey,jti, user);
 
         Instant now = Instant.now();
 
@@ -111,7 +114,7 @@ public class JwtService {
                 .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
 
-        logger.debug("Refresh token generated for userId: {}", user.getUserId());
+        log.debug("Refresh token generated for userId: {}", user.getUserId());
 
         return token;
     }

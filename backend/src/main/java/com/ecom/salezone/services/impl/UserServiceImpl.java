@@ -5,6 +5,7 @@ import com.ecom.salezone.dtos.SignupRequestDto;
 import com.ecom.salezone.dtos.UserDto;
 import com.ecom.salezone.enities.Role;
 import com.ecom.salezone.enities.User;
+import com.ecom.salezone.enums.Provider;
 import com.ecom.salezone.exceptions.ResourceNotFoundException;
 import com.ecom.salezone.util.Helper;
 import com.ecom.salezone.repository.RoleRepository;
@@ -52,35 +53,39 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(SignupRequestDto userDto, String logKey) {
 
-        log.info("{} Create user request received ", logKey);
+        if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+//        if (userRepository.findByEmail(userDto.getEmail())) {
+//            throw new IllegalArgumentException("User with given email already exists");
+//        }
+
+        log.info("LogKey: {} - Entry into create user  ", logKey);
 
         String userId = UUID.randomUUID().toString();
+        log.info("LogKey: {} - User id generated - {}", logKey,userId);
+
         userDto.setUserId(userId);
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-
-        log.info("{} User name received | username={}",logKey, userDto.getUserName());
-
-        log.info("{} Generated userId | userId={}",logKey, userId);
+        log.info("LogKey: {} - Password Encrypted - {}  ", logKey,userDto.getPassword());
 
         User user = modelMapper.map(userDto, User.class);
         user.setUserName(user.getUserName());
+        user.setProvider(userDto.getProvider() != null ? userDto.getProvider() : Provider.LOCAL);
 
-        log.info("{} UserDto mapped to User | username ={}",logKey, user.getUsername());
 
         // Fetch ROLE_USER
         Role roleUser = roleRepository.findById("ROLE_USER")
                 .orElseThrow(() -> {
-                    log.error("{} ROLE_USER not found ", logKey);
+                    log.error("LogKey: {} - ROLE_USER not found ", logKey);
                     return new ResourceNotFoundException("Role USER not found");
                 });
 
         user.getRoles().add(roleUser);
+        log.info("LogKey: {} - User role set to {} ", logKey , roleUser);
 
         User savedUser = userRepository.save(user);
-
-        log.info("{} User saved | savedUser={}",logKey, savedUser);
-        log.info("{} User created successfully | userId={}",
-                logKey, savedUser.getUserId());
+        log.info("LogKey: {} - User saved | savedUser = {}",logKey, savedUser);
 
         return modelMapper.map(savedUser, UserDto.class);
     }

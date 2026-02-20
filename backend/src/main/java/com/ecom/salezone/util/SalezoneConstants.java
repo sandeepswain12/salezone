@@ -1,6 +1,6 @@
 package com.ecom.salezone.util;
 
-public class AppConstants {
+public class SalezoneConstants {
     public static final String[] AUTH_PUBLIC_URLS = {
             "/salezone/ecom/auth/**",
             "/salezone/ecom/categories/**",

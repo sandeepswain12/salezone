@@ -1,5 +1,6 @@
 package com.ecom.salezone.dtos;
 
+import com.ecom.salezone.enums.Provider;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -75,6 +76,8 @@ public class UserDto {
      */
     // @ImageNameValid (custom validator - optional)
     private String imageName;
+
+    private Provider provider = Provider.LOCAL;
 
     /**
      * Roles assigned to user
