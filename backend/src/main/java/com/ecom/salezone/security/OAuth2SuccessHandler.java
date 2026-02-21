@@ -141,8 +141,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTtlSeconds(),logKey);
         log.info("LogKey: {} - Refresh token attached in cookie = {} ", logKey, refreshToken);
         log.info("LogKey: {} - Login successful ", logKey);
-        response.getWriter().write("Login successful");
-//        response.sendRedirect(frontEndSuccessUrl);
+//        response.getWriter().write("Login successful");
+        response.sendRedirect(frontEndSuccessUrl);
 
 
     }

@@ -15,6 +15,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,7 @@ public class AuthController {
      * Handles user signup request.
      */
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@RequestBody SignupRequestDto userDto) {
+    public ResponseEntity<UserDto> signup(@Valid @RequestBody SignupRequestDto userDto) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 

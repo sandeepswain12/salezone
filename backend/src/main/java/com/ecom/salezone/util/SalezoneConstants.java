@@ -6,7 +6,6 @@ public class SalezoneConstants {
             "/salezone/ecom/categories/**",
             "/salezone/ecom/products/**",
             "/swagger-ui.html",
-//            "/salezone/ecom/users/**",
             "/swagger-ui/**"
     };
 
