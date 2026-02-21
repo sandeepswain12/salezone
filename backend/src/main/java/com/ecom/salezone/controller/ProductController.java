@@ -49,7 +49,7 @@ public class ProductController {
             @RequestBody ProductDto productDto) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Create product | productRequest = {} ",logkey,
+        log.info("{} api call : Create product | productRequest = {} ",logkey,
                 productDto);
 
         ProductDto createdProduct =
