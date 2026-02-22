@@ -14,27 +14,29 @@ import java.util.UUID;
 @Service
 public class FileServiceImpl implements FileService {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(FileServiceImpl.class);
 
+    // ================= UPLOAD FILE =================
     @Override
     public String uploadFile(MultipartFile file, String path, String logkey) throws IOException {
 
-        logger.info("{} Starting file upload process",logkey);
+        logger.info("LogKey: {} - Entry into uploadFile method", logkey);
 
         String originalFilename = file.getOriginalFilename();
-        logger.info("{} Original file name: {}",logkey, originalFilename);
+        logger.info("LogKey: {} - Original file name | fileName={}", logkey, originalFilename);
 
         String filename = UUID.randomUUID().toString();
-        logger.info("{} Generated random file name: {}",logkey, filename);
+        logger.info("LogKey: {} - Generated random file name | uuid={}", logkey, filename);
 
         String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        logger.info("{} File extension extracted: {}",logkey, extension);
+        logger.info("LogKey: {} - File extension extracted | extension={}", logkey, extension);
 
         String fileNameWithExtension = filename + extension;
-        logger.info("{} Final file name with extension: {}",logkey, fileNameWithExtension);
+        logger.info("LogKey: {} - Final file name generated | fileName={}", logkey, fileNameWithExtension);
 
         String fullPathWithFileName = path + fileNameWithExtension;
-        logger.info("{} Full file path: {}",logkey, fullPathWithFileName);
+        logger.info("LogKey: {} - Full file path prepared | path={}", logkey, fullPathWithFileName);
 
         if (extension.equalsIgnoreCase(".png")
                 || extension.equalsIgnoreCase(".jpg")
@@ -43,30 +45,39 @@ public class FileServiceImpl implements FileService {
             File folder = new File(path);
             if (!folder.exists()) {
                 folder.mkdirs();
-                logger.info("{} Upload directory created at path: {}",logkey, path);
+                logger.info("LogKey: {} - Upload directory created | directory={}", logkey, path);
             }
 
-            logger.info("{} Uploading file to disk...",logkey);
+            logger.info("LogKey: {} - Uploading file to disk...", logkey);
             Files.copy(file.getInputStream(), Paths.get(fullPathWithFileName));
 
-            logger.info("{} File uploaded successfully: {}",logkey, fileNameWithExtension);
+            logger.info("LogKey: {} - File uploaded successfully | fileName={}",
+                    logkey, fileNameWithExtension);
+
             return fileNameWithExtension;
 
         } else {
-            logger.error("{} File upload failed. Unsupported file extension: {}",logkey, extension);
+            logger.error("LogKey: {} - File upload failed | unsupported extension={}",
+                    logkey, extension);
             throw new RuntimeException("{} File with this " + extension + " not allowed !!");
         }
     }
 
+    // ================= GET RESOURCE =================
     @Override
-    public InputStream getResource(String path, String name, String logkey) throws FileNotFoundException {
+    public InputStream getResource(String path, String name, String logkey)
+            throws FileNotFoundException {
 
         String fullPath = path + File.separator + name;
-        logger.info("{} Fetching file resource from path: {}",logkey, fullPath);
+
+        logger.info("LogKey: {} - Entry into getResource method | path={}",
+                logkey, fullPath);
 
         InputStream inputStream = new FileInputStream(fullPath);
 
-        logger.info("{} File resource loaded successfully: {}",logkey, name);
+        logger.info("LogKey: {} - File resource loaded successfully | fileName={}",
+                logkey, name);
+
         return inputStream;
     }
 }

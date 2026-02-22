@@ -1,6 +1,7 @@
 package com.ecom.salezone.security;
 
 import com.ecom.salezone.repository.UserRepository;
+import com.ecom.salezone.util.LogKeyGenerator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
@@ -34,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserRepository userRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     /**
      * This filter runs once per request.
@@ -46,39 +48,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // 🔥 Generate logKey for this request
+        String logKey = LogKeyGenerator.generateLogKey();
+
         String header = request.getHeader("Authorization");
 
-        logger.debug("Authorization header: {}", header);
+        logger.debug("LogKey: {} - JWT Filter invoked | AuthorizationHeader={}",
+                logKey, header);
 
-        // Check if Authorization header exists and starts with Bearer
         if (header != null && header.startsWith("Bearer ")) {
 
-            String token = header.substring(7); // Remove "Bearer "
+            String token = header.substring(7);
 
             try {
 
-                // Check if token is access token
                 if (!jwtService.isAccessToken(token)) {
-                    logger.warn("Invalid token type. Not an access token.");
+                    logger.warn("LogKey: {} - Invalid token type (Not access token)", logKey);
                     filterChain.doFilter(request, response);
                     return;
                 }
 
-                // Parse JWT
                 Jws<Claims> parsedToken = jwtService.parse(token);
                 Claims payload = parsedToken.getPayload();
 
                 String userId = payload.getSubject();
 
-                logger.debug("Token validated. UserId from token: {}", userId);
+                logger.debug("LogKey: {} - Token validated | userId={}", logKey, userId);
 
                 userRepository.findById(userId).ifPresent(user -> {
 
                     if (user.isEnabled()) {
 
-                        logger.info("Authenticated user: {}", user.getEmail());
+                        logger.info("LogKey: {} - User authenticated | email={}",
+                                logKey, user.getEmail());
 
-                        // Convert roles to GrantedAuthority
                         List<GrantedAuthority> authorities =
                                 user.getRoles() == null
                                         ? List.of()
@@ -100,30 +103,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                         .buildDetails(request)
                         );
 
-                        // Set authentication in security context
                         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            SecurityContextHolder.getContext()
+                                    .setAuthentication(authentication);
                         }
 
                     } else {
-                        logger.warn("User is disabled: {}", user.getEmail());
+                        logger.warn("LogKey: {} - User account disabled | email={}",
+                                logKey, user.getEmail());
                     }
 
                 });
 
             } catch (ExpiredJwtException e) {
 
-                logger.error("JWT token expired");
+                logger.error("LogKey: {} - JWT token expired", logKey);
                 request.setAttribute("error", "Token Expired");
 
             } catch (Exception e) {
 
-                logger.error("Invalid JWT token: {}", e.getMessage());
+                logger.error("LogKey: {} - Invalid JWT token | reason={}",
+                        logKey, e.getMessage());
                 request.setAttribute("error", "Invalid Token");
             }
         }
 
-        // Continue filter chain
         filterChain.doFilter(request, response);
     }
 

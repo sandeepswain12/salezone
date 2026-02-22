@@ -22,7 +22,8 @@ import java.util.UUID;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-    private static final Logger log = LoggerFactory.getLogger(CategoryServiceImpl.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(CategoryServiceImpl.class);
 
     @Autowired
     private ModelMapper modelMapper;
@@ -34,7 +35,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto create(CategoryDto categoryDto, String logkey) {
 
-        log.info("{} Creating category with title: {}",logkey, categoryDto.getTitle());
+        log.info("LogKey: {} - Entry into createCategory method | title={}",
+                logkey, categoryDto.getTitle());
 
         String categoryId = UUID.randomUUID().toString();
         categoryDto.setCategoryId(categoryId);
@@ -42,7 +44,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = dtoToEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);
 
-        log.info("{} Category created successfully with ID: {}",logkey, categoryId);
+        log.info("LogKey: {} - Category created successfully | categoryId={}",
+                logkey, categoryId);
 
         return entityToDto(savedCategory);
     }
@@ -51,11 +54,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto update(CategoryDto categoryDto, String categoryId, String logkey) {
 
-        log.info("{} Updating category with ID: {}",logkey, categoryId);
+        log.info("LogKey: {} - Entry into updateCategory method | categoryId={}",
+                logkey, categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> {
-                    log.error("{} Category not found for update. ID: {}",logkey, categoryId);
+                    log.error("LogKey: {} - Category not found for update | categoryId={}",
+                            logkey, categoryId);
                     return new ResourceNotFoundException("Category not found with given id !!");
                 });
 
@@ -65,7 +70,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category updatedCategory = categoryRepository.save(category);
 
-        log.info("{} Category updated successfully with ID: {}",logkey, categoryId);
+        log.info("LogKey: {} - Category updated successfully | categoryId={}",
+                logkey, categoryId);
 
         return entityToDto(updatedCategory);
     }
@@ -74,17 +80,20 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(String categoryId, String logkey) {
 
-        log.warn("{} Deleting category with ID: {}",logkey, categoryId);
+        log.warn("LogKey: {} - Entry into deleteCategory method | categoryId={}",
+                logkey, categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> {
-                    log.error("{} Category not found for delete. ID: {}",logkey, categoryId);
+                    log.error("LogKey: {} - Category not found for delete | categoryId={}",
+                            logkey, categoryId);
                     return new ResourceNotFoundException("Category not found with given id !!");
                 });
 
         categoryRepository.delete(category);
 
-        log.info("{} Category deleted successfully with ID: {}",logkey, categoryId);
+        log.info("LogKey: {} - Category deleted successfully | categoryId={}",
+                logkey, categoryId);
     }
 
     // ================= GET ALL CATEGORIES =================
@@ -96,7 +105,7 @@ public class CategoryServiceImpl implements CategoryService {
             String sortDir,
             String logkey) {
 
-        log.debug("{} Fetching all categories | page={} size={} sortBy={} sortDir={}",
+        log.info("LogKey: {} - Entry into getAllCategories method | page={} size={} sortBy={} sortDir={}",
                 logkey, pageNumber, pageSize, sortBy, sortDir);
 
         Sort sort = (sortDir.equalsIgnoreCase("desc"))
@@ -106,7 +115,8 @@ public class CategoryServiceImpl implements CategoryService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Category> page = categoryRepository.findAll(pageable);
 
-        log.info("{} Categories fetched count: {}", logkey, page.getNumberOfElements());
+        log.info("LogKey: {} - Categories fetched from DB | count={}",
+                logkey, page.getNumberOfElements());
 
         PageableResponse<CategoryDto> pageableResponse =
                 Helper.getPageableResponse(page, CategoryDto.class, logkey);
@@ -118,27 +128,30 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto get(String categoryId, String logkey) {
 
-        log.debug("{} Fetching category with ID: {}",logkey, categoryId);
+        log.info("LogKey: {} - Entry into getCategoryById method | categoryId={}",
+                logkey, categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> {
-                    log.error("Category not found. ID: {}", categoryId);
+                    log.error("LogKey: {} - Category not found | categoryId={}",
+                            logkey, categoryId);
                     return new ResourceNotFoundException("Category not found with given id !!");
                 });
 
-        log.info("{} Category fetched successfully with ID: {}",logkey, categoryId);
+        log.info("LogKey: {} - Category fetched successfully | categoryId={}",
+                logkey, categoryId);
 
         return entityToDto(category);
     }
 
     // ================= MAPPER METHODS =================
     public Category dtoToEntity(CategoryDto categoryDto) {
-        log.debug("Mapping CategoryDto to Category entity");
+        log.debug("LogKey: MAPPING - Converting CategoryDto to Category entity");
         return modelMapper.map(categoryDto, Category.class);
     }
 
     public CategoryDto entityToDto(Category category) {
-        log.debug("Mapping Category entity to CategoryDto");
+        log.debug("LogKey: MAPPING - Converting Category entity to CategoryDto");
         return modelMapper.map(category, CategoryDto.class);
     }
 }

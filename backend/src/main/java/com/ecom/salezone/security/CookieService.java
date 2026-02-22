@@ -58,7 +58,9 @@ public class CookieService {
 
     // Clear refresh cookie
 
-    public void clearRefreshCookie(HttpServletResponse response) {
+    public void clearRefreshCookie(HttpServletResponse response,String logKey) {
+        logger.warn("LogKey: {} - Clearing refresh cookie | name={}",
+                logKey, refreshTokenCookieName);
         var builder = ResponseCookie.from(refreshTokenCookieName, "")
                 .maxAge(0)
                 .httpOnly(cookieHttpOnly)
@@ -77,7 +79,8 @@ public class CookieService {
 
     }
 
-    public void addNoStoreHeaders(HttpServletResponse response) {
+    public void addNoStoreHeaders(HttpServletResponse response,String logKey) {
+        logger.info("LogKey: {} - Adding no-store cache headers", logKey);
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         response.setHeader("Pragma", "no-cache");
     }

@@ -27,7 +27,6 @@ import java.io.InputStream;
 @CrossOrigin(origins = "http://localhost:5173/")
 public class ProductController {
 
-    // Logger for controller-level request tracing
     private static final Logger log =
             LoggerFactory.getLogger(ProductController.class);
 
@@ -40,65 +39,53 @@ public class ProductController {
     @Value("${product.image.path}")
     private String imagePath;
 
-    /**
-     * Create new product
-     * URL: POST /salezone/ecom/products/create
-     */
+    // ================= CREATE PRODUCT =================
     @PostMapping("/create")
     public ResponseEntity<ProductDto> createProduct(
             @RequestBody ProductDto productDto) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} api call : Create product | productRequest = {} ",logkey,
-                productDto);
+        log.info("LogKey: {} - Create product request received | payload={}",
+                logkey, productDto);
 
         ProductDto createdProduct =
-                productService.create(productDto,logkey);
+                productService.create(productDto, logkey);
 
-        log.info("{} Product created successfully | productResponse = {}",logkey,
-                createdProduct);
+        log.info("LogKey: {} - Product created successfully | payload={}",
+                logkey, createdProduct);
 
-        return new ResponseEntity<>(
-                createdProduct,
-                HttpStatus.CREATED
-        );
+        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
-    /**
-     * Update existing product
-     * URL: PUT /salezone/ecom/products/update/{productId}
-     */
+    // ================= UPDATE PRODUCT =================
     @PutMapping("/update/{productId}")
     public ResponseEntity<ProductDto> updateProduct(
             @PathVariable String productId,
             @RequestBody ProductDto productDto) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Update product | productId={} productRequest = {}",logkey, productId,productDto);
+        log.info("LogKey: {} - Update product request received | productId={} payload={}",
+                logkey, productId, productDto);
 
         ProductDto updatedProduct =
-                productService.update(productDto, productId,logkey);
+                productService.update(productDto, productId, logkey);
 
-        log.info("{} Product updated successfully | productId={} productRespone = {}",logkey, productId,updatedProduct);
+        log.info("LogKey: {} - Product updated successfully | productId={} payload={}",
+                logkey, productId, updatedProduct);
 
-        return new ResponseEntity<>(
-                updatedProduct,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
-    /**
-     * Delete product
-     * URL: DELETE /salezone/ecom/products/delete/{productId}
-     */
+    // ================= DELETE PRODUCT =================
     @DeleteMapping("/delete/{productId}")
     public ResponseEntity<ApiResponseMessage> delete(
             @PathVariable String productId) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Delete product | productId={}",logkey, productId);
+        log.info("LogKey: {} - Delete product request received | productId={}",
+                logkey, productId);
 
-        productService.delete(productId,logkey);
+        productService.delete(productId, logkey);
 
         ApiResponseMessage responseMessage =
                 ApiResponseMessage.builder()
@@ -107,124 +94,95 @@ public class ProductController {
                         .success(true)
                         .build();
 
-        log.info("{} Product deleted successfully | productId={}",logkey, productId);
+        log.info("LogKey: {} - Product deleted successfully | productId={}",
+                logkey, productId);
 
-        return new ResponseEntity<>(
-                responseMessage,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 
-    /**
-     * Get product by id
-     * URL: GET /salezone/ecom/products/{productId}
-     */
+    // ================= GET PRODUCT BY ID =================
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDto> getProduct(
             @PathVariable String productId) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("API CALL: Get product | productId={}", productId);
+        log.info("LogKey: {} - Get product request received | productId={}",
+                logkey, productId);
 
         ProductDto productDto =
-                productService.get(productId,logkey);
+                productService.get(productId, logkey);
 
-        log.info("Product fetched successfully | productId={}", productId);
+        log.info("LogKey: {} - Product fetched successfully | productId={} payload={}",
+                logkey, productId, productDto);
 
-        return new ResponseEntity<>(
-                productDto,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(productDto, HttpStatus.OK);
     }
 
-    /**
-     * Get all products
-     * URL: GET /salezone/ecom/products
-     */
+    // ================= GET ALL PRODUCTS =================
     @GetMapping
     public ResponseEntity<PageableResponse<ProductDto>> getAll(
-            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Get all products | page={} size={}",logkey,
-                pageNumber, pageSize);
+        log.info("LogKey: {} - Get all products request received | page={} size={} sortBy={} sortDir={}",
+                logkey, pageNumber, pageSize, sortBy, sortDir);
 
         PageableResponse<ProductDto> response =
-                productService.getAll(pageNumber, pageSize, sortBy, sortDir,logkey);
+                productService.getAll(pageNumber, pageSize, sortBy, sortDir, logkey);
 
-        log.info("{} Products fetched successfully | count={}",logkey,
-                response.getContent().size());
-
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.OK
-        );
-    }
-
-    /**
-     * Get all live products
-     * URL: GET /salezone/ecom/products/live
-     */
-    @GetMapping("/live")
-    public ResponseEntity<PageableResponse<ProductDto>> getAllLive(
-            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
-
-        String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Get all live products | page={} size={}",
-                logkey, pageNumber, pageSize);
-
-        PageableResponse<ProductDto> response =
-                productService.getAllLive(pageNumber, pageSize, sortBy, sortDir,logkey);
-
-        log.info("{} Live products fetched successfully | count={}",
+        log.info("LogKey: {} - Products fetched successfully | totalElements={}",
                 logkey, response.getContent().size());
 
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    /**
-     * Search product by title
-     * URL: GET /salezone/ecom/products/search/{query}
-     */
+    // ================= GET ALL LIVE PRODUCTS =================
+    @GetMapping("/live")
+    public ResponseEntity<PageableResponse<ProductDto>> getAllLive(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - Get all live products request received | page={} size={} sortBy={} sortDir={}",
+                logkey, pageNumber, pageSize, sortBy, sortDir);
+
+        PageableResponse<ProductDto> response =
+                productService.getAllLive(pageNumber, pageSize, sortBy, sortDir, logkey);
+
+        log.info("LogKey: {} - Live products fetched successfully | totalElements={}",
+                logkey, response.getContent().size());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // ================= SEARCH PRODUCT =================
     @GetMapping("/search/{query}")
     public ResponseEntity<PageableResponse<ProductDto>> searchProduct(
             @PathVariable String query,
-            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Search product | query={} page={} size={}",
-                logkey, query, pageNumber, pageSize);
+        log.info("LogKey: {} - Search product request received | query={} page={} size={} sortBy={} sortDir={}",
+                logkey, query, pageNumber, pageSize, sortBy, sortDir);
 
         PageableResponse<ProductDto> response =
-                productService.searchByTitle(
-                        query, pageNumber, pageSize, sortBy, sortDir,logkey
-                );
+                productService.searchByTitle(query, pageNumber, pageSize, sortBy, sortDir, logkey);
 
-        log.info("{} Product search completed | resultCount={}",
+        log.info("LogKey: {} - Product search completed successfully | resultCount={}",
                 logkey, response.getContent().size());
 
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    /**
-     * Upload product image
-     * URL: POST /salezone/ecom/products/image/{productId}
-     */
+    // ================= UPLOAD PRODUCT IMAGE =================
     @PostMapping("/image/{productId}")
     public ResponseEntity<ImageResponse> uploadProductImage(
             @PathVariable String productId,
@@ -232,17 +190,17 @@ public class ProductController {
             throws IOException {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Upload product image | productId={} fileName={}",
+        log.info("LogKey: {} - Upload product image request received | productId={} fileName={}",
                 logkey, productId, image.getOriginalFilename());
 
         String fileName =
                 fileService.uploadFile(image, imagePath, logkey);
 
         ProductDto productDto =
-                productService.get(productId,logkey);
+                productService.get(productId, logkey);
         productDto.setProductImageName(fileName);
 
-        productService.update(productDto, productId,logkey);
+        productService.update(productDto, productId, logkey);
 
         ImageResponse response =
                 ImageResponse.builder()
@@ -252,19 +210,13 @@ public class ProductController {
                         .success(true)
                         .build();
 
-        log.info("{} Product image uploaded successfully | productId={}",logkey,
-                productId);
+        log.info("LogKey: {} - Product image uploaded successfully | productId={} imageName={}",
+                logkey, productId, fileName);
 
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.CREATED
-        );
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * Serve product image
-     * URL: GET /salezone/ecom/products/image/{productId}
-     */
+    // ================= SERVE PRODUCT IMAGE =================
     @GetMapping("/image/{productId}")
     public void serveUserImage(
             @PathVariable String productId,
@@ -272,10 +224,11 @@ public class ProductController {
             throws IOException {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Serve product image | productId={}",logkey, productId);
+        log.info("LogKey: {} - Serve product image request received | productId={}",
+                logkey, productId);
 
         ProductDto productDto =
-                productService.get(productId,logkey);
+                productService.get(productId, logkey);
 
         InputStream resource =
                 fileService.getResource(
@@ -287,6 +240,7 @@ public class ProductController {
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
         StreamUtils.copy(resource, response.getOutputStream());
 
-        log.info("{} Product image served successfully | productId={}",logkey, productId);
+        log.info("LogKey: {} - Product image served successfully | productId={} imageName={}",
+                logkey, productId, productDto.getProductImageName());
     }
 }

@@ -2,6 +2,7 @@ package com.ecom.salezone.exceptions;
 
 import com.ecom.salezone.dtos.ApiError;
 import com.ecom.salezone.dtos.ApiResponseMessage;
+import com.ecom.salezone.util.LogKeyGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -31,28 +31,34 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Logger for centralized exception handling
     private static final Logger logger =
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
 
     @ExceptionHandler({
             UsernameNotFoundException.class,
             BadCredentialsException.class,
             CredentialsExpiredException.class,
             DisabledException.class
-
     })
-    public ResponseEntity<ApiError> handleAuthException(Exception e, HttpServletRequest request) {
-        logger.info("Exception  : {}", e.getClass().getName());
+    public ResponseEntity<ApiError> handleAuthException(
+            Exception e,
+            HttpServletRequest request) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        logger.error("LogKey: {} - Authentication exception | type={} path={} message={}",
+                logKey, e.getClass().getSimpleName(),
+                request.getRequestURI(),
+                e.getMessage());
+
         ApiError apiError = new ApiError();
         apiError.setStatus(HttpStatus.UNAUTHORIZED.value());
         apiError.setMessage(e.getMessage());
         apiError.setError("Bad Request");
         apiError.setPath(request.getRequestURI());
         apiError.setTimestamp(OffsetDateTime.now());
-        return ResponseEntity.badRequest().body(apiError);
 
+        return ResponseEntity.badRequest().body(apiError);
     }
 
     /**
@@ -61,16 +67,20 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponseMessage> handleResourceNotFoundException(
-            ResourceNotFoundException ex) {
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
 
-        logger.error("Resource not found | message={}", ex.getMessage());
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        logger.error("LogKey: {} - Resource not found | path={} message={}",
+                logKey, request.getRequestURI(), ex.getMessage());
 
         ApiResponseMessage response = new ApiResponseMessage();
         response.setMessage(ex.getMessage());
-        response.setSuccess(true); // keeping as per your existing logic
+        response.setSuccess(true);
         response.setStatus(HttpStatus.NOT_FOUND);
 
-        logger.info("Returning NOT_FOUND response | {}", response);
+        logger.info("LogKey: {} - Returning NOT_FOUND response", logKey);
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
@@ -81,27 +91,30 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException ex) {
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
 
-        logger.warn("Validation failed for request payload");
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        logger.warn("LogKey: {} - Validation failed | path={}",
+                logKey, request.getRequestURI());
 
         List<ObjectError> allErrors =
                 ex.getBindingResult().getAllErrors();
 
         Map<String, Object> response = new HashMap<>();
 
-        // Collect field-wise validation messages
         allErrors.forEach(objectError -> {
             String message = objectError.getDefaultMessage();
             String field = ((FieldError) objectError).getField();
             response.put(field, message);
 
-            logger.debug("Validation error | field={} message={}",
-                    field, message);
+            logger.debug("LogKey: {} - Validation error | field={} message={}",
+                    logKey, field, message);
         });
 
-        logger.info("Returning BAD_REQUEST for validation errors | errorCount={}",
-                response.size());
+        logger.info("LogKey: {} - Returning BAD_REQUEST | errorCount={}",
+                logKey, response.size());
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -112,9 +125,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BadApiRequestException.class)
     public ResponseEntity<ApiResponseMessage> handleBadApiRequest(
-            BadApiRequestException ex) {
+            BadApiRequestException ex,
+            HttpServletRequest request) {
 
-        logger.warn("Bad API request | message={}", ex.getMessage());
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        logger.warn("LogKey: {} - Bad API request | path={} message={}",
+                logKey, request.getRequestURI(), ex.getMessage());
 
         ApiResponseMessage response =
                 ApiResponseMessage.builder()
@@ -123,7 +140,7 @@ public class GlobalExceptionHandler {
                         .success(false)
                         .build();
 
-        logger.info("Returning BAD_REQUEST response | {}", response);
+        logger.info("LogKey: {} - Returning BAD_REQUEST response", logKey);
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

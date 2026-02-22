@@ -1,7 +1,10 @@
 package com.ecom.salezone.security;
 
 import com.ecom.salezone.dtos.ApiError;
+import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.util.SalezoneConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,91 +33,91 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(SecurityConfig.class);
+
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    /**
-     * Main Spring Security configuration.
-     * - Enables CORS
-     * - Disables CSRF (since using JWT)
-     * - Configures authorization rules
-     * - Adds JWT filter before UsernamePasswordAuthenticationFilter
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        log.info("SecurityConfig - Initializing security filter chain");
+
         http
-                // Enable CORS
                 .cors(Customizer.withDefaults())
-
-                // Disable CSRF because we are using stateless JWT authentication
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // Authorization rules
                 .authorizeHttpRequests(req -> req
-                                .requestMatchers(SalezoneConstants.AUTH_PUBLIC_URLS).permitAll()
-//                      .requestMatchers(SalezoneConstants.AUTH_ADMIN_URLS).hasRole(SalezoneConstants.ADMIN_ROLE)
-//                      .requestMatchers(SalezoneConstants.AUTH_USER_URLS).hasRole(SalezoneConstants.USER_ROLE)
-                                .anyRequest().authenticated()
-                ).oauth2Login(oauth ->
+                        .requestMatchers(SalezoneConstants.AUTH_PUBLIC_URLS).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth ->
                         oauth.successHandler(oAuth2SuccessHandler)
                                 .failureHandler(null)
                 )
                 .logout(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
-                    //error message
-                    e.printStackTrace();
+
+                    // 🔥 Generate logKey here
+                    String logKey = LogKeyGenerator.generateLogKey();
+
+                    log.error("LogKey: {} - Unauthorized access attempt | path={} reason={}",
+                            logKey, request.getRequestURI(), e.getMessage());
+
                     response.setStatus(401);
                     response.setContentType("application/json");
+
                     String message = e.getMessage();
                     String error = (String) request.getAttribute("error");
+
                     if (error != null) {
                         message = error;
                     }
-//                    Map<String, Object> errorMap = Map.of("message", message, "statusCode",404);
+
                     ApiError apiError = new ApiError();
                     apiError.setStatus(HttpStatus.UNAUTHORIZED.value());
                     apiError.setMessage(message);
                     apiError.setTimestamp(OffsetDateTime.now());
                     apiError.setPath(request.getRequestURI());
                     apiError.setError("Unauthorized Access");
+
                     var objectMapper = new ObjectMapper();
                     response.getWriter().write(objectMapper.writeValueAsString(apiError));
                 }))
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
-                // Add JWT filter before Spring's default authentication filter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        log.info("SecurityConfig - Security filter chain configured successfully");
 
         return http.build();
     }
 
-    /**
-     * AuthenticationManager bean required for login authentication.
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
             throws Exception {
+
+        log.info("SecurityConfig - AuthenticationManager bean initialized");
         return configuration.getAuthenticationManager();
     }
 
-    /**
-     * Password encoder using BCrypt hashing algorithm.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
+
+        log.info("SecurityConfig - BCryptPasswordEncoder bean initialized");
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * CORS configuration.
-     * Reads allowed frontend URLs from application properties.
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.front-end-url}") String corsUrls) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        log.info("LogKey: {} - Initializing CORS configuration | allowedOrigins={}",
+                logKey, corsUrls);
 
         String[] urls = corsUrls.trim().split(",");
 
@@ -126,6 +129,8 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
+        log.info("LogKey: {} - CORS configuration completed successfully", logKey);
 
         return source;
     }

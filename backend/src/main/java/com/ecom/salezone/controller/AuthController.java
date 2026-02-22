@@ -137,7 +137,7 @@ public class AuthController {
 
         // use cookie service to attach refresh token in cookie
         cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTtlSeconds(),logKey);
-        cookieService.addNoStoreHeaders(response);
+        cookieService.addNoStoreHeaders(response,logKey);
         log.info("LogKey: {} - Refresh token attached in cookie = {} ", logKey, refreshToken);
 
         // Build response
@@ -237,7 +237,7 @@ public class AuthController {
 
         cookieService.attachRefreshCookie(response, newRefreshToken,
                 (int) jwtService.getRefreshTtlSeconds(),logKey);
-        cookieService.addNoStoreHeaders(response);
+        cookieService.addNoStoreHeaders(response,logKey);
         log.info("LogKey: {} - New Refresh token attached to cookie = {}",logKey,jti);
 
         TokenResponse tokenResponse = new TokenResponse();
@@ -281,8 +281,8 @@ public class AuthController {
             }
         });
 
-        cookieService.clearRefreshCookie(response);
-        cookieService.addNoStoreHeaders(response);
+        cookieService.clearRefreshCookie(response,logKey);
+        cookieService.addNoStoreHeaders(response,logKey);
         log.info("LogKey: {} - Cleared refresh token from cookie ", logKey);
 
         SecurityContextHolder.clearContext();

@@ -31,7 +31,8 @@ import java.util.List;
 @RequestMapping("/salezone/ecom/users")
 public class UserController {
 
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private UserService userService;
@@ -42,84 +43,84 @@ public class UserController {
     @Value("${user.profile.image.path}")
     private String imageUploadPath;
 
-    /**
-     * Get all users with pagination and sorting.
-     */
+    // ================= GET ALL USERS =================
     @GetMapping
     public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
-            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "userName") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "userName") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - GetAllUsers request | page={} size={} sortBy={} sortDir={}",
+        log.info("LogKey: {} - Get all users request received | page={} size={} sortBy={} sortDir={}",
                 logKey, pageNumber, pageSize, sortBy, sortDir);
 
         PageableResponse<UserDto> response =
                 userService.getAllUsers(pageNumber, pageSize, sortBy, sortDir, logKey);
 
-        log.info("LogKey: {} - GetAllUsers completed | resultCount={}",
+        log.info("LogKey: {} - Users fetched successfully | totalElements={}",
                 logKey, response.getContent().size());
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get user by ID.
-     */
+    // ================= GET USER BY ID =================
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable String userId) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - GetUserById request | userId={}", logKey, userId);
+        log.info("LogKey: {} - Get user by ID request received | userId={}",
+                logKey, userId);
 
-        UserDto userDto = userService.getUserById(userId, logKey);
+        UserDto userDto =
+                userService.getUserById(userId, logKey);
 
-        log.info("LogKey: {} - GetUserById completed | userId={}", logKey, userId);
+        log.info("LogKey: {} - User fetched successfully | userId={} payload={}",
+                logKey, userId, userDto);
 
         return ResponseEntity.ok(userDto);
     }
 
-    /**
-     * Get user by email.
-     */
+    // ================= GET USER BY EMAIL =================
     @GetMapping("/email/{email}")
     public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - GetUserByEmail request | email={}", logKey, email);
+        log.info("LogKey: {} - Get user by email request received | email={}",
+                logKey, email);
 
-        UserDto userDto = userService.getUserByEmail(email, logKey);
+        UserDto userDto =
+                userService.getUserByEmail(email, logKey);
 
-        log.info("LogKey: {} - GetUserByEmail completed", logKey);
+        log.info("LogKey: {} - User fetched successfully by email | email={} payload={}",
+                logKey, email, userDto);
 
         return ResponseEntity.ok(userDto);
     }
 
-    /**
-     * Search users using keywords.
-     */
+    // ================= SEARCH USERS =================
     @GetMapping("/search/{keywords}")
-    public ResponseEntity<List<UserDto>> searchUsers(@PathVariable String keywords) {
+    public ResponseEntity<List<UserDto>> searchUsers(
+            @PathVariable String keywords) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - SearchUsers request | keywords={}", logKey, keywords);
+        log.info("LogKey: {} - Search users request received | keywords={}",
+                logKey, keywords);
 
-        List<UserDto> users = userService.searchUsers(keywords, logKey);
+        List<UserDto> users =
+                userService.searchUsers(keywords, logKey);
 
-        log.info("LogKey: {} - SearchUsers completed | resultCount={}", logKey, users.size());
+        log.info("LogKey: {} - User search completed successfully | resultCount={}",
+                logKey, users.size());
 
         return ResponseEntity.ok(users);
     }
 
-    /**
-     * Update user.
-     */
+    // ================= UPDATE USER =================
     @PutMapping("/update/{userId}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable String userId,
@@ -127,41 +128,44 @@ public class UserController {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - UpdateUser request | userId={}", logKey, userId);
+        log.info("LogKey: {} - Update user request received | userId={} payload={}",
+                logKey, userId, userDto);
 
-        UserDto updatedUser = userService.updateUser(userDto, userId, logKey);
+        UserDto updatedUser =
+                userService.updateUser(userDto, userId, logKey);
 
-        log.info("LogKey: {} - UpdateUser completed | userId={}", logKey, userId);
+        log.info("LogKey: {} - User updated successfully | userId={} payload={}",
+                logKey, userId, updatedUser);
 
         return ResponseEntity.ok(updatedUser);
     }
 
-    /**
-     * Delete user by ID.
-     */
+    // ================= DELETE USER =================
     @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<ApiResponseMessage> deleteUser(@PathVariable String userId) {
+    public ResponseEntity<ApiResponseMessage> deleteUser(
+            @PathVariable String userId) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - DeleteUser request | userId={}", logKey, userId);
+        log.warn("LogKey: {} - Delete user request received | userId={}",
+                logKey, userId);
 
         userService.deleteUser(userId, logKey);
 
-        ApiResponseMessage message = ApiResponseMessage.builder()
-                .message("User is deleted Successfully !!")
-                .success(true)
-                .status(HttpStatus.OK)
-                .build();
+        ApiResponseMessage message =
+                ApiResponseMessage.builder()
+                        .message("User is deleted Successfully !!")
+                        .success(true)
+                        .status(HttpStatus.OK)
+                        .build();
 
-        log.info("LogKey: {} - DeleteUser completed | userId={}", logKey, userId);
+        log.info("LogKey: {} - User deleted successfully | userId={}",
+                logKey, userId);
 
         return ResponseEntity.ok(message);
     }
 
-    /**
-     * Upload profile image for user.
-     */
+    // ================= UPLOAD USER IMAGE =================
     @PostMapping("/image/{userId}")
     public ResponseEntity<ImageResponse> uploadUserImage(
             @RequestParam("userImage") MultipartFile image,
@@ -169,30 +173,33 @@ public class UserController {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - UploadUserImage request | userId={} fileName={}",
+        log.info("LogKey: {} - Upload user image request received | userId={} fileName={}",
                 logKey, userId, image.getOriginalFilename());
 
-        String imageName = fileService.uploadFile(image, imageUploadPath, logKey);
+        String imageName =
+                fileService.uploadFile(image, imageUploadPath, logKey);
 
-        UserDto user = userService.getUserById(userId, logKey);
+        UserDto user =
+                userService.getUserById(userId, logKey);
+
         user.setImageName(imageName);
         userService.updateUser(user, userId, logKey);
 
-        ImageResponse imageResponse = ImageResponse.builder()
-                .imageName(imageName)
-                .success(true)
-                .message("Image uploaded successfully")
-                .status(HttpStatus.CREATED)
-                .build();
+        ImageResponse imageResponse =
+                ImageResponse.builder()
+                        .imageName(imageName)
+                        .success(true)
+                        .message("Image uploaded successfully")
+                        .status(HttpStatus.CREATED)
+                        .build();
 
-        log.info("LogKey: {} - UploadUserImage completed | userId={}", logKey, userId);
+        log.info("LogKey: {} - User image uploaded successfully | userId={} imageName={}",
+                logKey, userId, imageName);
 
         return new ResponseEntity<>(imageResponse, HttpStatus.CREATED);
     }
 
-    /**
-     * Serve user profile image.
-     */
+    // ================= SERVE USER IMAGE =================
     @GetMapping("/image/{userId}")
     public void serveUserImage(
             @PathVariable String userId,
@@ -200,9 +207,11 @@ public class UserController {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
-        log.info("LogKey: {} - ServeUserImage request | userId={}", logKey, userId);
+        log.info("LogKey: {} - Serve user image request received | userId={}",
+                logKey, userId);
 
-        UserDto user = userService.getUserById(userId, logKey);
+        UserDto user =
+                userService.getUserById(userId, logKey);
 
         InputStream resource =
                 fileService.getResource(imageUploadPath, user.getImageName(), logKey);
@@ -210,6 +219,7 @@ public class UserController {
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
         StreamUtils.copy(resource, response.getOutputStream());
 
-        log.info("LogKey: {} - ServeUserImage completed | userId={}", logKey, userId);
+        log.info("LogKey: {} - User image served successfully | userId={} imageName={}",
+                logKey, userId, user.getImageName());
     }
 }

@@ -17,113 +17,108 @@ import java.util.List;
 @RequestMapping("/salezone/ecom/orders")
 public class OrderController {
 
-    // Controller-level logger
-    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private OrderService orderService;
 
-    /**
-     * Create new order
-     * URL: POST /salezone/ecom/orders
-     */
+    // ================= CREATE ORDER =================
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Create Order | payload={}",logkey, request);
+        log.info("LogKey: {} - Create order request received | payload={}",
+                logkey, request);
 
-        OrderDto order = orderService.createOrder(request, logkey);
+        OrderDto order =
+                orderService.createOrder(request, logkey);
 
-        log.info("{} API RESPONSE: Order Created | response={}",logkey, order);
+        log.info("LogKey: {} - Order created successfully | orderId={} payload={}",
+                logkey, order.getOrderId(), order);
 
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
-    /**
-     * Remove order by orderId
-     * URL: DELETE /salezone/ecom/orders/{orderId}
-     */
-//    @PreAuthorize("hasRole('ADMIN')")
+    // ================= REMOVE ORDER =================
     @DeleteMapping("/{orderId}")
     public ResponseEntity<ApiResponseMessage> removeOrder(
             @PathVariable String orderId) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.warn("{} API CALL: Remove Order | orderId={}",logkey, orderId);
+        log.warn("LogKey: {} - Remove order request received | orderId={}",
+                logkey, orderId);
 
         orderService.removeOrder(orderId, logkey);
 
-        ApiResponseMessage responseMessage = ApiResponseMessage.builder()
-                .status(HttpStatus.OK)
-                .message("order is removed !!")
-                .success(true)
-                .build();
+        ApiResponseMessage responseMessage =
+                ApiResponseMessage.builder()
+                        .status(HttpStatus.OK)
+                        .message("Order is removed !!")
+                        .success(true)
+                        .build();
 
-        log.info("{} API RESPONSE: Order Removed | orderId={}",logkey, orderId);
+        log.info("LogKey: {} - Order removed successfully | orderId={}",
+                logkey, orderId);
 
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 
-    /**
-     * Get all orders of a specific user
-     * URL: GET /salezone/ecom/orders/users/{userId}
-     */
+    // ================= GET ORDERS OF USER =================
     @GetMapping("/users/{userId}")
     public ResponseEntity<List<OrderDto>> getOrdersOfUser(
             @PathVariable String userId) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Get Orders Of User | userId={}",logkey, userId);
+        log.info("LogKey: {} - Get orders of user request received | userId={}",
+                logkey, userId);
 
-        List<OrderDto> ordersOfUser = orderService.getOrdersOfUser(userId, logkey);
+        List<OrderDto> ordersOfUser =
+                orderService.getOrdersOfUser(userId, logkey);
 
-        log.info("{} API RESPONSE: Orders Fetched For User | userId={} count={}",
+        log.info("LogKey: {} - Orders fetched successfully for user | userId={} count={}",
                 logkey, userId, ordersOfUser.size());
 
         return new ResponseEntity<>(ordersOfUser, HttpStatus.OK);
     }
 
-    /**
-     * Get all orders with pagination and sorting
-     * URL: GET /salezone/ecom/orders
-     */
+    // ================= GET ALL ORDERS (PAGINATED) =================
     @GetMapping
     public ResponseEntity<PageableResponse<OrderDto>> getOrders(
-            @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "orderedDate", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "orderedDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Get Orders (Paginated) | page={} size={} sortBy={} sortDir={}",
+        log.info("LogKey: {} - Get orders request received | page={} size={} sortBy={} sortDir={}",
                 logkey, pageNumber, pageSize, sortBy, sortDir);
 
         PageableResponse<OrderDto> orders =
                 orderService.getOrders(pageNumber, pageSize, sortBy, sortDir, logkey);
 
-        log.info("{} API RESPONSE: Orders Fetched | count={}",
+        log.info("LogKey: {} - Orders fetched successfully | totalElements={}",
                 logkey, orders.getContent().size());
 
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
 
-    /**
-     * Update order details
-     * URL: PUT /salezone/ecom/orders/{orderId}
-     */
+    // ================= UPDATE ORDER =================
     @PutMapping("/{orderId}")
     public ResponseEntity<OrderDto> updateOrder(
-            @PathVariable("orderId") String orderId,
+            @PathVariable String orderId,
             @RequestBody OrderUpdateRequest request) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Update Order | orderId={} payload={}",logkey, orderId, request);
+        log.info("LogKey: {} - Update order request received | orderId={} payload={}",
+                logkey, orderId, request);
 
-        OrderDto dto = orderService.updateOrder(orderId, request, logkey);
+        OrderDto dto =
+                orderService.updateOrder(orderId, request, logkey);
 
-        log.info("{} API RESPONSE: Order Updated | orderId={}",logkey, orderId);
+        log.info("LogKey: {} - Order updated successfully | orderId={} payload={}",
+                logkey, orderId, dto);
 
         return ResponseEntity.ok(dto);
     }

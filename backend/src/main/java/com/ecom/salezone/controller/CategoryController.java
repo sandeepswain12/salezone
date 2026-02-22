@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:5173/")
 public class CategoryController {
 
-    // Logger for controller-level request tracing
     private static final Logger log =
             LoggerFactory.getLogger(CategoryController.class);
 
@@ -30,65 +29,53 @@ public class CategoryController {
     @Autowired
     private ProductService productService;
 
-    /**
-     * Create new category
-     * URL: POST /salezone/ecom/categories/create
-     */
+    // ================= CREATE CATEGORY =================
     @PostMapping("/create")
     public ResponseEntity<CategoryDto> createCategory(
             @Valid @RequestBody CategoryDto categoryDto) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Create category | categoryRequest={} ",
+        log.info("LogKey: {} - Create category request received | payload={}",
                 logkey, categoryDto);
 
         CategoryDto createdCategory =
-                categoryService.create(categoryDto,logkey);
+                categoryService.create(categoryDto, logkey);
 
-        log.info("{} Category created successfully | categoryResponse={}",
+        log.info("LogKey: {} - Category created successfully | payload={}",
                 logkey, createdCategory);
 
-        return new ResponseEntity<>(
-                createdCategory,
-                HttpStatus.CREATED
-        );
+        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
 
-    /**
-     * Update category
-     * URL: PUT /salezone/ecom/categories/update/{categoryId}
-     */
+    // ================= UPDATE CATEGORY =================
     @PutMapping("/update/{categoryId}")
     public ResponseEntity<CategoryDto> updateCategory(
             @PathVariable String categoryId,
             @RequestBody CategoryDto categoryDto) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Update category | categoryId={} categoryRequest = {}",logkey, categoryId , categoryDto);
+        log.info("LogKey: {} - Update category request received | categoryId={} payload={}",
+                logkey, categoryId, categoryDto);
 
         CategoryDto updatedCategory =
                 categoryService.update(categoryDto, categoryId, logkey);
 
-        log.info("{} Category updated successfully | categoryId={} categoryResponse = {}",logkey, categoryId, updatedCategory);
+        log.info("LogKey: {} - Category updated successfully | categoryId={} payload={}",
+                logkey, categoryId, updatedCategory);
 
-        return new ResponseEntity<>(
-                updatedCategory,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
     }
 
-    /**
-     * Delete category
-     * URL: DELETE /salezone/ecom/categories/delete/{categoryId}
-     */
+    // ================= DELETE CATEGORY =================
     @DeleteMapping("/delete/{categoryId}")
     public ResponseEntity<ApiResponseMessage> deleteCategory(
             @PathVariable String categoryId) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Delete category | categoryId={}",logkey, categoryId);
+        log.warn("LogKey: {} - Delete category request received | categoryId={}",
+                logkey, categoryId);
 
-        categoryService.delete(categoryId,logkey);
+        categoryService.delete(categoryId, logkey);
 
         ApiResponseMessage responseMessage =
                 ApiResponseMessage.builder()
@@ -97,142 +84,114 @@ public class CategoryController {
                         .success(true)
                         .build();
 
-        log.info("{} Category deleted successfully | categoryId={}",logkey, categoryId);
+        log.info("LogKey: {} - Category deleted successfully | categoryId={}",
+                logkey, categoryId);
 
-        return new ResponseEntity<>(
-                responseMessage,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 
-    /**
-     * Get all categories
-     * URL: GET /salezone/ecom/categories
-     */
+    // ================= GET ALL CATEGORIES =================
     @GetMapping
     public ResponseEntity<PageableResponse<CategoryDto>> getAll(
-            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
     ) throws InterruptedException {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Get all categories | page={} size={}",
-                logkey, pageNumber, pageSize);
+        log.info("LogKey: {} - Get all categories request received | page={} size={} sortBy={} sortDir={}",
+                logkey, pageNumber, pageSize, sortBy, sortDir);
 
-        Thread.sleep(1000); // existing logic (unchanged)
+        Thread.sleep(1000); // existing logic unchanged
 
         PageableResponse<CategoryDto> response =
                 categoryService.getAll(pageNumber, pageSize, sortBy, sortDir, logkey);
 
-        log.info("{} Categories fetched successfully | count={}",
+        log.info("LogKey: {} - Categories fetched successfully | totalElements={}",
                 logkey, response.getContent().size());
 
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    /**
-     * Get single category
-     * URL: GET /salezone/ecom/categories/{categoryId}
-     */
+    // ================= GET SINGLE CATEGORY =================
     @GetMapping("/{categoryId}")
     public ResponseEntity<CategoryDto> getSingle(
             @PathVariable String categoryId) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Get category | categoryId={}",logkey, categoryId);
+        log.info("LogKey: {} - Get category request received | categoryId={}",
+                logkey, categoryId);
 
         CategoryDto categoryDto =
-                categoryService.get(categoryId,logkey);
+                categoryService.get(categoryId, logkey);
 
-        log.info("{} Category fetched successfully | categoryId={}",logkey, categoryId);
+        log.info("LogKey: {} - Category fetched successfully | categoryId={} payload={}",
+                logkey, categoryId, categoryDto);
 
         return ResponseEntity.ok(categoryDto);
     }
 
-    /**
-     * Create product under a category
-     * URL: POST /salezone/ecom/categories/{categoryId}/products
-     */
+    // ================= CREATE PRODUCT UNDER CATEGORY =================
     @PostMapping("/{categoryId}/products")
     public ResponseEntity<ProductDto> createProductWithCategory(
             @PathVariable String categoryId,
             @RequestBody ProductDto dto) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Create product with category | categoryId={}",
-                logkey, categoryId);
+        log.info("LogKey: {} - Create product under category request received | categoryId={} payload={}",
+                logkey, categoryId, dto);
 
         ProductDto productWithCategory =
                 productService.createWithCategory(dto, categoryId, logkey);
 
-        log.info("{} Product created under category | categoryId={}",
-                logkey, categoryId);
+        log.info("LogKey: {} - Product created under category successfully | categoryId={} productId={}",
+                logkey, categoryId, productWithCategory.getProductId());
 
-        return new ResponseEntity<>(
-                productWithCategory,
-                HttpStatus.CREATED
-        );
+        return new ResponseEntity<>(productWithCategory, HttpStatus.CREATED);
     }
 
-    /**
-     * Update category of a product
-     * URL: PUT /salezone/ecom/categories/{categoryId}/products/{productId}
-     */
+    // ================= UPDATE PRODUCT CATEGORY =================
     @PutMapping("/{categoryId}/products/{productId}")
     public ResponseEntity<ProductDto> updateCategoryOfProduct(
             @PathVariable String categoryId,
             @PathVariable String productId) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Update product category | productId={} categoryId={}",
+        log.info("LogKey: {} - Update product category request received | productId={} categoryId={}",
                 logkey, productId, categoryId);
 
         ProductDto productDto =
-                productService.updateCategory(productId, categoryId,logkey);
+                productService.updateCategory(productId, categoryId, logkey);
 
-        log.info("{} Product category updated successfully | productId={}",
-                logkey, productId);
+        log.info("LogKey: {} - Product category updated successfully | productId={} categoryId={}",
+                logkey, productId, categoryId);
 
-        return new ResponseEntity<>(
-                productDto,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(productDto, HttpStatus.OK);
     }
 
-    /**
-     * Get all products of a category
-     * URL: GET /salezone/ecom/categories/{categoryId}/products
-     */
+    // ================= GET PRODUCTS OF CATEGORY =================
     @GetMapping("/{categoryId}/products")
     public ResponseEntity<PageableResponse<ProductDto>> getProductsOfCategory(
             @PathVariable String categoryId,
-            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "title") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
     ) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("{} API CALL: Get products of category | categoryId={} page={} size={}",
-                logkey, categoryId, pageNumber, pageSize);
+        log.info("LogKey: {} - Get products of category request received | categoryId={} page={} size={} sortBy={} sortDir={}",
+                logkey, categoryId, pageNumber, pageSize, sortBy, sortDir);
 
         PageableResponse<ProductDto> response =
                 productService.getAllOfCategory(
-                        categoryId, pageNumber, pageSize, sortBy, sortDir,logkey
+                        categoryId, pageNumber, pageSize, sortBy, sortDir, logkey
                 );
 
-        log.info("{} Products fetched successfully | categoryId={} count={}",
+        log.info("LogKey: {} - Products fetched successfully for category | categoryId={} totalElements={}",
                 logkey, categoryId, response.getContent().size());
 
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
-
