@@ -1,16 +1,19 @@
 package com.ecom.salezone.services.impl;
 
 import com.ecom.salezone.dtos.PageableResponse;
+import com.ecom.salezone.dtos.RoleDto;
 import com.ecom.salezone.dtos.SignupRequestDto;
 import com.ecom.salezone.dtos.UserDto;
 import com.ecom.salezone.enities.Role;
 import com.ecom.salezone.enities.User;
 import com.ecom.salezone.enums.Provider;
 import com.ecom.salezone.exceptions.ResourceNotFoundException;
+import com.ecom.salezone.repository.RefreshTokenRepository;
 import com.ecom.salezone.util.Helper;
 import com.ecom.salezone.repository.RoleRepository;
 import com.ecom.salezone.repository.UserRepository;
 import com.ecom.salezone.services.UserService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +25,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+//@Transactional
 public class UserServiceImpl implements UserService {
 
     private static final Logger log =
@@ -43,6 +49,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Value("${user.profile.image.path}")
     private String imagePath;
@@ -98,8 +107,29 @@ public class UserServiceImpl implements UserService {
         exUser.setUserName(updatedUserDto.getUserName());
         exUser.setEmail(updatedUserDto.getEmail());
 
-        if (!updatedUserDto.getPassword().equalsIgnoreCase(exUser.getPassword())) {
+        if (updatedUserDto.getPassword() != null &&
+                !updatedUserDto.getPassword().isBlank() &&
+                !passwordEncoder.matches(updatedUserDto.getPassword(), exUser.getPassword())) {
+
             exUser.setPassword(passwordEncoder.encode(updatedUserDto.getPassword()));
+        }
+
+        // ROLE UPDATE SECTION
+        if (updatedUserDto.getRoles() != null &&
+                !updatedUserDto.getRoles().isEmpty()) {
+
+            Set<Role> updatedRoles = new HashSet<>();
+
+            for (RoleDto roleDto : updatedUserDto.getRoles()) {
+
+                Role role = roleRepository.findById(roleDto.getRoleId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Role not found: " + roleDto.getRoleId()));
+
+                updatedRoles.add(role);
+            }
+
+            exUser.setRoles(updatedRoles);
         }
 
         exUser.setAbout(updatedUserDto.getAbout());
@@ -125,6 +155,10 @@ public class UserServiceImpl implements UserService {
                     log.error("LogKey: {} - User not found for delete | userId={}", logKey, userId);
                     return new ResourceNotFoundException("User not found......!!!");
                 });
+
+        //Delete refresh tokens first
+//        refreshTokenRepository.deleteByUser(user);
+//        log.info("LogKey: {} - Refresh tokens deleted for user | userId={}", logKey, userId);
 
         String fullPath = imagePath + user.getImageName();
 

@@ -144,4 +144,35 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponseMessage> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+
+        logger.error("LogKey: {} - Data integrity violation | path={} message={}",
+                logKey, request.getRequestURI(), ex.getMessage());
+
+        String message = "Database constraint violation";
+
+        // 🔥 Detect duplicate email specifically
+        if (ex.getRootCause() != null &&
+                ex.getRootCause().getMessage().contains("users.UK")) {
+
+            message = "Email already exists. Please use another email.";
+        }
+
+        ApiResponseMessage response =
+                ApiResponseMessage.builder()
+                        .message(message)
+                        .status(HttpStatus.BAD_REQUEST)
+                        .success(false)
+                        .build();
+
+        logger.info("LogKey: {} - Returning BAD_REQUEST response for DB violation", logKey);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }

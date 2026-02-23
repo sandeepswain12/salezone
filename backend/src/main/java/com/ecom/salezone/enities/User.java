@@ -111,6 +111,7 @@ public class User implements UserDetails {
     /**
      * User roles (ADMIN, USER, SELLER, etc.)
      */
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
@@ -124,6 +125,11 @@ public class User implements UserDetails {
      */
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Cart cart;
+
+    @OneToMany(mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<RefreshToken> refreshTokens;
 
     /**
      * Automatically sets createdAt before insert
@@ -291,7 +297,7 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String userId, String userName, String email, String password, String gender, String about, String imageName, String phoneNumber, Boolean isActive, Provider provider, String providerId, Boolean emailVerified, LocalDateTime createdAt, LocalDateTime updatedAt, List<Order> orders, Set<Role> roles, Cart cart) {
+    public User(String userId, String userName, String email, String password, String gender, String about, String imageName, String phoneNumber, Boolean isActive, Provider provider, String providerId, Boolean emailVerified, LocalDateTime createdAt, LocalDateTime updatedAt, List<Order> orders, Set<Role> roles, Cart cart, List<RefreshToken> refreshTokens) {
         this.userId = userId;
         this.userName = userName;
         this.email = email;
@@ -309,6 +315,7 @@ public class User implements UserDetails {
         this.orders = orders;
         this.roles = roles;
         this.cart = cart;
+        this.refreshTokens = refreshTokens;
     }
 
     @Override

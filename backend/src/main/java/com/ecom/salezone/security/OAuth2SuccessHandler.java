@@ -2,9 +2,12 @@ package com.ecom.salezone.security;
 
 
 import com.ecom.salezone.enities.RefreshToken;
+import com.ecom.salezone.enities.Role;
 import com.ecom.salezone.enities.User;
 import com.ecom.salezone.enums.Provider;
+import com.ecom.salezone.exceptions.ResourceNotFoundException;
 import com.ecom.salezone.repository.RefreshTokenRepository;
+import com.ecom.salezone.repository.RoleRepository;
 import com.ecom.salezone.repository.UserRepository;
 import com.ecom.salezone.util.LogKeyGenerator;
 import jakarta.servlet.ServletException;
@@ -33,6 +36,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieService cookieService;
+    private final RoleRepository roleRepository;
 
     @Value("${app.auth.frontend.success-redirect}")
     private String frontEndSuccessUrl;
@@ -74,6 +78,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .provider(Provider.GOOGLE)
                         .providerId(googleId)
                         .build();
+
+                Role roleUser = roleRepository.findById("ROLE_USER")
+                        .orElseThrow(() -> {
+                            log.error("LogKey: {} - ROLE_USER not found", logKey);
+                            return new ResourceNotFoundException("Role USER not found");
+                        });
+
+                newUser.getRoles().add(roleUser);
+                log.info("LogKey: {} - User role set | role={}", logKey, roleUser);
 
 
                 user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
