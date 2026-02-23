@@ -1,34 +1,21 @@
 import axios from "axios";
-import authService from "./authService";
 
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:8089/salezone/ecom",
-  timeout: 10000,
-  headers: {
-    "Content-Type": "application/json",
-  },
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true, // important for refresh cookie
 });
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const authHeader = authService.getAuthHeader(); // "Basic xxx"
+let accessToken = null;
 
-    if (authHeader) {
-      config.headers.Authorization = authHeader;
-      console.log("Sending Authorization:", authHeader);
-    }
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
 
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error("API Error:", error.response || error.message);
-    return Promise.reject(error);
+api.interceptors.request.use((config) => {
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
-);
+  return config;
+});
 
-export default axiosInstance;
+export default api;

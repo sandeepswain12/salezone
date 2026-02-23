@@ -1,34 +1,35 @@
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import HeroCarousel from "./components/HeroCarousel";
-import ProductGrid from "./components/ProductGrid";
-import ProductDetails from "./components/ProductDetails";
-import CategorySection from "./components/CategorySection";
-import Footer from "./components/Footer";
+import Navbar from "./components/layout/Navbar";
+import HeroCarousel from "./components/carousel/HeroCarousel";
+import ProductGrid from "./components/product/ProductGrid";
+import ProductDetails from "./components/product/ProductDetails";
+import CategorySection from "./components/category/CategorySection";
+import Footer from "./components/layout/Footer";
 import { useTheme } from "./context/ThemeContext";
-import ScrollToTop from "./components/ScrollToTop";
-import Cart from "./components/Cart";
-import Checkout from "./components/Checkout";
-import Auth from "./components/Auth";
-import CategoryProducts from "./components/CategoryProducts";
-import SearchResults from "./components/SearchResults";
+import ScrollToTop from "./components/layout/ScrollToTop";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Auth from "./pages/Auth";
+import CategoryProducts from "./pages/CategoryProducts";
+import SearchResults from "./pages/SearchResults";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AuthSuccess from "./pages/AuthSuccess";
+import AuthFailure from "./pages/AuthFailure";
 
 function App() {
   const { theme } = useTheme();
 
   return (
     <div
-      className={`min-h-screen w-full
-        ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}
-      `}
+      className={`min-h-screen w-full ${
+        theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+      }`}
     >
       <Navbar />
       <ScrollToTop />
 
-      {/* Offset for fixed navbar */}
       <div className="pt-16">
         <Routes>
-          {/* HOME */}
           <Route
             path="/"
             element={
@@ -40,24 +41,36 @@ function App() {
             }
           />
 
-          {/* PRODUCT */}
           <Route path="/product/:id" element={<ProductDetails />} />
-
-          {/* CATEGORY (READY FOR NEXT STEP) */}
           <Route path="/categories" element={<CategorySection />} />
-          {/* later */}
-          {/* <Route path="/category/:categoryId" element={<CategoryProducts />} /> */}
-
-          {/* CART / CHECKOUT / AUTH */}
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/auth" element={<Auth />} />
           <Route path="/category/:categoryId" element={<CategoryProducts />} />
           <Route path="/search/:keyword" element={<SearchResults />} />
-        </Routes>
 
-        <Footer />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/success" element={<AuthSuccess />} />
+          <Route path="/auth/failure" element={<AuthFailure />} />
+        </Routes>
       </div>
+
+      <Footer />
     </div>
   );
 }

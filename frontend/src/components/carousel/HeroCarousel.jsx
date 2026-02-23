@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
 
 const slides = [
   {

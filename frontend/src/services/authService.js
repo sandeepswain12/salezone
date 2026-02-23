@@ -1,61 +1,24 @@
-const BASE_URL = "http://localhost:8089/salezone/ecom/auth";
+import api from "./api";
 
-class AuthService {
-  // 🔓 SIGNUP
-  async signup(signupData) {
-    const res = await fetch(`${BASE_URL}/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(signupData),
-    });
+const authService = {
+  signup: async (data) => {
+    const res = await api.post("/auth/signup", data);
+    return res.data;
+  },
 
-    if (!res.ok) {
-      throw new Error("Signup failed");
-    }
+  login: async (email, password) => {
+    const res = await api.post("/auth/login", { email, password });
+    return res.data;
+  },
 
-    return res.json();
-  }
+  refresh: async () => {
+    const res = await api.post("/auth/refresh");
+    return res.data;
+  },
 
-  // 🔐 LOGIN (Basic Auth)
-  async login(email, password) {
-    const authHeader = "Basic " + btoa(`${email}:${password}`);
+  logout: async () => {
+    await api.post("/auth/logout");
+  },
+};
 
-    const res = await fetch(`${BASE_URL}/login`, {
-      method: "GET",
-      headers: {
-        Authorization: authHeader,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error("Invalid credentials");
-    }
-
-    const data = await res.text(); // or json later
-
-    // store auth
-    localStorage.setItem("basicAuth", authHeader);
-
-    return data;
-  }
-
-  // 🚪 LOGOUT
-  logout() {
-    localStorage.removeItem("basicAuth");
-    localStorage.removeItem("user");
-  }
-
-  // ✅ CHECK LOGIN
-  isLoggedIn() {
-    return !!localStorage.getItem("basicAuth");
-  }
-
-  // 🔑 GET AUTH HEADER
-  getAuthHeader() {
-    return localStorage.getItem("basicAuth");
-  }
-}
-
-export default new AuthService();
+export default authService;

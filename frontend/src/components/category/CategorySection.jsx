@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCategories } from "../services/CategoryService";
-import { useTheme } from "../context/ThemeContext";
+import { getCategories } from "../../services/CategoryService";
+import { useTheme } from "../../context/ThemeContext";
 import { Book, Laptop, Shirt, Home, Dumbbell, Grid } from "lucide-react";
 
 const categoryMeta = {
@@ -17,13 +17,25 @@ const DefaultIcon = Grid;
 const CategorySection = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    getCategories({ pageSize: 5 })
-      .then((data) => setCategories(data.content || []))
-      .finally(() => setLoading(false));
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategories({ pageSize: 5 });
+        setCategories(data?.content || []);
+      } catch (err) {
+        console.error("Failed to load categories", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   return (
@@ -31,36 +43,38 @@ const CategorySection = () => {
       <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center sm:text-left">
         Shop by Category
       </h2>
-      {/* SKELETON */}
+
+      {error && (
+        <div className="text-center text-red-500">
+          Failed to load categories.
+        </div>
+      )}
+
       {loading && (
         <div className="flex gap-4 overflow-x-auto sm:grid sm:grid-cols-3 md:grid-cols-5 sm:overflow-visible">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className={`min-w-[140px] sm:min-w-0 rounded-xl p-4
-          ${theme === "dark" ? "bg-[#0f0f0f]" : "bg-white shadow-sm"}
-        `}
+              className={`min-w-[140px] sm:min-w-0 rounded-xl p-4 ${
+                theme === "dark" ? "bg-[#0f0f0f]" : "bg-white shadow-sm"
+              }`}
             >
-              {/* ICON SKELETON */}
               <div
-                className={`w-12 h-12 mx-auto rounded-xl mb-3 animate-pulse
-            ${theme === "dark" ? "bg-[#1f1f1f]" : "bg-gray-200"}
-          `}
+                className={`w-12 h-12 mx-auto rounded-xl mb-3 animate-pulse ${
+                  theme === "dark" ? "bg-[#1f1f1f]" : "bg-gray-200"
+                }`}
               />
-
-              {/* TEXT SKELETON */}
               <div
-                className={`h-3 w-3/4 mx-auto rounded animate-pulse
-            ${theme === "dark" ? "bg-[#1f1f1f]" : "bg-gray-200"}
-          `}
+                className={`h-3 w-3/4 mx-auto rounded animate-pulse ${
+                  theme === "dark" ? "bg-[#1f1f1f]" : "bg-gray-200"
+                }`}
               />
             </div>
           ))}
         </div>
       )}
 
-      {/* CATEGORY LIST */}
-      {!loading && (
+      {!loading && !error && (
         <div className="flex gap-4 overflow-x-auto sm:grid sm:grid-cols-3 md:grid-cols-5 sm:overflow-visible">
           {categories.map((category) => {
             const Icon = categoryMeta[category.title]?.icon || DefaultIcon;
@@ -72,25 +86,18 @@ const CategorySection = () => {
               <div
                 key={category.categoryId}
                 onClick={() => navigate(`/category/${category.categoryId}`)}
-                className={`min-w-[140px] sm:min-w-0 cursor-pointer
-                  rounded-xl p-4 flex flex-col items-center justify-center
-                  transition
-                  ${
-                    theme === "dark"
-                      ? "bg-[#0f0f0f] hover:bg-[#151515]"
-                      : "bg-white shadow-sm hover:shadow-lg"
-                  }
-                `}
+                className={`min-w-[140px] sm:min-w-0 cursor-pointer rounded-xl p-4 flex flex-col items-center justify-center transition ${
+                  theme === "dark"
+                    ? "bg-[#0f0f0f] hover:bg-[#151515]"
+                    : "bg-white shadow-sm hover:shadow-lg"
+                }`}
               >
-                {/* ICON */}
                 <div
-                  className={`w-12 h-12 rounded-xl mb-3 flex items-center justify-center
-                    bg-gradient-to-br ${gradient} text-white`}
+                  className={`w-12 h-12 rounded-xl mb-3 flex items-center justify-center bg-gradient-to-br ${gradient} text-white`}
                 >
                   <Icon size={22} />
                 </div>
 
-                {/* TITLE */}
                 <h3 className="text-sm font-semibold text-center">
                   {category.title}
                 </h3>

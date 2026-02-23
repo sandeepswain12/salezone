@@ -1,44 +1,50 @@
-import axiosInstance from "./axiosInstance";
+import api from "./api";
 
+// ✅ Get all products
 export const getProducts = async ({
-  pageNumber = 0, // frontend (0-based)
-  pageSize = 4,
+  pageNumber = 0,
+  pageSize = 10,
   sortBy = "title",
   sortDir = "asc",
-}) => {
-  const backendPage = pageNumber; // 🔥 backend is 1-based
-
-  const response = await axiosInstance.get("/products", {
+} = {}) => {
+  const response = await api.get("/products", {
     params: {
-      pageNumber: backendPage,
+      pageNumber,
       pageSize,
       sortBy,
       sortDir,
     },
   });
 
-  return response.data; // axios auto-parses JSON
-};
-
-export const getProductById = async (productId) => {
-  const response = await axiosInstance.get(`/products/${productId}`);
   return response.data;
 };
 
+// ✅ Get single product by ID
+export const getProductById = async (productId) => {
+  if (!productId) throw new Error("Invalid product ID");
+
+  const response = await api.get(`/products/${productId}`);
+  return response.data;
+};
+
+// ✅ Search products (FIXED for your backend)
 export const searchProducts = async ({
   keyword,
   pageNumber = 0,
-  pageSize = 8,
+  pageSize = 10,
+  sortBy = "title",
+  sortDir = "asc",
 }) => {
-  const response = await axiosInstance.get(
-    `/products/search/${encodeURIComponent(keyword)}`,
-    {
-      params: {
-        pageNumber,
-        pageSize,
-      },
-    }
-  );
+  if (!keyword) throw new Error("Keyword required");
+
+  const response = await api.get(`/products/search/${keyword}`, {
+    params: {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDir,
+    },
+  });
 
   return response.data;
 };
