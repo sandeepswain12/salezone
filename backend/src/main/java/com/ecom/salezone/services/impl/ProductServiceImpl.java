@@ -13,12 +13,17 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
@@ -34,6 +39,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Value("${product.image.path}")
+    private String imagePath;
 
     // ================= CREATE PRODUCT =================
     @Override
@@ -93,6 +101,17 @@ public class ProductServiceImpl implements ProductService {
                     return new ResourceNotFoundException("Product not found of given Id !!");
                 });
         log.info("LogKey: {} - Fetched product form DB | product = {}", logkey, product);
+
+        String fullPath = imagePath + product.getProductImageName();
+
+        try {
+            Files.delete(Paths.get(fullPath));
+            log.info("LogKey: {} - Product image deleted | path={}", logkey, fullPath);
+        } catch (NoSuchFileException ex) {
+            log.warn("LogKey: {} - Product image not found | path={}", logkey, fullPath);
+        } catch (IOException e) {
+            log.error("LogKey: {} - Error deleting product image | path={}", logkey, fullPath, e);
+        }
 
         productRepository.delete(product);
         log.info("LogKey: {} - Product deleted from DB | product = {}", logkey, product);
