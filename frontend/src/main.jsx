@@ -11,15 +11,17 @@ import "./index.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <ThemeProvider>
-      <AuthProvider>
-        <CartProvider>
-          <AuthGate>
-            <ToastProvider>
+      <ToastProvider>
+        {" "}
+        {/* 🔥 must be above */}
+        <AuthProvider>
+          <CartProvider>
+            <AuthGate>
               <App />
-            </ToastProvider>
-          </AuthGate>
-        </CartProvider>
-      </AuthProvider>
+            </AuthGate>
+          </CartProvider>
+        </AuthProvider>
+      </ToastProvider>
     </ThemeProvider>
   </BrowserRouter>
 );

@@ -49,7 +49,7 @@ const ProductCard = ({ product }) => {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          addToCart(product);
+          addToCart(product.productId);
         }}
         className="w-full flex items-center justify-center gap-2
           py-2.5 rounded-lg text-xs font-medium

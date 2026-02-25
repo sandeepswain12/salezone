@@ -1,75 +1,87 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import cartService from "../services/cartService";
+import { useAuth } from "./AuthContext";
+import { useToast } from "./ToastContext";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem("salezone_cart");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { user, isAuthenticated } = useAuth();
+  const { showToast } = useToast();
 
-  useEffect(() => {
-    localStorage.setItem("salezone_cart", JSON.stringify(cart));
-  }, [cart]);
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const addToCart = (product) => {
-    setCart((prev) => {
-      const exists = prev.find((item) => item.productId === product.productId);
+  const fetchCart = async () => {
+    if (!isAuthenticated || !user?.userId) return;
 
-      if (exists) {
-        return prev.map((item) =>
-          item.productId === product.productId
-            ? { ...item, qty: item.qty + 1 }
-            : item
-        );
-      }
-
-      return [...prev, { ...product, qty: 1 }];
-    });
+    try {
+      setLoading(true);
+      const data = await cartService.getCart(user.userId);
+      setCartItems(data.items ?? []);
+    } catch (error) {
+      console.error("Cart fetch failed:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeFromCart = (productId) => {
-    setCart((prev) => prev.filter((item) => item.productId !== productId));
+  const addToCart = async (productId) => {
+    if (!user?.userId) {
+      showToast("Please login first", "error");
+      return;
+    }
+
+    try {
+      await cartService.addToCart(user.userId, productId, 1);
+      showToast("Added to cart 🛒", "success");
+      fetchCart();
+    } catch (error) {
+      showToast("Failed to add to cart", "error");
+    }
   };
 
-  const increaseQty = (productId) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.productId === productId ? { ...item, qty: item.qty + 1 } : item
-      )
-    );
+  const removeItem = async (cartItemId) => {
+    try {
+      await cartService.removeCartItem(user.userId, cartItemId);
+      fetchCart();
+    } catch (error) {
+      showToast("Failed to remove item", "error");
+    }
   };
 
-  const decreaseQty = (productId) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.productId === productId && item.qty > 1
-          ? { ...item, qty: item.qty - 1 }
-          : item
-      )
-    );
+  const updateQuantity = async (cartItemId, quantity) => {
+    try {
+      await cartService.updateCartItem(user.userId, cartItemId, quantity);
+      fetchCart();
+    } catch (error) {
+      showToast("Failed to update quantity", "error");
+    }
   };
 
-  const clearCart = () => setCart([]);
-
-  const subtotal = cart.reduce(
-    (total, item) => total + item.discountedPrice * item.qty,
+  const totalAmount = cartItems.reduce(
+    (total, item) => total + item.totalPrice,
     0
   );
 
-  const cartCount = cart.reduce((count, item) => count + item.qty, 0);
+  const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.userId) {
+      fetchCart();
+    }
+  }, [isAuthenticated, user]);
 
   return (
     <CartContext.Provider
       value={{
-        cart,
+        cartItems,
         addToCart,
-        removeFromCart,
-        increaseQty,
-        decreaseQty,
-        clearCart,
-        subtotal,
+        removeItem,
+        updateQuantity,
+        totalAmount,
         cartCount,
+        loading,
       }}
     >
       {children}

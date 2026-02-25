@@ -7,9 +7,12 @@ import {
   Home,
   Grid,
   LogOut,
+  Package,
+  MapPin,
+  Heart,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
@@ -22,27 +25,46 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
+
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // Sync search with URL
+  const menuRef = useRef();
+
+  /* -------------------- Sync Search with URL -------------------- */
   useEffect(() => {
     const keywordFromUrl = location.pathname.startsWith("/search/")
       ? decodeURIComponent(location.pathname.split("/search/")[1] || "")
       : "";
-
     setSearchText(keywordFromUrl);
   }, [location.pathname]);
 
-  // Scroll effect
+  /* -------------------- Scroll Effect -------------------- */
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  /* -------------------- Close Drawer on Outside Click -------------------- */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
 
   const submitSearch = () => {
     if (!searchText.trim()) return;
@@ -59,6 +81,7 @@ const Navbar = () => {
 
   return (
     <>
+      {/* NAVBAR */}
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-300
           ${
@@ -73,7 +96,7 @@ const Navbar = () => {
         `}
       >
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
-          {/* MOBILE MENU BUTTON */}
+          {/* HAMBURGER */}
           <button
             className="md:hidden"
             onClick={() => {
@@ -139,14 +162,18 @@ const Navbar = () => {
               `}
             >
               <div
-                className={`w-4 h-4 bg-white rounded-full transition-transform
+                className={`w-4 h-4 bg-white rounded-full transition-transform duration-300
                   ${theme === "dark" ? "translate-x-6" : ""}
                 `}
               />
             </button>
 
-            {/* AUTH SECTION */}
-            <div className="relative hidden md:block">
+            {/* PROFILE (HOVER DROPDOWN) */}
+            <div
+              className="relative hidden md:block"
+              onMouseEnter={() => setShowProfileMenu(true)}
+              onMouseLeave={() => setShowProfileMenu(false)}
+            >
               {!isAuthenticated ? (
                 <button
                   onClick={() => navigate("/auth")}
@@ -156,30 +183,108 @@ const Navbar = () => {
                 </button>
               ) : (
                 <>
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-2"
-                  >
+                  <button className="flex items-center gap-2">
                     <User size={20} />
                     <span>{user?.userName}</span>
                   </button>
 
-                  {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg overflow-hidden">
+                  {/* DROPDOWN */}
+                  <div
+                    className={`absolute right-0 mt-2 w-72 rounded-lg shadow-2xl border transition-all duration-200 origin-top-right transform
+                      ${
+                        showProfileMenu
+                          ? "opacity-100 scale-100 visible translate-y-0"
+                          : "opacity-0 scale-95 invisible -translate-y-2"
+                      }
+                      ${
+                        theme === "dark"
+                          ? "bg-[#0f0f0f] border-gray-800 text-white"
+                          : "bg-white border-gray-200 text-gray-800"
+                      }
+                    `}
+                  >
+                    {/* HEADER */}
+                    <div
+                      className={`px-4 py-3 border-b
+                        ${
+                          theme === "dark"
+                            ? "border-gray-800"
+                            : "border-gray-200"
+                        }
+                      `}
+                    >
+                      <p className="font-semibold">{user?.userName}</p>
+                      <p className="text-sm opacity-70">Manage your account</p>
+                    </div>
+
+                    {/* MENU ITEMS */}
+                    <div className="flex flex-col text-sm">
                       <button
                         onClick={() => navigate("/profile")}
-                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                        className={`flex items-center gap-3 px-4 py-3 transition-colors
+                          ${
+                            theme === "dark"
+                              ? "hover:bg-gray-800"
+                              : "hover:bg-gray-100"
+                          }
+                        `}
                       >
-                        Profile
+                        <User size={16} /> My Profile
                       </button>
+
+                      <button
+                        onClick={() => navigate("/orders")}
+                        className={`flex items-center gap-3 px-4 py-3 transition-colors
+                          ${
+                            theme === "dark"
+                              ? "hover:bg-gray-800"
+                              : "hover:bg-gray-100"
+                          }
+                        `}
+                      >
+                        <Package size={16} /> Orders
+                      </button>
+
+                      <button
+                        onClick={() => navigate("/addresses")}
+                        className={`flex items-center gap-3 px-4 py-3 transition-colors
+                          ${
+                            theme === "dark"
+                              ? "hover:bg-gray-800"
+                              : "hover:bg-gray-100"
+                          }
+                        `}
+                      >
+                        <MapPin size={16} /> Saved Addresses
+                      </button>
+
+                      <button
+                        onClick={() => navigate("/wishlist")}
+                        className={`flex items-center gap-3 px-4 py-3 transition-colors
+                          ${
+                            theme === "dark"
+                              ? "hover:bg-gray-800"
+                              : "hover:bg-gray-100"
+                          }
+                        `}
+                      >
+                        <Heart size={16} /> Wishlist
+                      </button>
+
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500 flex items-center gap-2"
+                        className={`flex items-center gap-3 px-4 py-3 text-red-500 transition-colors
+                          ${
+                            theme === "dark"
+                              ? "hover:bg-gray-800"
+                              : "hover:bg-gray-100"
+                          }
+                        `}
                       >
                         <LogOut size={16} /> Logout
                       </button>
                     </div>
-                  )}
+                  </div>
                 </>
               )}
             </div>
@@ -190,49 +295,15 @@ const Navbar = () => {
               className="relative cursor-pointer"
             >
               <ShoppingCart />
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-                {cartCount}
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
+                  {cartCount}
+                </span>
+              )}
             </div>
           </div>
         </div>
       </nav>
-
-      {/* MOBILE SEARCH PANEL */}
-      {showSearch && (
-        <div
-          className={`md:hidden fixed top-16 w-full z-40 border-b
-            ${
-              theme === "dark"
-                ? "bg-black border-gray-800"
-                : "bg-white border-gray-200"
-            }
-          `}
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              submitSearch();
-            }}
-            className="px-4 py-4 flex gap-2"
-          >
-            <input
-              type="search"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              autoFocus
-              placeholder="Search products..."
-              className="flex-1 rounded-full px-4 py-2 outline-none bg-gray-100"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-full bg-blue-600 text-white"
-            >
-              Search
-            </button>
-          </form>
-        </div>
-      )}
     </>
   );
 };

@@ -5,8 +5,12 @@ public class SalezoneConstants {
             "/salezone/ecom/auth/**",
             "/salezone/ecom/categories/**",
             "/salezone/ecom/products/**",
-            "/swagger-ui.html",
-            "/swagger-ui/**"
+
+            // ✅ Swagger Required
+            "/v3/api-docs/**",
+            "/v3/api-docs",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
     };
 
     public static final String[] AUTH_ADMIN_URLS= {
