@@ -9,15 +9,19 @@ export const CartProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const { showToast } = useToast();
 
+  const [cart, setCart] = useState(null); // ✅ store full cart
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // 🔹 Fetch Cart
   const fetchCart = async () => {
     if (!isAuthenticated || !user?.userId) return;
 
     try {
       setLoading(true);
       const data = await cartService.getCart(user.userId);
+
+      setCart(data); // ✅ store full cart
       setCartItems(data.items ?? []);
     } catch (error) {
       console.error("Cart fetch failed:", error);
@@ -26,6 +30,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // 🔹 Add To Cart
   const addToCart = async (productId) => {
     if (!user?.userId) {
       showToast("Please login first", "error");
@@ -41,6 +46,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // 🔹 Remove Item
   const removeItem = async (cartItemId) => {
     try {
       await cartService.removeCartItem(user.userId, cartItemId);
@@ -50,6 +56,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // 🔹 Update Quantity
   const updateQuantity = async (cartItemId, quantity) => {
     try {
       await cartService.updateCartItem(user.userId, cartItemId, quantity);
@@ -59,6 +66,18 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // 🔹 Clear Cart
+  const clearCart = async () => {
+    try {
+      await cartService.clearCart(user.userId);
+      setCart(null); // ✅ clear cart object
+      setCartItems([]);
+    } catch (error) {
+      showToast("Failed to clear cart", "error");
+    }
+  };
+
+  // 🔹 Calculations
   const totalAmount = cartItems.reduce(
     (total, item) => total + item.totalPrice,
     0
@@ -75,13 +94,17 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider
       value={{
+        cart,
+        cartId: cart?.cartId, // ✅ expose cartId
         cartItems,
         addToCart,
         removeItem,
         updateQuantity,
+        clearCart,
         totalAmount,
         cartCount,
         loading,
+        fetchCart,
       }}
     >
       {children}

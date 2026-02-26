@@ -16,9 +16,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         {/* 🔥 must be above */}
         <AuthProvider>
           <CartProvider>
-            <AuthGate>
-              <App />
-            </AuthGate>
+            {/* <AuthGate> */}
+            <App />
+            {/* </AuthGate> */}
           </CartProvider>
         </AuthProvider>
       </ToastProvider>

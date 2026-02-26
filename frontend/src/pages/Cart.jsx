@@ -2,13 +2,32 @@ import { Trash2, Plus, Minus } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useState } from "react";
 
 const Cart = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const {
+    cartItems,
+    removeItem,
+    updateQuantity,
+    totalAmount,
+    loading,
+    clearCart,
+  } = useCart();
 
-  const { cartItems, removeItem, updateQuantity, totalAmount, loading } =
-    useCart();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  const handleClearCart = async () => {
+    try {
+      setClearing(true);
+      await clearCart();
+      setShowConfirm(false);
+    } finally {
+      setClearing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -25,7 +44,7 @@ const Cart = () => {
         <p className="opacity-70 mb-6">Start shopping to add items</p>
         <button
           onClick={() => navigate("/")}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
           Go Shopping
         </button>
@@ -34,8 +53,18 @@ const Cart = () => {
   }
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+    <section className="max-w-7xl mx-auto px-4 py-12 relative">
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Shopping Cart</h1>
+
+        <button
+          onClick={() => setShowConfirm(true)}
+          className="text-red-500 hover:text-red-700 font-medium transition"
+        >
+          Clear Cart
+        </button>
+      </div>
 
       <div className="grid gap-8 md:grid-cols-3">
         {/* CART ITEMS */}
@@ -47,14 +76,12 @@ const Cart = () => {
                 theme === "dark" ? "bg-[#0f0f0f]" : "bg-white shadow-sm"
               }`}
             >
-              {/* IMAGE */}
               <img
                 src={`http://localhost:8089/salezone/ecom/products/image/${item.product.productId}`}
                 alt={item.product.title}
                 className="w-24 h-24 object-cover rounded-lg"
               />
 
-              {/* INFO */}
               <div className="flex-1">
                 <h3 className="font-semibold">{item.product.title}</h3>
 
@@ -62,14 +89,13 @@ const Cart = () => {
                   ₹{item.product.discountedPrice}
                 </p>
 
-                {/* QUANTITY */}
                 <div className="flex items-center gap-3 mt-4">
                   <button
                     onClick={() =>
                       item.quantity > 1 &&
                       updateQuantity(item.cartItemId, item.quantity - 1)
                     }
-                    className="p-2 rounded border"
+                    className="p-2 rounded border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   >
                     <Minus size={16} />
                   </button>
@@ -80,17 +106,16 @@ const Cart = () => {
                     onClick={() =>
                       updateQuantity(item.cartItemId, item.quantity + 1)
                     }
-                    className="p-2 rounded border"
+                    className="p-2 rounded border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   >
                     <Plus size={16} />
                   </button>
                 </div>
               </div>
 
-              {/* REMOVE */}
               <button
                 onClick={() => removeItem(item.cartItemId)}
-                className="text-red-500"
+                className="text-red-500 hover:text-red-700 transition"
               >
                 <Trash2 />
               </button>
@@ -105,6 +130,11 @@ const Cart = () => {
           }`}
         >
           <h3 className="text-xl font-semibold mb-4">Price Details</h3>
+
+          <div className="flex justify-between mb-2">
+            <span>Items</span>
+            <span>{cartItems.length}</span>
+          </div>
 
           <div className="flex justify-between mb-2">
             <span>Subtotal</span>
@@ -131,6 +161,41 @@ const Cart = () => {
           </button>
         </div>
       </div>
+
+      {/* CONFIRM MODAL */}
+      {showConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div
+            className={`w-[90%] max-w-md p-6 rounded-xl ${
+              theme === "dark" ? "bg-[#1a1a1a]" : "bg-white"
+            }`}
+          >
+            <h2 className="text-lg font-semibold mb-4">Clear Cart</h2>
+
+            <p className="mb-6 opacity-70">
+              Are you sure you want to remove all items from your cart?
+            </p>
+
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowConfirm(false)}
+                disabled={clearing}
+                className="px-4 py-2 rounded-lg border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleClearCart}
+                disabled={clearing}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-50"
+              >
+                {clearing ? "Clearing..." : "Clear"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
