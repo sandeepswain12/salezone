@@ -57,12 +57,33 @@ export const CartProvider = ({ children }) => {
   };
 
   // 🔹 Update Quantity
-  const updateQuantity = async (cartItemId, quantity) => {
+  const updateQuantity = async (cartItemId, newQuantity) => {
+    if (newQuantity < 1) return;
+
+    // Save old state for rollback
+    const previousItems = [...cartItems];
+
     try {
-      await cartService.updateCartItem(user.userId, cartItemId, quantity);
-      fetchCart();
+      // 🔥 Optimistic UI update
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.cartItemId === cartItemId
+            ? {
+                ...item,
+                quantity: newQuantity,
+                totalPrice: item.product.discountedPrice * newQuantity,
+              }
+            : item
+        )
+      );
+
+      // API call
+      await cartService.updateCartItem(user.userId, cartItemId, newQuantity);
     } catch (error) {
       showToast("Failed to update quantity", "error");
+
+      // 🔥 Rollback if failed
+      setCartItems(previousItems);
     }
   };
 

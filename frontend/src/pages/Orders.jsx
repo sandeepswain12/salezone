@@ -5,19 +5,24 @@ import orderService from "../services/orderService";
 import { useNavigate } from "react-router-dom";
 
 const Orders = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
 
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
+    // Wait for auth to initialize
+    if (authLoading) return;
+
+    // If not logged in → redirect
     if (!isAuthenticated) {
       navigate("/auth");
       return;
     }
 
+    // If user not ready yet
     if (!user?.userId) return;
 
     const fetchOrders = async () => {
@@ -27,12 +32,12 @@ const Orders = () => {
       } catch (error) {
         console.error("Failed to fetch orders:", error);
       } finally {
-        setLoading(false);
+        setOrdersLoading(false);
       }
     };
 
     fetchOrders();
-  }, [user, isAuthenticated, navigate]);
+  }, [user, isAuthenticated, authLoading, navigate]);
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -55,7 +60,7 @@ const Orders = () => {
   };
 
   /* ---------------- Loading State ---------------- */
-  if (loading) {
+  if (ordersLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <div className="animate-pulse space-y-4">
@@ -106,7 +111,7 @@ const Orders = () => {
                 <p className="text-sm opacity-60">Order ID</p>
                 <h3 className="font-semibold break-all">{order.orderId}</h3>
                 <p className="text-sm opacity-60 mt-1">
-                  Placed on {formatDate(order.orderDate)}
+                  Placed on {formatDate(order.orderedDate)}
                 </p>
               </div>
 

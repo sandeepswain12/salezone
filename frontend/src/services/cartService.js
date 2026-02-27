@@ -24,11 +24,8 @@ const cartService = {
     return res.data;
   },
 
-  updateCartItem: async (userId, cartItemId, quantity) => {
-    const res = await api.put(`/carts/${userId}/items/${cartItemId}`, {
-      quantity,
-    });
-    return res.data;
+  updateCartItem(userId, itemId, quantity) {
+    return api.put(`/carts/${userId}/items/${itemId}?quantity=${quantity}`);
   },
 };
 

@@ -72,9 +72,12 @@ const Cart = () => {
           {cartItems.map((item) => (
             <div
               key={item.cartItemId}
-              className={`flex gap-4 p-4 rounded-xl ${
-                theme === "dark" ? "bg-[#0f0f0f]" : "bg-white shadow-sm"
-              }`}
+              className={`flex gap-5 p-5 rounded-2xl transition-all duration-200 
+${
+  theme === "dark"
+    ? "bg-[#121212] border border-gray-800"
+    : "bg-white shadow-md border border-gray-100"
+}`}
             >
               <img
                 src={`http://localhost:8089/salezone/ecom/products/image/${item.product.productId}`}
@@ -85,31 +88,65 @@ const Cart = () => {
               <div className="flex-1">
                 <h3 className="font-semibold">{item.product.title}</h3>
 
-                <p className="font-bold mt-1">
-                  ₹{item.product.discountedPrice}
+                <p className="mt-2">
+                  <span className="text-lg font-bold">
+                    ₹{item.product.discountedPrice.toLocaleString("en-IN")}
+                  </span>
+                  <span className="ml-2 text-sm line-through opacity-60">
+                    ₹{item.product.price.toLocaleString("en-IN")}
+                  </span>
                 </p>
 
-                <div className="flex items-center gap-3 mt-4">
-                  <button
-                    onClick={() =>
-                      item.quantity > 1 &&
-                      updateQuantity(item.cartItemId, item.quantity - 1)
-                    }
-                    className="p-2 rounded border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                <div className="mt-5">
+                  <div
+                    className={`inline-flex items-center rounded-lg border transition-all 
+    ${
+      theme === "dark"
+        ? "border-gray-700 bg-[#1a1a1a]"
+        : "border-gray-300 bg-gray-50"
+    }`}
                   >
-                    <Minus size={16} />
-                  </button>
+                    {/* Minus Button */}
+                    <button
+                      onClick={() =>
+                        updateQuantity(item.cartItemId, item.quantity - 1)
+                      }
+                      disabled={item.quantity <= 1}
+                      className={`px-3 py-2 transition-all 
+      ${
+        theme === "dark"
+          ? "hover:bg-gray-700 active:bg-gray-600"
+          : "hover:bg-gray-200 active:bg-gray-300"
+      } disabled:opacity-40 disabled:cursor-not-allowed`}
+                    >
+                      <Minus size={16} />
+                    </button>
 
-                  <span>{item.quantity}</span>
+                    {/* Quantity */}
+                    <div
+                      className={`px-5 text-sm font-semibold tracking-wide ${
+                        theme === "dark" ? "text-white" : "text-gray-800"
+                      }`}
+                    >
+                      {item.quantity}
+                    </div>
 
-                  <button
-                    onClick={() =>
-                      updateQuantity(item.cartItemId, item.quantity + 1)
-                    }
-                    className="p-2 rounded border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                  >
-                    <Plus size={16} />
-                  </button>
+                    {/* Plus Button */}
+                    <button
+                      onClick={() =>
+                        updateQuantity(item.cartItemId, item.quantity + 1)
+                      }
+                      disabled={item.quantity >= item.product.quantity}
+                      className={`px-3 py-2 transition-all 
+      ${
+        theme === "dark"
+          ? "hover:bg-gray-700 active:bg-gray-600"
+          : "hover:bg-gray-200 active:bg-gray-300"
+      } disabled:opacity-40 disabled:cursor-not-allowed`}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -133,12 +170,14 @@ const Cart = () => {
 
           <div className="flex justify-between mb-2">
             <span>Items</span>
-            <span>{cartItems.length}</span>
+            <span>{cartItems.reduce((t, i) => t + i.quantity, 0)}</span>
           </div>
 
           <div className="flex justify-between mb-2">
             <span>Subtotal</span>
-            <span>₹{totalAmount}</span>
+            <span className="font-semibold">
+              ₹{totalAmount.toLocaleString("en-IN")}
+            </span>
           </div>
 
           <div className="flex justify-between mb-2">
@@ -155,7 +194,9 @@ const Cart = () => {
 
           <button
             onClick={() => navigate("/checkout")}
-            className="w-full py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 
+text-white font-semibold tracking-wide shadow-lg 
+hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
             Proceed to Checkout
           </button>
