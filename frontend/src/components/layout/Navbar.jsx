@@ -304,6 +304,178 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* MOBILE MENU DRAWER */}
+      <div
+        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${
+          showMenu ? "visible" : "invisible"
+        }`}
+      >
+        {/* BACKDROP */}
+        <div
+          className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+            showMenu ? "opacity-50" : "opacity-0"
+          }`}
+          onClick={() => setShowMenu(false)}
+        />
+
+        {/* DRAWER */}
+        <div
+          ref={menuRef}
+          className={`absolute top-0 left-0 h-full w-80 transform transition-transform duration-300 ${
+            showMenu ? "translate-x-0" : "-translate-x-full"
+          } ${theme === "dark" ? "bg-black" : "bg-white"} shadow-xl`}
+        >
+          {/* DRAWER HEADER */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+            <span className="text-xl font-bold">Menu</span>
+            <button onClick={() => setShowMenu(false)}>
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* DRAWER CONTENT */}
+          <div className="p-4">
+            {/* USER SECTION */}
+            <div className="mb-6">
+              {!isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    navigate("/auth");
+                    setShowMenu(false);
+                  }}
+                  className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg font-medium"
+                >
+                  Sign In / Sign Up
+                </button>
+              ) : (
+                <div className="space-y-1">
+                  <p className="font-semibold">{user?.userName}</p>
+                  <p className="text-sm opacity-70">{user?.email}</p>
+                </div>
+              )}
+            </div>
+
+            {/* NAVIGATION LINKS */}
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  navigate("/");
+                  setShowMenu(false);
+                }}
+                className={`flex items-center gap-3 w-full p-3 rounded-lg transition-colors ${
+                  theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"
+                }`}
+              >
+                <Home size={20} /> Home
+              </button>
+
+              {isAuthenticated && (
+                <>
+                  <button
+                    onClick={() => {
+                      navigate("/profile");
+                      setShowMenu(false);
+                    }}
+                    className={`flex items-center gap-3 w-full p-3 rounded-lg transition-colors ${
+                      theme === "dark"
+                        ? "hover:bg-gray-800"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    <User size={20} /> Profile
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      navigate("/orders");
+                      setShowMenu(false);
+                    }}
+                    className={`flex items-center gap-3 w-full p-3 rounded-lg transition-colors ${
+                      theme === "dark"
+                        ? "hover:bg-gray-800"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    <Package size={20} /> Orders
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      navigate("/addresses");
+                      setShowMenu(false);
+                    }}
+                    className={`flex items-center gap-3 w-full p-3 rounded-lg transition-colors ${
+                      theme === "dark"
+                        ? "hover:bg-gray-800"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    <MapPin size={20} /> Addresses
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      navigate("/wishlist");
+                      setShowMenu(false);
+                    }}
+                    className={`flex items-center gap-3 w-full p-3 rounded-lg transition-colors ${
+                      theme === "dark"
+                        ? "hover:bg-gray-800"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    <Heart size={20} /> Wishlist
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setShowMenu(false);
+                    }}
+                    className="flex items-center gap-3 w-full p-3 rounded-lg text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <LogOut size={20} /> Logout
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MOBILE SEARCH DRAWER */}
+      <div
+        className={`fixed top-16 left-0 right-0 z-40 md:hidden transition-all duration-300 ${
+          showSearch ? "translate-y-0" : "-translate-y-full"
+        } ${
+          theme === "dark" ? "bg-black" : "bg-white"
+        } border-b border-gray-200 dark:border-gray-800 p-4 shadow-lg`}
+      >
+        <div className="relative">
+          <input
+            type="search"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submitSearch()}
+            placeholder="Search products..."
+            className={`w-full rounded-full px-5 py-3 pr-12 outline-none
+              ${
+                theme === "dark"
+                  ? "bg-[#111] text-white"
+                  : "bg-gray-100 text-black"
+              }
+            `}
+            autoFocus
+          />
+          <button
+            onClick={submitSearch}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
+            <Search size={18} />
+          </button>
+        </div>
+      </div>
     </>
   );
 };

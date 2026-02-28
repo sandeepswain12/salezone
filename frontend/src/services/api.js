@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const REFRESH_URL = import.meta.env.VITE_REFRESH_URL;
+
 const api = axios.create({
-  baseURL: "http://localhost:8089/salezone/ecom",
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 
@@ -18,14 +21,13 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 🔥 AUTO RETRY ON 401
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
       try {
         const res = await axios.post(
-          "http://localhost:8089/salezone/ecom/auth/refresh",
+          REFRESH_URL,
           {},
           { withCredentials: true }
         );

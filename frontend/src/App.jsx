@@ -15,6 +15,7 @@ import SearchResults from "./pages/SearchResults";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthSuccess from "./pages/AuthSuccess";
 import AuthFailure from "./pages/AuthFailure";
+import Orders from "./pages/Orders";
 
 function App() {
   const { theme } = useTheme();
@@ -67,6 +68,15 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/auth/failure" element={<AuthFailure />} />
+
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
 
