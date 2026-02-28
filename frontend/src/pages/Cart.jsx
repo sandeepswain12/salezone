@@ -3,6 +3,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
+import CartSkeleton from "../components/skeleton/CartSkeleton";
 
 const Cart = () => {
   const { theme } = useTheme();
@@ -30,11 +31,7 @@ const Cart = () => {
   };
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <p>Loading cart...</p>
-      </div>
-    );
+    return <CartSkeleton />;
   }
 
   if (!cartItems || cartItems.length === 0) {
