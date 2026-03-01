@@ -80,7 +80,10 @@ const Auth = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8089/oauth2/authorization/google";
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL.replace(
+      "/salezone/ecom",
+      ""
+    )}/oauth2/authorization/google`;
   };
 
   return (
