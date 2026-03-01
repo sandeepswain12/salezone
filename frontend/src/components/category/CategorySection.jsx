@@ -2,17 +2,73 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCategories } from "../../services/CategoryService";
 import { useTheme } from "../../context/ThemeContext";
-import { Book, Laptop, Shirt, Home, Dumbbell, Grid } from "lucide-react";
+import CategorySkeleton from "../skeleton/CategorySkeleton";
+import {
+  Book,
+  Laptop,
+  Shirt,
+  Home,
+  Dumbbell,
+  Car,
+  Sparkles,
+  ShoppingCart,
+  Gamepad2,
+  Apple,
+} from "lucide-react";
 
-const categoryMeta = {
-  Books: { icon: Book, color: "from-indigo-500 to-indigo-600" },
-  Electronics: { icon: Laptop, color: "from-blue-500 to-blue-600" },
-  Fashion: { icon: Shirt, color: "from-pink-500 to-pink-600" },
-  "Home Appliances": { icon: Home, color: "from-emerald-500 to-emerald-600" },
-  "Sports Fitness": { icon: Dumbbell, color: "from-orange-500 to-orange-600" },
+/* ---------------------------------- */
+/* 🔥 Dynamic Icon Resolver */
+/* ---------------------------------- */
+const iconMap = [
+  { keywords: ["book"], icon: Book },
+  { keywords: ["elect", "laptop", "mobile"], icon: Laptop },
+  { keywords: ["fashion", "cloth", "men", "women"], icon: Shirt },
+  { keywords: ["home", "decor"], icon: Home },
+  { keywords: ["sport", "fit"], icon: Dumbbell },
+  { keywords: ["auto", "car", "vehicle"], icon: Car },
+  { keywords: ["beauty", "care", "cosmetic"], icon: Sparkles },
+  { keywords: ["grocery", "food"], icon: Apple },
+  { keywords: ["toy", "game"], icon: Gamepad2 },
+];
+
+const resolveIcon = (title = "") => {
+  const lower = title.toLowerCase();
+
+  for (let item of iconMap) {
+    if (item.keywords.some((word) => lower.includes(word))) {
+      return item.icon;
+    }
+  }
+
+  return ShoppingCart;
 };
 
-const DefaultIcon = Grid;
+/* ---------------------------------- */
+/* 🎨 Deterministic Gradient Generator */
+/* ---------------------------------- */
+const gradients = [
+  "from-blue-500 to-indigo-600",
+  "from-purple-500 to-pink-500",
+  "from-emerald-500 to-teal-600",
+  "from-orange-500 to-red-500",
+  "from-cyan-500 to-blue-500",
+  "from-rose-500 to-pink-600",
+  "from-amber-500 to-orange-600",
+  "from-violet-500 to-indigo-500",
+  "from-lime-500 to-emerald-500",
+];
+
+const getGradient = (title = "") => {
+  let hash = 0;
+
+  for (let i = 0; i < title.length; i++) {
+    hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const index = Math.abs(hash) % gradients.length;
+
+  return gradients[index];
+};
 
 const CategorySection = () => {
   const { theme } = useTheme();
@@ -39,73 +95,78 @@ const CategorySection = () => {
   }, []);
 
   return (
-    <section className="max-w-7xl mx-auto px-3 sm:px-4 py-10">
-      <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center sm:text-left">
-        Shop by Category
-      </h2>
+    <section className="max-w-7xl mx-auto px-4 py-14">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold tracking-tight">Shop by Category</h2>
+      </div>
 
-      {error && (
-        <div className="text-center text-red-500">
-          Failed to load categories.
-        </div>
-      )}
-
-      {loading && (
-        <div className="flex gap-4 overflow-x-auto sm:grid sm:grid-cols-3 md:grid-cols-5 sm:overflow-visible">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className={`min-w-[140px] sm:min-w-0 rounded-xl p-4 ${
-                theme === "dark" ? "bg-[#0f0f0f]" : "bg-white shadow-sm"
-              }`}
-            >
-              <div
-                className={`w-12 h-12 mx-auto rounded-xl mb-3 animate-pulse ${
-                  theme === "dark" ? "bg-[#1f1f1f]" : "bg-gray-200"
-                }`}
-              />
-              <div
-                className={`h-3 w-3/4 mx-auto rounded animate-pulse ${
-                  theme === "dark" ? "bg-[#1f1f1f]" : "bg-gray-200"
-                }`}
-              />
-            </div>
+      {/* Scroll Container */}
+      <div
+        className={`
+          flex gap-5 overflow-x-auto overflow-y-visible
+          pb-6 pt-2
+          scroll-smooth snap-x snap-mandatory
+          custom-scrollbar
+          ${theme === "dark" ? "scrollbar-dark" : "scrollbar-light"}
+        `}
+      >
+        {/* 🔥 Loading Skeleton */}
+        {loading &&
+          Array.from({ length: 5 }).map((_, index) => (
+            <CategorySkeleton key={index} theme={theme} />
           ))}
-        </div>
-      )}
 
-      {!loading && !error && (
-        <div className="flex gap-4 overflow-x-auto sm:grid sm:grid-cols-3 md:grid-cols-5 sm:overflow-visible">
-          {categories.map((category) => {
-            const Icon = categoryMeta[category.title]?.icon || DefaultIcon;
-            const gradient =
-              categoryMeta[category.title]?.color ||
-              "from-gray-500 to-gray-600";
+        {/* ❌ Error State */}
+        {!loading && error && (
+          <div className="text-sm text-red-500">Failed to load categories.</div>
+        )}
+
+        {/* ✅ Categories */}
+        {!loading &&
+          !error &&
+          categories.map((category) => {
+            const Icon = resolveIcon(category.title);
+            const gradient = getGradient(category.title);
 
             return (
-              <div
+              <button
                 key={category.categoryId}
                 onClick={() => navigate(`/category/${category.categoryId}`)}
-                className={`min-w-[140px] sm:min-w-0 cursor-pointer rounded-xl p-4 flex flex-col items-center justify-center transition ${
-                  theme === "dark"
-                    ? "bg-[#0f0f0f] hover:bg-[#151515]"
-                    : "bg-white shadow-sm hover:shadow-lg"
-                }`}
+                className={`
+                  snap-start shrink-0
+                  w-[150px] sm:w-[170px] md:w-[180px]
+                  rounded-2xl p-6 text-center
+                  transition-all duration-300
+                  ${
+                    theme === "dark"
+                      ? "bg-zinc-900 border border-zinc-800 hover:bg-zinc-800"
+                      : "bg-white shadow-sm hover:shadow-xl"
+                  }
+                  hover:scale-[1.03]
+                  focus:outline-none focus:ring-2 focus:ring-blue-500
+                `}
               >
+                {/* Icon */}
                 <div
-                  className={`w-12 h-12 rounded-xl mb-3 flex items-center justify-center bg-gradient-to-br ${gradient} text-white`}
+                  className={`
+                    w-14 h-14 mx-auto mb-4
+                    rounded-xl flex items-center justify-center
+                    bg-gradient-to-br ${gradient}
+                    text-white shadow-md
+                    transition-transform duration-300
+                  `}
                 >
-                  <Icon size={22} />
+                  <Icon size={24} />
                 </div>
 
-                <h3 className="text-sm font-semibold text-center">
+                <h3 className="text-sm font-semibold tracking-wide">
                   {category.title}
                 </h3>
-              </div>
+              </button>
             );
           })}
-        </div>
-      )}
+      </div>
     </section>
   );
 };

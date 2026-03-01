@@ -1,4 +1,7 @@
 import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import axios from "axios";
+
 import Navbar from "./components/layout/Navbar";
 import HeroCarousel from "./components/carousel/HeroCarousel";
 import ProductGrid from "./components/product/ProductGrid";
@@ -12,13 +15,35 @@ import Checkout from "./pages/Checkout";
 import Auth from "./pages/Auth";
 import CategoryProducts from "./pages/CategoryProducts";
 import SearchResults from "./pages/SearchResults";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/protectedroute/ProtectedRoute";
 import AuthSuccess from "./pages/AuthSuccess";
 import AuthFailure from "./pages/AuthFailure";
 import Orders from "./pages/Orders";
+import Profile from "./pages/Profile";
+
+import { setAccessToken } from "./services/api";
 
 function App() {
   const { theme } = useTheme();
+
+  // 🔥 Restore session on page refresh
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const res = await axios.post(
+          import.meta.env.VITE_REFRESH_URL,
+          {},
+          { withCredentials: true }
+        );
+
+        setAccessToken(res.data.accessToken);
+      } catch (err) {
+        console.log("No active session");
+      }
+    };
+
+    restoreSession();
+  }, []);
 
   return (
     <div
@@ -31,6 +56,7 @@ function App() {
 
       <div className="pt-16">
         <Routes>
+          {/* Home */}
           <Route
             path="/"
             element={
@@ -42,11 +68,16 @@ function App() {
             }
           />
 
+          {/* Public Routes */}
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/categories" element={<CategorySection />} />
           <Route path="/category/:categoryId" element={<CategoryProducts />} />
           <Route path="/search/:keyword" element={<SearchResults />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/success" element={<AuthSuccess />} />
+          <Route path="/auth/failure" element={<AuthFailure />} />
 
+          {/* 🔐 Protected Routes */}
           <Route
             path="/cart"
             element={
@@ -65,15 +96,20 @@ function App() {
             }
           />
 
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/success" element={<AuthSuccess />} />
-          <Route path="/auth/failure" element={<AuthFailure />} />
-
           <Route
             path="/orders"
             element={
               <ProtectedRoute>
                 <Orders />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

@@ -5,26 +5,45 @@ const REFRESH_URL = import.meta.env.VITE_REFRESH_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // required for refresh token cookie
 });
 
+// 🔐 Access token stored in memory
 let accessToken = null;
 
+// ✅ Setter for access token (call after login)
 export const setAccessToken = (token) => {
   accessToken = token;
 };
 
-api.interceptors.request.use((config) => {
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-});
+// ✅ Optional getter (if needed somewhere)
+export const getAccessToken = () => accessToken;
 
+// ===============================
+// 🔹 Request Interceptor
+// ===============================
+api.interceptors.request.use(
+  (config) => {
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ===============================
+// 🔹 Response Interceptor
+// ===============================
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config;
+
+    // If token expired & not already retried
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
       try {
         const res = await axios.post(
           REFRESH_URL,
@@ -32,12 +51,27 @@ api.interceptors.response.use(
           { withCredentials: true }
         );
 
-        accessToken = res.data.accessToken;
-        error.config.headers.Authorization = `Bearer ${accessToken}`;
+        const newAccessToken = res.data.accessToken;
 
-        return api(error.config);
-      } catch (err) {
-        console.log("Session expired");
+        // Update memory token
+        setAccessToken(newAccessToken);
+
+        // Attach new token to failed request
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        // Retry original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.log("Session expired. Redirecting to login...");
+
+        // Clear everything
+        accessToken = null;
+        localStorage.removeItem("userId");
+
+        // Redirect to login
+        window.location.href = "/login";
+
+        return Promise.reject(refreshError);
       }
     }
 

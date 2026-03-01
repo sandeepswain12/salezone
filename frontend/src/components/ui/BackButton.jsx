@@ -9,9 +9,12 @@ const BackButton = ({ label = "Back" }) => {
 
   const handleBack = () => {
     if (location.state?.from) {
-      navigate(location.state.from.pathname, {
-        state: location.state.from.state,
-      });
+      navigate(
+        location.state.from.pathname + (location.state.from.search || ""),
+        {
+          state: location.state.from.state,
+        }
+      );
     } else {
       navigate(-1);
     }
