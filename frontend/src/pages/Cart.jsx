@@ -80,7 +80,7 @@ const Cart = () => {
   }
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12 relative">
+    <section className="max-w-7xl mx-auto px-4 py-12 relative overflow-x-hidden">
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-3xl font-bold">Shopping Cart ({totalItems})</h1>
@@ -109,105 +109,196 @@ const Cart = () => {
             return (
               <div
                 key={item.cartItemId}
-                className={`flex gap-6 p-6 rounded-2xl
-                ${
-                  theme === "dark"
-                    ? "bg-[#121212] border border-gray-800"
-                    : "bg-white shadow-sm border border-gray-100"
-                }`}
+                className={`p-5 rounded-2xl
+    ${
+      theme === "dark"
+        ? "bg-[#121212] border border-gray-800"
+        : "bg-white shadow-sm border border-gray-100"
+    }`}
               >
-                <img
-                  onClick={() => navigate(`/product/${item.product.productId}`)}
-                  src={`${import.meta.env.VITE_API_BASE_URL}/products/image/${
-                    item.product.productId
-                  }`}
-                  alt={item.product.title}
-                  className="w-28 h-28 object-contain rounded-xl bg-gray-50 dark:bg-[#1a1a1a] cursor-pointer hover:scale-105 transition"
-                />
-
-                <div className="flex-1">
-                  <h3
+                {/* DESKTOP LAYOUT */}
+                <div className="hidden md:flex gap-6">
+                  {/* IMAGE */}
+                  <div
                     onClick={() =>
                       navigate(`/product/${item.product.productId}`)
                     }
-                    className="font-semibold text-lg cursor-pointer hover:text-blue-600 transition"
+                    className={`w-28 h-28 flex-shrink-0 flex items-center justify-center rounded-xl cursor-pointer
+        ${
+          theme === "dark"
+            ? "bg-[#1a1a1a] border border-gray-800"
+            : "bg-gray-50 border border-gray-200"
+        }
+      `}
                   >
-                    {item.product.title}
-                  </h3>
-
-                  {/* PRICE DISPLAY */}
-                  <div className="mt-3 flex items-center gap-3 flex-wrap">
-                    <span className="text-lg font-bold">
-                      {formatCurrency(item.product.discountedPrice)}
-                    </span>
-
-                    {item.product.price > item.product.discountedPrice && (
-                      <>
-                        <span className="text-sm line-through text-gray-500">
-                          {formatCurrency(item.product.price)}
-                        </span>
-
-                        <span className="text-sm font-semibold text-green-600">
-                          {Math.round(
-                            ((item.product.price -
-                              item.product.discountedPrice) /
-                              item.product.price) *
-                              100
-                          )}
-                          % OFF
-                        </span>
-                      </>
-                    )}
+                    <img
+                      src={`${
+                        import.meta.env.VITE_API_BASE_URL
+                      }/products/image/${item.product.productId}`}
+                      alt={item.product.title}
+                      className="max-h-full max-w-full object-contain p-2"
+                    />
                   </div>
 
-                  {/* QUANTITY */}
-                  <div className="mt-5 flex items-center gap-4">
-                    <div
-                      className={`flex items-center rounded-xl border
-  ${
-    theme === "dark"
-      ? "border-gray-700 bg-[#1a1a1a]"
-      : "border-gray-300 bg-gray-100"
-  }
-`}
-                    >
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.cartItemId, item.quantity - 1)
-                        }
-                        disabled={item.quantity <= 1}
-                        className="px-3 py-2 disabled:opacity-40"
-                      >
-                        <Minus size={16} />
-                      </button>
+                  {/* CONTENT */}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {item.product.title}
+                      </h3>
 
-                      <span className="px-5 font-semibold">
-                        {item.quantity}
-                      </span>
+                      <div className="mt-2 flex items-center gap-3">
+                        <span className="text-lg font-bold">
+                          {formatCurrency(item.product.discountedPrice)}
+                        </span>
 
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.cartItemId, item.quantity + 1)
-                        }
-                        disabled={item.quantity >= item.product.quantity}
-                        className="px-3 py-2 disabled:opacity-40"
-                      >
-                        <Plus size={16} />
-                      </button>
+                        {item.product.price > item.product.discountedPrice && (
+                          <>
+                            <span className="text-sm line-through text-gray-500">
+                              {formatCurrency(item.product.price)}
+                            </span>
+                            <span className="text-sm text-green-600 font-semibold">
+                              {Math.round(
+                                ((item.product.price -
+                                  item.product.discountedPrice) /
+                                  item.product.price) *
+                                  100
+                              )}
+                              % OFF
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
 
-                    <span className="font-semibold">
-                      {formatCurrency(lineTotal)}
-                    </span>
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center border rounded-xl px-2">
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.cartItemId, item.quantity - 1)
+                          }
+                          disabled={item.quantity <= 1}
+                          className="px-2 py-1"
+                        >
+                          <Minus size={16} />
+                        </button>
+
+                        <span className="px-4">{item.quantity}</span>
+
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.cartItemId, item.quantity + 1)
+                          }
+                          disabled={item.quantity >= item.product.quantity}
+                          className="px-2 py-1"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+
+                      <span className="font-semibold">
+                        {formatCurrency(lineTotal)}
+                      </span>
+                    </div>
                   </div>
+
+                  {/* DELETE */}
+                  <button
+                    onClick={() => removeItem(item.cartItemId)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 />
+                  </button>
                 </div>
 
-                <button
-                  onClick={() => removeItem(item.cartItemId)}
-                  className="text-red-500 hover:text-red-700 transition"
-                >
-                  <Trash2 />
-                </button>
+                {/* MOBILE LAYOUT */}
+                <div className="md:hidden">
+                  <div className="flex gap-4">
+                    {/* IMAGE */}
+                    <div
+                      onClick={() =>
+                        navigate(`/product/${item.product.productId}`)
+                      }
+                      className="w-24 h-24 flex-shrink-0 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-[#1a1a1a]"
+                    >
+                      <img
+                        src={`${
+                          import.meta.env.VITE_API_BASE_URL
+                        }/products/image/${item.product.productId}`}
+                        alt={item.product.title}
+                        className="max-h-full max-w-full object-contain p-2"
+                      />
+                    </div>
+
+                    {/* RIGHT SIDE */}
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base">
+                        {item.product.title}
+                      </h3>
+
+                      <div className="mt-1 flex items-center gap-2 flex-wrap">
+                        <span className="font-bold">
+                          {formatCurrency(item.product.discountedPrice)}
+                        </span>
+
+                        {item.product.price > item.product.discountedPrice && (
+                          <>
+                            <span className="text-xs line-through text-gray-500">
+                              {formatCurrency(item.product.price)}
+                            </span>
+                            <span className="text-xs text-green-600 font-semibold">
+                              {Math.round(
+                                ((item.product.price -
+                                  item.product.discountedPrice) /
+                                  item.product.price) *
+                                  100
+                              )}
+                              % OFF
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Quantity + Delete Row */}
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center border rounded-xl px-2">
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.cartItemId, item.quantity - 1)
+                            }
+                            disabled={item.quantity <= 1}
+                            className="px-2 py-1"
+                          >
+                            <Minus size={14} />
+                          </button>
+
+                          <span className="px-3 text-sm">{item.quantity}</span>
+
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.cartItemId, item.quantity + 1)
+                            }
+                            disabled={item.quantity >= item.product.quantity}
+                            className="px-2 py-1"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+
+                        <span className="font-semibold text-sm">
+                          {formatCurrency(lineTotal)}
+                        </span>
+
+                        <button
+                          onClick={() => removeItem(item.cartItemId)}
+                          className="text-red-500"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })}
