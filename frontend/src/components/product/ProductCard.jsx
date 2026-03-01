@@ -9,7 +9,7 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
   const imageUrl = product.productId
-    ? `http://localhost:8089/salezone/ecom/products/image/${product.productId}`
+    ? `${import.meta.env.VITE_API_BASE_URL}/products/image/${product.productId}`
     : "/no-image.png";
   return (
     <div

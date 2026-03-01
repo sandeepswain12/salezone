@@ -4,12 +4,13 @@ import { ShoppingCart } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { getProductById } from "../../services/ProductService";
 import ProductDetailsSkeleton from "./ProductDetailsSkeleton";
+import { useCart } from "../../context/CartContext";
 import BackButton from "../ui/BackButton";
 
 const ProductDetails = () => {
   const { id: productId } = useParams();
   const { theme } = useTheme();
-
+  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,7 +60,9 @@ const ProductDetails = () => {
             }`}
           >
             <img
-              src={`http://localhost:8089/salezone/ecom/products/image/${product.productId}`}
+              src={`${import.meta.env.VITE_API_BASE_URL}/products/image/${
+                product.productId
+              }`}
               alt={product.title}
               className="w-full h-64 sm:h-80 md:h-[400px] object-contain"
             />
@@ -91,20 +94,22 @@ const ProductDetails = () => {
               </span>
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="w-full sm:flex-1 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+            <div className="mt-4">
+              {/* <button className="w-full sm:flex-1 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
                 Buy Now
-              </button>
+              </button> */}
 
               <button
-                className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition ${
-                  theme === "dark"
-                    ? "bg-[#1a1a1a] hover:bg-[#222]"
-                    : "bg-gray-200 hover:bg-gray-300"
+                disabled={product.quantity <= 0}
+                onClick={() => addToCart(product.productId)}
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white transition ${
+                  product.quantity <= 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
                 }`}
               >
                 <ShoppingCart size={18} />
-                Add to Cart
+                {product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
               </button>
             </div>
           </div>
