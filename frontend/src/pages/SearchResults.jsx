@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { searchProducts } from "../services/ProductService";
-import ProductGridSkeleton from "../components/product/ProductGridSkeleton";
+import ProductGridSkeleton from "../components/skeleton/ProductGridSkeleton";
 import ProductCard from "../components/product/ProductCard";
 import BackButton from "../components/ui/BackButton";
 import Pagination from "../components/ui/Pagination";

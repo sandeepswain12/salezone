@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getProductsByCategory } from "../services/CategoryService";
-import ProductGridSkeleton from "../components/product/ProductGridSkeleton";
+import ProductGridSkeleton from "../components/skeleton/ProductGridSkeleton";
 import ProductCard from "../components/product/ProductCard";
 import BackButton from "../components/ui/BackButton";
 
