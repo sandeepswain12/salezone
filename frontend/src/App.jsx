@@ -27,23 +27,23 @@ function App() {
   const { theme } = useTheme();
 
   // 🔥 Restore session on page refresh
-  useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const res = await axios.post(
-          import.meta.env.VITE_REFRESH_URL,
-          {},
-          { withCredentials: true }
-        );
+  // useEffect(() => {
+  //   const restoreSession = async () => {
+  //     try {
+  //       const res = await axios.post(
+  //         import.meta.env.VITE_REFRESH_URL,
+  //         {},
+  //         { withCredentials: true }
+  //       );
 
-        setAccessToken(res.data.accessToken);
-      } catch (err) {
-        console.log("No active session");
-      }
-    };
+  //       setAccessToken(res.data.accessToken);
+  //     } catch (err) {
+  //       console.log("No active session");
+  //     }
+  //   };
 
-    restoreSession();
-  }, []);
+  //   restoreSession();
+  // }, []);
 
   return (
     <div

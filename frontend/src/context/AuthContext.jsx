@@ -75,10 +75,10 @@ export const AuthProvider = ({ children }) => {
         login,
         signup,
         logout,
-        updateUserContext, // 👈 added
+        updateUserContext,
       }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
