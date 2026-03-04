@@ -66,6 +66,26 @@ public class CartController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    // ================= UPDATE CART ITEM QUANTITY =================
+    @PutMapping("/{userId}/items/{itemId}")
+    public ResponseEntity<CartDto> updateCartItemQuantity(
+            @PathVariable String userId,
+            @PathVariable int itemId,
+            @RequestParam int quantity) {
+
+        String logkey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - Update cart item quantity request received | userId={} itemId={} quantity={}",
+                logkey, userId, itemId, quantity);
+
+        CartDto cartDto =
+                cartService.updateCartItemQuantity(userId, itemId, quantity, logkey);
+
+        log.info("LogKey: {} - Cart item quantity updated successfully | userId={} itemId={}",
+                logkey, userId, itemId);
+
+        return new ResponseEntity<>(cartDto, HttpStatus.OK);
+    }
+
     // ================= CLEAR CART =================
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponseMessage> clearCart(

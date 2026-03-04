@@ -1,9 +1,6 @@
 package com.ecom.salezone.controller;
 
-import com.ecom.salezone.dtos.ApiResponseMessage;
-import com.ecom.salezone.dtos.ImageResponse;
-import com.ecom.salezone.dtos.PageableResponse;
-import com.ecom.salezone.dtos.UserDto;
+import com.ecom.salezone.dtos.*;
 import com.ecom.salezone.services.FileService;
 import com.ecom.salezone.services.UserService;
 import com.ecom.salezone.util.LogKeyGenerator;
@@ -124,7 +121,7 @@ public class UserController {
     @PutMapping("/update/{userId}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable String userId,
-            @Valid @RequestBody UserDto userDto) {
+            @Valid @RequestBody UpdateUserRequest userDto) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -182,8 +179,8 @@ public class UserController {
         UserDto user =
                 userService.getUserById(userId, logKey);
 
-        user.setImageName(imageName);
-        userService.updateUser(user, userId, logKey);
+//        user.setImageName(imageName);
+//        userService.updateUser(user, userId, logKey);
 
         ImageResponse imageResponse =
                 ImageResponse.builder()
