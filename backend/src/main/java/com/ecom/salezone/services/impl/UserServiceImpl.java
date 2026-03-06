@@ -1,9 +1,6 @@
 package com.ecom.salezone.services.impl;
 
-import com.ecom.salezone.dtos.PageableResponse;
-import com.ecom.salezone.dtos.RoleDto;
-import com.ecom.salezone.dtos.SignupRequestDto;
-import com.ecom.salezone.dtos.UserDto;
+import com.ecom.salezone.dtos.*;
 import com.ecom.salezone.enities.Role;
 import com.ecom.salezone.enities.User;
 import com.ecom.salezone.enums.Provider;
@@ -76,7 +73,7 @@ public class UserServiceImpl implements UserService {
         User user = modelMapper.map(userDto, User.class);
         user.setUserName(user.getUserName());
         user.setProvider(userDto.getProvider() != null ? userDto.getProvider() : Provider.LOCAL);
-
+        user.setRoles(new HashSet<>());
         Role roleUser = roleRepository.findById("ROLE_USER")
                 .orElseThrow(() -> {
                     log.error("LogKey: {} - ROLE_USER not found", logKey);
@@ -94,54 +91,69 @@ public class UserServiceImpl implements UserService {
 
     // ================= UPDATE USER =================
     @Override
-    public UserDto updateUser(UserDto updatedUserDto, String userId, String logKey) {
+    public UserDto updateUser(UpdateUserRequest updatedUserDto, String userId, String logKey) {
 
-        log.info("LogKey: {} - Entry into updateUser method | userId={}", logKey, userId);
+//        log.info("LogKey: {} - Entry into updateUser method | userId={}", logKey, userId);
+//
+//        User exUser = userRepository.findById(userId)
+//                .orElseThrow(() -> {
+//                    log.error("LogKey: {} - User not found for update | userId={}", logKey, userId);
+//                    return new ResourceNotFoundException("User not found......!!!");
+//                });
+//
+//        exUser.setUserName(updatedUserDto.getUserName());
+//        exUser.setEmail(updatedUserDto.getEmail());
+//
+//        if (updatedUserDto.getPassword() != null &&
+//                !updatedUserDto.getPassword().isBlank() &&
+//                !passwordEncoder.matches(updatedUserDto.getPassword(), exUser.getPassword())) {
+//
+//            exUser.setPassword(passwordEncoder.encode(updatedUserDto.getPassword()));
+//        }
+//
+//        // ROLE UPDATE SECTION
+//        if (updatedUserDto.getRoles() != null &&
+//                !updatedUserDto.getRoles().isEmpty()) {
+//
+//            Set<Role> updatedRoles = new HashSet<>();
+//
+//            for (RoleDto roleDto : updatedUserDto.getRoles()) {
+//
+//                Role role = roleRepository.findById(roleDto.getRoleId())
+//                        .orElseThrow(() ->
+//                                new ResourceNotFoundException("Role not found: " + roleDto.getRoleId()));
+//
+//                updatedRoles.add(role);
+//            }
+//
+//            exUser.setRoles(updatedRoles);
+//        }
+//
+//        exUser.setAbout(updatedUserDto.getAbout());
+//        exUser.setGender(updatedUserDto.getGender());
+//        exUser.setPhoneNumber(updatedUserDto.getPhoneNumber());
+//        exUser.setImageName(updatedUserDto.getImageName());
+//
+//        User savedUser = userRepository.save(exUser);
+//
+//        log.info("LogKey: {} - User updated successfully | userId={}", logKey, savedUser.getUserId());
+//
+//        return modelMapper.map(savedUser, UpdateUserRequest.class);
 
         User exUser = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.error("LogKey: {} - User not found for update | userId={}", logKey, userId);
-                    return new ResourceNotFoundException("User not found......!!!");
-                });
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
 
         exUser.setUserName(updatedUserDto.getUserName());
         exUser.setEmail(updatedUserDto.getEmail());
-
-        if (updatedUserDto.getPassword() != null &&
-                !updatedUserDto.getPassword().isBlank() &&
-                !passwordEncoder.matches(updatedUserDto.getPassword(), exUser.getPassword())) {
-
-            exUser.setPassword(passwordEncoder.encode(updatedUserDto.getPassword()));
-        }
-
-        // ROLE UPDATE SECTION
-        if (updatedUserDto.getRoles() != null &&
-                !updatedUserDto.getRoles().isEmpty()) {
-
-            Set<Role> updatedRoles = new HashSet<>();
-
-            for (RoleDto roleDto : updatedUserDto.getRoles()) {
-
-                Role role = roleRepository.findById(roleDto.getRoleId())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Role not found: " + roleDto.getRoleId()));
-
-                updatedRoles.add(role);
-            }
-
-            exUser.setRoles(updatedRoles);
-        }
-
-        exUser.setAbout(updatedUserDto.getAbout());
         exUser.setGender(updatedUserDto.getGender());
+        exUser.setAbout(updatedUserDto.getAbout());
         exUser.setPhoneNumber(updatedUserDto.getPhoneNumber());
         exUser.setImageName(updatedUserDto.getImageName());
 
         User savedUser = userRepository.save(exUser);
 
-        log.info("LogKey: {} - User updated successfully | userId={}", logKey, savedUser.getUserId());
-
-        return modelMapper.map(savedUser, UserDto.class);
+        return modelMapper.map(exUser, UserDto.class);
     }
 
     // ================= DELETE USER =================

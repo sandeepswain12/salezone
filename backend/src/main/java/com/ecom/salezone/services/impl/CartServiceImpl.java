@@ -128,6 +128,71 @@ public class CartServiceImpl implements CartService {
         return mapper.map(updatedCart, CartDto.class);
     }
 
+    // ================= UPDATE CART ITEM QUANTITY =================
+    @Override
+    public CartDto updateCartItemQuantity(String userId, int itemId, int quantity, String logkey) {
+
+        log.info("LogKey: {} - Entry into updateCartItemQuantity | userId={} itemId={} quantity={}",
+                logkey, userId, itemId, quantity);
+
+        if (quantity <= 0) {
+            log.error("LogKey: {} - Invalid quantity requested | itemId={} quantity={}",
+                    logkey, itemId, quantity);
+            throw new BadApiRequestException("Quantity must be greater than zero !!");
+        }
+
+        // Validate user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - User not found | userId={}",
+                            logkey, userId);
+                    return new ResourceNotFoundException("User not found !!");
+                });
+
+        // Get cart of user
+        Cart cart = cartRepository.findByUser(user)
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - Cart not found | userId={}",
+                            logkey, userId);
+                    return new ResourceNotFoundException("Cart not found !!");
+                });
+
+        // Get cart item
+        CartItem cartItem = cartItemRepository.findById(itemId)
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - Cart item not found | itemId={}",
+                            logkey, itemId);
+                    return new ResourceNotFoundException("Cart item not found !!");
+                });
+
+        // Safety check (VERY IMPORTANT)
+        if (!cartItem.getCart().getCartId().equals(cart.getCartId())) {
+            log.error("LogKey: {} - Cart item does not belong to user cart | userId={} itemId={}",
+                    logkey, userId, itemId);
+            throw new BadApiRequestException("Cart item does not belong to this user !!");
+        }
+
+        // Stock validation
+        Product product = cartItem.getProduct();
+
+        if (quantity > product.getQuantity()) {
+            log.error("LogKey: {} - Requested quantity exceeds stock | productId={} stock={} requested={}",
+                    logkey, product.getProductId(), product.getQuantity(), quantity);
+            throw new BadApiRequestException("Requested quantity exceeds available stock !!");
+        }
+
+        // Update values
+        cartItem.setQuantity(quantity);
+        cartItem.setTotalPrice(quantity * product.getDiscountedPrice());
+
+        cartItemRepository.save(cartItem);
+
+        log.info("LogKey: {} - Cart item updated successfully | itemId={}",
+                logkey, itemId);
+
+        return mapper.map(cart, CartDto.class);
+    }
+
     // ================= REMOVE ITEM FROM CART =================
     @Override
     public void removeItemFromCart(String userId, int cartItem, String logkey) {
