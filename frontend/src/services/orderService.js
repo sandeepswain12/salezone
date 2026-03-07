@@ -25,6 +25,16 @@ const orderService = {
     const res = await api.delete(`/orders/${orderId}`);
     return res.data;
   },
+
+  initiatePayment: async (orderId) => {
+    const res = await api.post(`/payment/initiate-payment/${orderId}`);
+    return res.data;
+  },
+
+  capturePayment: async (orderId, paymentData) => {
+    const res = await api.post(`/payment/capture/${orderId}`, paymentData);
+    return res.data;
+  },
 };
 
 export default orderService;

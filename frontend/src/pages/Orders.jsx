@@ -13,16 +13,13 @@ const Orders = () => {
   const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
-    // Wait for auth to initialize
     if (authLoading) return;
 
-    // If not logged in → redirect
     if (!isAuthenticated) {
       navigate("/auth");
       return;
     }
 
-    // If user not ready yet
     if (!user?.userId) return;
 
     const fetchOrders = async () => {
@@ -47,10 +44,10 @@ const Orders = () => {
         return "bg-blue-500/10 text-blue-600";
       case "CANCELLED":
         return "bg-red-500/10 text-red-600";
-      case "PAID":
-        return "bg-purple-500/10 text-purple-600";
-      default:
+      case "PENDING":
         return "bg-yellow-500/10 text-yellow-600";
+      default:
+        return "bg-gray-500/10 text-gray-600";
     }
   };
 
@@ -59,26 +56,20 @@ const Orders = () => {
     return new Date(date).toLocaleString();
   };
 
-  /* ---------------- Loading State ---------------- */
   if (ordersLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-300 rounded w-1/3 mx-auto" />
-          <div className="h-24 bg-gray-200 rounded-xl" />
-          <div className="h-24 bg-gray-200 rounded-xl" />
-        </div>
+        <p className="opacity-70">Loading orders...</p>
       </div>
     );
   }
 
-  /* ---------------- Empty State ---------------- */
   if (!orders.length) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold mb-3">No Orders Yet 📦</h2>
+        <h2 className="text-2xl font-bold mb-3">No Orders Yet</h2>
         <p className="opacity-70 mb-6">
-          Looks like you haven't placed any orders.
+          Looks like you haven't placed any orders yet.
         </p>
         <button
           onClick={() => navigate("/")}
@@ -90,26 +81,26 @@ const Orders = () => {
     );
   }
 
-  /* ---------------- Orders List ---------------- */
   return (
     <section className="max-w-7xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-10">My Orders</h1>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {orders.map((order) => (
           <div
             key={order.orderId}
-            className={`p-6 rounded-2xl border transition hover:shadow-lg ${
+            className={`p-6 rounded-2xl border transition ${
               theme === "dark"
                 ? "bg-[#0f0f0f] border-gray-800"
-                : "bg-white border-gray-200"
+                : "bg-white border-gray-200 shadow-sm"
             }`}
           >
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-3">
+            {/* Order Header */}
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
               <div>
                 <p className="text-sm opacity-60">Order ID</p>
                 <h3 className="font-semibold break-all">{order.orderId}</h3>
+
                 <p className="text-sm opacity-60 mt-1">
                   Placed on {formatDate(order.orderedDate)}
                 </p>
@@ -124,18 +115,49 @@ const Orders = () => {
               </span>
             </div>
 
-            {/* Body */}
-            <div className="grid md:grid-cols-3 gap-4 text-sm">
+            {/* Ordered Products */}
+            <div className="space-y-4 mb-6">
+              {order.orderItems?.map((item) => (
+                <div
+                  key={item.orderItemId}
+                  className="flex items-center gap-4 border-t pt-4"
+                >
+                  <img
+                    src={`/products/${item.product.productImageName}`}
+                    alt={item.product.title}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+
+                  <div className="flex-1">
+                    <p className="font-medium">{item.product.title}</p>
+
+                    <p className="text-sm opacity-70">Qty: {item.quantity}</p>
+                  </div>
+
+                  <p className="font-semibold">
+                    ₹{item.totalPrice?.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Order Summary */}
+            <div className="grid md:grid-cols-4 gap-4 text-sm">
               <div>
                 <p className="opacity-60">Total Amount</p>
                 <p className="font-semibold text-lg">
-                  ₹{order.orderAmount?.toLocaleString() ?? "0"}
+                  ₹{order.orderAmount?.toLocaleString()}
                 </p>
               </div>
 
               <div>
                 <p className="opacity-60">Payment Status</p>
                 <p className="font-medium">{order.paymentStatus}</p>
+              </div>
+
+              <div>
+                <p className="opacity-60">Payment Method</p>
+                <p className="font-medium">{order.paymentMethod}</p>
               </div>
 
               <div>

@@ -5,12 +5,14 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import orderService from "../services/orderService";
 import { useNavigate } from "react-router-dom";
+import loadRazorpay from "../utils/loadRazorpay";
 
 const Checkout = () => {
   const { theme } = useTheme();
   const { cartItems, cartId, clearCart } = useCart();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const [paymentMethod, setPaymentMethod] = useState("COD");
   const navigate = useNavigate();
 
   const [address, setAddress] = useState({
@@ -79,13 +81,61 @@ const Checkout = () => {
         billingName: address.name,
         billingPhone: address.phone,
         billingAddress: `${address.street}, ${address.city}, ${address.state}, ${address.pincode}`,
+        paymentMethod,
       };
 
-      await orderService.createOrder(orderData);
-      await clearCart();
+      const order = await orderService.createOrder(orderData);
 
-      showToast("Order placed successfully 🎉", "success");
-      navigate("/orders");
+      if (paymentMethod === "COD") {
+        await clearCart();
+        showToast("Order placed successfully", "success");
+        navigate("/orders");
+        return;
+      }
+
+      const razorpayData = await orderService.initiatePayment(order.orderId);
+
+      const sdkLoaded = await loadRazorpay();
+
+      if (!sdkLoaded) {
+        showToast("Failed to load Razorpay SDK", "error");
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: razorpayData.amount * 100,
+        currency: "INR",
+        order_id: razorpayData.razorpayOrderId,
+
+        handler: async function (response) {
+          try {
+            await orderService.capturePayment(order.orderId, {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayPaymentSignature: response.razorpay_signature,
+            });
+
+            await clearCart();
+
+            showToast("Payment successful", "success");
+
+            navigate("/orders");
+          } catch (err) {
+            console.error(err);
+            showToast("Payment verification failed", "error");
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+            showToast("Payment cancelled", "info");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
     } catch (error) {
       console.error(error);
       showToast("Failed to place order", "error");
@@ -93,7 +143,6 @@ const Checkout = () => {
       setLoading(false);
     }
   };
-
   return (
     <section className="max-w-7xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-10">
@@ -149,17 +198,32 @@ const Checkout = () => {
           {/* PAYMENT */}
           <div
             className={`p-8 rounded-2xl border
-            ${
-              theme === "dark"
-                ? "bg-[#0f0f0f] border-gray-800"
-                : "bg-white shadow-sm border-gray-100"
-            }`}
+  ${
+    theme === "dark"
+      ? "bg-[#0f0f0f] border-gray-800"
+      : "bg-white shadow-sm border-gray-100"
+  }`}
           >
             <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
 
-            <label className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <input type="radio" defaultChecked />
+            <label className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-3">
+              <input
+                type="radio"
+                value="COD"
+                checked={paymentMethod === "COD"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
               <span>Cash on Delivery</span>
+            </label>
+
+            <label className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <input
+                type="radio"
+                value="ONLINE"
+                checked={paymentMethod === "ONLINE"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
+              <span>Pay Online (Razorpay)</span>
             </label>
           </div>
         </div>
