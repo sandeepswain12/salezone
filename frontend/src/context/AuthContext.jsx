@@ -16,32 +16,33 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  // 🔥 Restore session on app load
+  // 🔥 Restore session on page reload
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const res = await authService.refresh();
+    const token = sessionStorage.getItem("accessToken");
+    const storedUser = localStorage.getItem("user");
 
-        if (res?.accessToken) {
-          setAccessToken(res.accessToken);
-          setUser(res.user);
-        }
-      } catch (err) {
-        console.log("No active session");
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (token) {
+      setAccessToken(token);
+    }
 
-    initializeAuth();
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+
+    setLoading(false);
   }, []);
 
   // 🔐 Login
   const login = async (email, password) => {
     const res = await authService.login(email, password);
 
+    // save token
     setAccessToken(res.accessToken);
+    sessionStorage.setItem("accessToken", res.accessToken);
+
+    // save user
     setUser(res.user);
+    localStorage.setItem("user", JSON.stringify(res.user));
   };
 
   // 📝 Signup
@@ -58,12 +59,16 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setAccessToken(null);
+
+      sessionStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
     }
   };
 
-  // 🔥 NEW: Sync Updated User (for profile updates)
+  // 🔄 Sync updated user (profile update)
   const updateUserContext = useCallback((updatedUser) => {
     setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   }, []);
 
   return (

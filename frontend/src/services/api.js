@@ -5,19 +5,26 @@ const REFRESH_URL = import.meta.env.VITE_REFRESH_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // required for refresh token cookie
+  withCredentials: true,
 });
 
 // 🔐 Access token stored in memory
-let accessToken = null;
+let accessToken = sessionStorage.getItem("accessToken") || null;
 
-// ✅ Setter for access token (call after login)
-export const setAccessToken = (token) => {
-  accessToken = token;
+// Queue for pending requests while refreshing
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+// Notify all queued requests
+const onRefreshed = (token) => {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
 };
 
-// ✅ Optional getter (if needed somewhere)
-export const getAccessToken = () => accessToken;
+// Add request to queue
+const subscribeTokenRefresh = (callback) => {
+  refreshSubscribers.push(callback);
+};
 
 // ===============================
 // 🔹 Request Interceptor
@@ -40,9 +47,20 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If token expired & not already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+
+      // If refresh already in progress → wait
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      isRefreshing = true;
 
       try {
         const res = await axios.post(
@@ -53,30 +71,41 @@ api.interceptors.response.use(
 
         const newAccessToken = res.data.accessToken;
 
-        // Update memory token
-        setAccessToken(newAccessToken);
+        // Save token
+        accessToken = newAccessToken;
+        sessionStorage.setItem("accessToken", newAccessToken);
 
-        // Attach new token to failed request
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        // Notify queued requests
+        onRefreshed(newAccessToken);
 
         // Retry original request
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
         console.log("Session expired. Redirecting to login...");
 
-        // Clear everything
         accessToken = null;
-        localStorage.removeItem("userId");
+        sessionStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
 
-        // Redirect to login
         window.location.href = "/login";
 
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
     return Promise.reject(error);
   }
 );
+
+// Setter for token
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
+
+// Getter if needed
+export const getAccessToken = () => accessToken;
 
 export default api;
