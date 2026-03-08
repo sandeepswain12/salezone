@@ -220,24 +220,23 @@ public class ProductController {
     @GetMapping("/image/{productId}")
     public void serveUserImage(
             @PathVariable String productId,
-            HttpServletResponse response)
-            throws IOException {
+            HttpServletResponse response) throws IOException {
 
         String logkey = LogKeyGenerator.generateLogKey();
+
         log.info("LogKey: {} - Serve product image request received | productId={}",
                 logkey, productId);
 
-        ProductDto productDto =
-                productService.get(productId, logkey);
+        ProductDto productDto = productService.get(productId, logkey);
 
-        InputStream resource =
-                fileService.getResource(
-                        imagePath,
-                        productDto.getProductImageName(),
-                        logkey
-                );
+        InputStream resource = fileService.getResource(
+                imagePath,
+                productDto.getProductImageName(),
+                logkey
+        );
 
-        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+        response.setContentType(MediaType.IMAGE_PNG_VALUE);
+
         StreamUtils.copy(resource, response.getOutputStream());
 
         log.info("LogKey: {} - Product image served successfully | productId={} imageName={}",

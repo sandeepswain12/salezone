@@ -5,6 +5,7 @@ import com.ecom.salezone.dtos.OrderDto;
 import com.ecom.salezone.dtos.OrderUpdateRequest;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.enities.*;
+import com.ecom.salezone.enums.PaymentStatus;
 import com.ecom.salezone.exceptions.BadApiRequestException;
 import com.ecom.salezone.exceptions.ResourceNotFoundException;
 import com.ecom.salezone.util.Helper;
@@ -95,6 +96,7 @@ public class OrderServiceImpl implements OrderService {
                 .paymentStatus(orderDto.getPaymentStatus())
                 .orderStatus(orderDto.getOrderStatus())
                 .orderId(UUID.randomUUID().toString())
+                .paymentMethod(orderDto.getPaymentMethod())
                 .user(user)
                 .build();
 
@@ -227,6 +229,34 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto updateOrder(String orderId, OrderDto request, String logkey) {
+
         return null;
+    }
+
+    @Override
+    public void updatePaymentStatus(String orderId, String paymentId, PaymentStatus status, String logKey) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        order.setPaymentStatus(status);
+        order.setPaymentId(paymentId);
+
+        orderRepository.save(order);
+
+        log.info("LogKey: {} - Payment updated | orderId={} paymentId={}", logKey, orderId, paymentId);
+    }
+
+    public void updateRazorpayOrderId(String orderId, String razorpayOrderId, String logKey) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        order.setRazorpayOrderId(razorpayOrderId);
+
+        orderRepository.save(order);
+
+        log.info("LogKey: {} - Razorpay order id saved | orderId={} razorpayOrderId={}",
+                logKey, orderId, razorpayOrderId);
     }
 }

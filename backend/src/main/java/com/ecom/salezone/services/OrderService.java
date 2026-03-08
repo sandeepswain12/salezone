@@ -4,6 +4,7 @@ import com.ecom.salezone.dtos.CreateOrderRequest;
 import com.ecom.salezone.dtos.OrderDto;
 import com.ecom.salezone.dtos.OrderUpdateRequest;
 import com.ecom.salezone.dtos.PageableResponse;
+import com.ecom.salezone.enums.PaymentStatus;
 
 import java.util.List;
 
@@ -24,6 +25,9 @@ public interface OrderService {
 
     OrderDto updateOrder(String orderId, OrderUpdateRequest request, String logkey);
     OrderDto updateOrder(String orderId, OrderDto request, String logkey);
+
+    void updatePaymentStatus(String orderId, String paymentId, PaymentStatus status, String logKey);
+    void updateRazorpayOrderId(String orderId, String razorpayOrderId, String logKey);
 
     //order methods(logic) related to order
 }

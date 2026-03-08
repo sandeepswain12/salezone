@@ -1,6 +1,7 @@
 package com.ecom.salezone.dtos;
 
 import com.ecom.salezone.enums.OrderStatus;
+import com.ecom.salezone.enums.PaymentMethod;
 import com.ecom.salezone.enums.PaymentStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -59,6 +60,8 @@ public class CreateOrderRequest {
      */
     @NotBlank(message = "Billing name is required !!")
     private String billingName;
+
+    private PaymentMethod paymentMethod;
 
 }
 

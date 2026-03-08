@@ -3,6 +3,7 @@ package com.ecom.salezone.dtos;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @ToString
-public class ProductDto {
+public class ProductDto implements Serializable {
 
     /**
      * Unique product identifier

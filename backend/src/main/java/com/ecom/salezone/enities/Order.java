@@ -1,6 +1,7 @@
 package com.ecom.salezone.enities;
 
 import com.ecom.salezone.enums.OrderStatus;
+import com.ecom.salezone.enums.PaymentMethod;
 import com.ecom.salezone.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -79,6 +80,10 @@ public class Order {
      */
     @Column(name = "p_id")
     private String paymentId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "p_method")
+    private PaymentMethod paymentMethod;
 
     /**
      * User who placed the order

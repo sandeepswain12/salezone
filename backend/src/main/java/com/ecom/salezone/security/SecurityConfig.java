@@ -62,7 +62,7 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
 
-                    // 🔥 Generate logKey here
+                    // Generate logKey here
                     String logKey = LogKeyGenerator.generateLogKey();
 
                     log.error("LogKey: {} - Unauthorized access attempt | path={} reason={}",

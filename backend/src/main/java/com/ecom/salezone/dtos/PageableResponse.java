@@ -2,6 +2,7 @@ package com.ecom.salezone.dtos;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @ToString
-public class PageableResponse<T> {
+public class PageableResponse<T> implements Serializable {
 
     /**
      * List of items returned for the current page.

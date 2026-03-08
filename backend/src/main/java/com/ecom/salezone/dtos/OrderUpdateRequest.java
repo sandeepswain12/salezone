@@ -1,6 +1,7 @@
 package com.ecom.salezone.dtos;
 
 import com.ecom.salezone.enums.OrderStatus;
+import com.ecom.salezone.enums.PaymentMethod;
 import com.ecom.salezone.enums.PaymentStatus;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -48,6 +49,8 @@ public class OrderUpdateRequest {
      * Set only when order status becomes DELIVERED.
      */
     private LocalDateTime deliveredDate;
+
+    private PaymentMethod paymentMethod;
 
 }
 

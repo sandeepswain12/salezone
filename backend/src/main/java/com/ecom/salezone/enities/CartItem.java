@@ -15,8 +15,10 @@ public class CartItem {
     @Column(name = "c_i_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int cartItemId;
-    @OneToOne
-    @JoinColumn(name = "product_id")
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     /**

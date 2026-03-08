@@ -19,6 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,6 +46,7 @@ public class ProductServiceImpl implements ProductService {
     private String imagePath;
 
     // ================= CREATE PRODUCT =================
+    @CacheEvict(value = {"products","live_products","search_products","category_products"}, allEntries = true)
     @Override
     public ProductDto create(ProductDto productDto,String logkey) {
 
@@ -62,6 +65,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= UPDATE PRODUCT =================
+    @CacheEvict(value = {"products","live_products","search_products","category_products"}, allEntries = true)
     @Override
     public ProductDto update(ProductDto productDto, String productId,String logkey) {
 
@@ -90,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= DELETE PRODUCT =================
+    @CacheEvict(value = {"products","live_products","search_products","category_products"}, allEntries = true)
     @Override
     public void delete(String productId,String logkey) {
 
@@ -118,6 +123,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= GET PRODUCT =================
+    @Cacheable(value = "products", key = "#productId")
     @Override
     public ProductDto get(String productId,String logkey) {
 
@@ -134,6 +140,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= GET ALL PRODUCTS =================
+    @Cacheable(value = "products", key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir")
     @Override
     public PageableResponse<ProductDto> getAll(int pageNumber, int pageSize, String sortBy, String sortDir , String logkey) {
 
@@ -155,6 +162,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= GET ALL LIVE PRODUCTS =================
+    @Cacheable(value = "live_products", key = "'page_' + #pageNumber + '_size_' + #pageSize")
     @Override
     public PageableResponse<ProductDto> getAllLive(int pageNumber, int pageSize, String sortBy, String sortDir,String logkey) {
 
@@ -176,6 +184,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= SEARCH PRODUCT =================
+    @Cacheable(value = "search_products", key = "#subTitle + '_' + #pageNumber")
     @Override
     public PageableResponse<ProductDto> searchByTitle(String subTitle, int pageNumber, int pageSize, String sortBy, String sortDir,String logkey) {
 
@@ -197,6 +206,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= CREATE PRODUCT WITH CATEGORY =================
+    @CacheEvict(value = {"products","live_products","search_products","category_products"}, allEntries = true)
     @Override
     public ProductDto createWithCategory(ProductDto productDto, String categoryId,String logkey) {
 
@@ -223,6 +233,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= UPDATE PRODUCT CATEGORY =================
+    @CacheEvict(value = {"products","live_products","search_products","category_products"}, allEntries = true)
     @Override
     public ProductDto updateCategory(String productId, String categoryId, String logkey) {
 
@@ -260,6 +271,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= GET PRODUCTS BY CATEGORY =================
+    @Cacheable(value = "category_products", key = "#categoryId + '_' + #pageNumber")
     @Override
     public PageableResponse<ProductDto> getAllOfCategory(String categoryId,
                                                          int pageNumber,
