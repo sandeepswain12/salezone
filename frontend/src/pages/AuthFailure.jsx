@@ -7,6 +7,9 @@ const AuthFailure = () => {
   const { showToast } = useToast();
 
   useEffect(() => {
+    sessionStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+
     showToast("Google authentication failed ❌", "error");
 
     const timer = setTimeout(() => {
@@ -14,7 +17,7 @@ const AuthFailure = () => {
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [navigate, showToast]);
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">

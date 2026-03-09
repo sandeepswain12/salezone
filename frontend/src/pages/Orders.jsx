@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import orderService from "../services/orderService";
 import { useNavigate } from "react-router-dom";
+import OrdersSkeleton from "../components/skeleton/OrdersSkeleton";
 
 const Orders = () => {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -57,11 +58,7 @@ const Orders = () => {
   };
 
   if (ordersLoading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <p className="opacity-70">Loading orders...</p>
-      </div>
-    );
+    return <OrdersSkeleton />;
   }
 
   if (!orders.length) {

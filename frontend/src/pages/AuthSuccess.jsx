@@ -1,24 +1,47 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { setAccessToken } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
+const REFRESH_URL = import.meta.env.VITE_REFRESH_URL;
+
 const AuthSuccess = () => {
   const navigate = useNavigate();
-  const { loading, isAuthenticated } = useAuth();
+  const { updateUserContext } = useAuth();
   const { showToast } = useToast();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      showToast("Google login successful 🎉", "success");
+    const restoreSession = async () => {
+      try {
+        const res = await axios.post(
+          REFRESH_URL,
+          {},
+          { withCredentials: true }
+        );
 
-      const timer = setTimeout(() => {
-        navigate("/");
-      }, 1500);
+        const { accessToken, user } = res.data;
 
-      return () => clearTimeout(timer);
-    }
-  }, [loading, isAuthenticated, navigate, showToast]);
+        setAccessToken(accessToken);
+        sessionStorage.setItem("accessToken", accessToken);
+
+        localStorage.setItem("user", JSON.stringify(user));
+        updateUserContext(user);
+
+        showToast("Google login successful 🎉", "success");
+
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } catch (error) {
+        console.error("OAuth restore failed", error);
+        navigate("/login");
+      }
+    };
+
+    restoreSession();
+  }, [navigate, showToast, updateUserContext]);
 
   return (
     <div className="flex items-center justify-center h-screen">
