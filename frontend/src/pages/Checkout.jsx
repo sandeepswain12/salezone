@@ -33,7 +33,6 @@ const Checkout = () => {
       maximumFractionDigits: 0,
     }).format(amount);
 
-  // PROFESSIONAL TOTAL CALCULATIONS
   const totalItems = useMemo(
     () => cartItems.reduce((t, i) => t + i.quantity, 0),
     [cartItems]
@@ -143,8 +142,13 @@ const Checkout = () => {
       setLoading(false);
     }
   };
+
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12">
+    <section
+      className={`max-w-7xl mx-auto px-4 py-12 ${
+        theme === "dark" ? "text-white" : "text-gray-900"
+      }`}
+    >
       <h1 className="text-3xl font-bold mb-10">
         Checkout ({totalItems} items)
       </h1>
@@ -198,11 +202,11 @@ const Checkout = () => {
           {/* PAYMENT */}
           <div
             className={`p-8 rounded-2xl border
-  ${
-    theme === "dark"
-      ? "bg-[#0f0f0f] border-gray-800"
-      : "bg-white shadow-sm border-gray-100"
-  }`}
+            ${
+              theme === "dark"
+                ? "bg-[#0f0f0f] border-gray-800"
+                : "bg-white shadow-sm border-gray-100"
+            }`}
           >
             <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
 
@@ -228,7 +232,7 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* RIGHT SIDE - PROFESSIONAL SUMMARY */}
+        {/* RIGHT SIDE */}
         <div
           className={`p-8 rounded-2xl sticky top-24 border
           ${
