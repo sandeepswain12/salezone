@@ -13,6 +13,7 @@ const Checkout = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [processingPayment, setProcessingPayment] = useState(false);
   const navigate = useNavigate();
 
   const [address, setAddress] = useState({
@@ -109,6 +110,8 @@ const Checkout = () => {
 
         handler: async function (response) {
           try {
+            setProcessingPayment(true); // show loader
+
             await orderService.capturePayment(order.orderId, {
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
@@ -117,12 +120,14 @@ const Checkout = () => {
 
             await clearCart();
 
-            showToast("Payment successful", "success");
+            showToast("Order placed successfully", "success");
 
             navigate("/orders");
           } catch (err) {
             console.error(err);
             showToast("Payment verification failed", "error");
+          } finally {
+            setProcessingPayment(false);
           }
         },
 
@@ -142,6 +147,16 @@ const Checkout = () => {
       setLoading(false);
     }
   };
+  if (processingPayment) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg font-semibold">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section
