@@ -74,18 +74,14 @@ public class FileServiceImpl implements FileService {
 
         File file = new File(fullPath);
 
-        // If image not found return default image
         if (!file.exists()) {
 
-            logger.warn("LogKey: {} - Image not found. Returning default image | fileName={}",
-                    logkey, name);
+            logger.error("LogKey: {} - Image not found | fileName={}", logkey, name);
 
-            String defaultImage = path + File.separator + "default.png";
-            return new FileInputStream(defaultImage);
+            throw new FileNotFoundException("Image not found: " + name);
         }
 
-        logger.info("LogKey: {} - File resource loaded successfully | fileName={}",
-                logkey, name);
+        logger.info("LogKey: {} - File resource loaded successfully | fileName={}", logkey, name);
 
         return new FileInputStream(file);
     }

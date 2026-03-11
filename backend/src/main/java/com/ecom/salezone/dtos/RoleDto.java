@@ -1,13 +1,15 @@
 package com.ecom.salezone.dtos;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
-public class RoleDto {
+public class RoleDto implements Serializable {
 
     /**
      * Unique role identifier

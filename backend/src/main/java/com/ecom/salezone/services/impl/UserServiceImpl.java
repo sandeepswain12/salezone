@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -54,6 +56,11 @@ public class UserServiceImpl implements UserService {
     private String imagePath;
 
     // ================= CREATE USER =================
+    @CacheEvict(
+            value = {"users","users_page","users_by_email","search_users"},
+            condition = "@cacheFlags.userCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public UserDto createUser(SignupRequestDto userDto, String logKey) {
 
@@ -90,6 +97,11 @@ public class UserServiceImpl implements UserService {
     }
 
     // ================= UPDATE USER =================
+    @CacheEvict(
+            value = {"users","users_page","users_by_email","search_users"},
+            condition = "@cacheFlags.userCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public UserDto updateUser(UpdateUserRequest updatedUserDto, String userId, String logKey) {
 
@@ -157,6 +169,10 @@ public class UserServiceImpl implements UserService {
     }
 
     // ================= DELETE USER =================
+    @CacheEvict(value = {"users","users_page","users_by_email","search_users"},
+            condition = "@cacheFlags.userCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public void deleteUser(String userId, String logKey) {
 
@@ -189,6 +205,11 @@ public class UserServiceImpl implements UserService {
     }
 
     // ================= GET ALL USERS =================
+    @Cacheable(
+            value = "users_page",
+            key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir",
+            condition = "@cacheFlags.userCacheEnabled()"
+    )
     @Override
     public PageableResponse<UserDto> getAllUsers(
             int pageNumber,
@@ -214,6 +235,11 @@ public class UserServiceImpl implements UserService {
     }
 
     // ================= GET USER BY ID =================
+    @Cacheable(
+            value = "users",
+            key = "#userId",
+            condition = "@cacheFlags.userCacheEnabled()"
+    )
     @Override
     public UserDto getUserById(String userId, String logKey) {
 
@@ -229,6 +255,11 @@ public class UserServiceImpl implements UserService {
     }
 
     // ================= GET USER BY EMAIL =================
+    @Cacheable(
+            value = "users_by_email",
+            key = "#email",
+            condition = "@cacheFlags.userCacheEnabled()"
+    )
     @Override
     public UserDto getUserByEmail(String email, String logKey) {
 
@@ -244,6 +275,11 @@ public class UserServiceImpl implements UserService {
     }
 
     // ================= SEARCH USERS =================
+    @Cacheable(
+            value = "search_users",
+            key = "#keyword",
+            condition = "@cacheFlags.userCacheEnabled()"
+    )
     @Override
     public List<UserDto> searchUsers(String keyword, String logKey) {
 

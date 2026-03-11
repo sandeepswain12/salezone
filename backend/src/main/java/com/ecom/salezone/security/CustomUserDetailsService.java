@@ -5,6 +5,7 @@ import com.ecom.salezone.util.LogKeyGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +20,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
+    @Cacheable(
+            value = "users",
+            key = "#username",
+            condition = "@cacheFlags.loadUserCacheEnabled()"
+    )
     @Override
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException {

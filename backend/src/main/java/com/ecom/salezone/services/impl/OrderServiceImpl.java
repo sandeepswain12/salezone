@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,6 +46,11 @@ public class OrderServiceImpl implements OrderService {
     private CartRepository cartRepository;
 
     // ================= GET ORDER =================
+    @Cacheable(
+            value = "orders",
+            key = "#orderId",
+            condition = "@cacheFlags.orderCacheEnabled()"
+    )
     @Override
     public OrderDto getOrder(String orderId, String logkey) {
 
@@ -61,6 +68,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ================= CREATE ORDER =================
+    @CacheEvict(
+            value = {"orders","orders_page","user_orders"},
+            condition = "@cacheFlags.orderCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public OrderDto createOrder(CreateOrderRequest orderDto, String logkey) {
 
@@ -135,6 +147,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ================= REMOVE ORDER =================
+    @CacheEvict(
+            value = {"orders","orders_page","user_orders"},
+            condition = "@cacheFlags.orderCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public void removeOrder(String orderId, String logkey) {
 
@@ -152,6 +169,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ================= GET ORDERS OF USER =================
+    @Cacheable(
+            value = "user_orders",
+            key = "#userId",
+            condition = "@cacheFlags.orderCacheEnabled()"
+    )
     @Override
     public List<OrderDto> getOrdersOfUser(String userId, String logkey) {
 
@@ -174,6 +196,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ================= GET PAGINATED ORDERS =================
+    @Cacheable(
+            value = "orders_page",
+            key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir",
+            condition = "@cacheFlags.orderCacheEnabled()"
+    )
     @Override
     public PageableResponse<OrderDto> getOrders(
             int pageNumber,
@@ -199,6 +226,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ================= UPDATE ORDER =================
+    @CacheEvict(
+            value = {"orders","orders_page","user_orders"},
+            condition = "@cacheFlags.orderCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public OrderDto updateOrder(String orderId, OrderUpdateRequest request, String logkey) {
 
@@ -233,6 +265,11 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
+    @CacheEvict(
+            value = {"orders","orders_page","user_orders"},
+            condition = "@cacheFlags.orderCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public void updatePaymentStatus(String orderId, String paymentId, PaymentStatus status, String logKey) {
 

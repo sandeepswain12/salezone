@@ -16,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.UUID;
 
@@ -32,6 +34,11 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryRepository categoryRepository;
 
     // ================= CREATE CATEGORY =================
+    @CacheEvict(
+            value = {"categories","categories_page"},
+            condition = "@cacheFlags.categoryCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public CategoryDto create(CategoryDto categoryDto, String logkey) {
 
@@ -51,6 +58,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     // ================= UPDATE CATEGORY =================
+    @CacheEvict(
+            value = {"categories","categories_page"},
+            condition = "@cacheFlags.categoryCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public CategoryDto update(CategoryDto categoryDto, String categoryId, String logkey) {
 
@@ -77,6 +89,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     // ================= DELETE CATEGORY =================
+    @CacheEvict(
+            value = {"categories","categories_page"},
+            condition = "@cacheFlags.categoryCacheEnabled()",
+            allEntries = true
+    )
     @Override
     public void delete(String categoryId, String logkey) {
 
@@ -97,6 +114,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     // ================= GET ALL CATEGORIES =================
+    @Cacheable(
+            value = "categories_page",
+            key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir",
+            condition = "@cacheFlags.categoryCacheEnabled()"
+    )
     @Override
     public PageableResponse<CategoryDto> getAll(
             int pageNumber,
@@ -125,6 +147,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     // ================= GET SINGLE CATEGORY =================
+    @Cacheable(
+            value = "categories",
+            key = "#categoryId",
+            condition = "@cacheFlags.categoryCacheEnabled()"
+    )
     @Override
     public CategoryDto get(String categoryId, String logkey) {
 

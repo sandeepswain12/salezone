@@ -19,6 +19,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -227,19 +228,28 @@ public class ProductController {
         log.info("LogKey: {} - Serve product image request received | productId={}",
                 logkey, productId);
 
-        ProductDto productDto = productService.get(productId, logkey);
+        try {
 
-        InputStream resource = fileService.getResource(
-                imagePath,
-                productDto.getProductImageName(),
-                logkey
-        );
+            ProductDto productDto = productService.get(productId, logkey);
 
-        response.setContentType(MediaType.IMAGE_PNG_VALUE);
+            InputStream resource = fileService.getResource(
+                    imagePath,
+                    productDto.getProductImageName(),
+                    logkey
+            );
 
-        StreamUtils.copy(resource, response.getOutputStream());
+            response.setContentType(MediaType.IMAGE_PNG_VALUE);
 
-        log.info("LogKey: {} - Product image served successfully | productId={} imageName={}",
-                logkey, productId, productDto.getProductImageName());
+            StreamUtils.copy(resource, response.getOutputStream());
+
+            log.info("LogKey: {} - Product image served successfully | productId={} imageName={}",
+                    logkey, productId, productDto.getProductImageName());
+
+        } catch (FileNotFoundException e) {
+
+            log.error("LogKey: {} - Product image not found | productId={}", logkey, productId);
+
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 }

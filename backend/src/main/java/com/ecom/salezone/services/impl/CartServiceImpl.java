@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -47,6 +49,11 @@ public class CartServiceImpl implements CartService {
     private CartItemRepository cartItemRepository;
 
     // ================= ADD ITEM TO CART =================
+    @CacheEvict(
+            value = "user_cart",
+            key = "#userId",
+            condition = "@cacheFlags.cartCacheEnabled()"
+    )
     @Override
     public CartDto addItemToCart(String userId, AddItemToCartRequest request, String logkey) {
 
@@ -129,6 +136,11 @@ public class CartServiceImpl implements CartService {
     }
 
     // ================= UPDATE CART ITEM QUANTITY =================
+    @CacheEvict(
+            value = "user_cart",
+            key = "#userId",
+            condition = "@cacheFlags.cartCacheEnabled()"
+    )
     @Override
     public CartDto updateCartItemQuantity(String userId, int itemId, int quantity, String logkey) {
 
@@ -194,6 +206,11 @@ public class CartServiceImpl implements CartService {
     }
 
     // ================= REMOVE ITEM FROM CART =================
+    @CacheEvict(
+            value = "user_cart",
+            key = "#userId",
+            condition = "@cacheFlags.cartCacheEnabled()"
+    )
     @Override
     public void removeItemFromCart(String userId, int cartItem, String logkey) {
 
@@ -214,6 +231,11 @@ public class CartServiceImpl implements CartService {
     }
 
     // ================= CLEAR CART =================
+    @CacheEvict(
+            value = "user_cart",
+            key = "#userId",
+            condition = "@cacheFlags.cartCacheEnabled()"
+    )
     @Override
     public void clearCart(String userId, String logkey) {
 
@@ -222,14 +244,14 @@ public class CartServiceImpl implements CartService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("LogKey: {} - User not found | userId={}",
+                    log.error("LogKey: {} - User not found . userId={}",
                             logkey, userId);
                     return new ResourceNotFoundException("user not found in database!!");
                 });
 
         Cart cart = cartRepository.findByUser(user)
                 .orElseThrow(() -> {
-                    log.error("LogKey: {} - Cart not found | userId={}",
+                    log.error("LogKey: {} - Cart not found || userId={}",
                             logkey, userId);
                     return new ResourceNotFoundException("Cart of given user not found !!");
                 });
@@ -242,6 +264,11 @@ public class CartServiceImpl implements CartService {
     }
 
     // ================= GET CART BY USER =================
+    @Cacheable(
+            value = "user_cart",
+            key = "#userId",
+            condition = "@cacheFlags.cartCacheEnabled()"
+    )
     @Override
     public CartDto getCartByUser(String userId, String logkey) {
 
