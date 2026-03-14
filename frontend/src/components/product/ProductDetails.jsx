@@ -42,10 +42,8 @@ const ProductDetails = () => {
 
   // Image URL
   const imageUrl =
-    product && !imgError
-      ? `${import.meta.env.VITE_API_BASE_URL}/products/image/${
-          product.productId
-        }`
+    product?.productImageUrl && !imgError
+      ? product.productImageUrl
       : "/no-image.png";
 
   // Price Formatting
