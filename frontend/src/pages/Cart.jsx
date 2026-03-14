@@ -132,9 +132,7 @@ const Cart = () => {
       `}
                   >
                     <img
-                      src={`${
-                        import.meta.env.VITE_API_BASE_URL
-                      }/products/image/${item.product.productId}`}
+                      src={item.product.productImageUrl || "/no-image.png"}
                       alt={item.product.title}
                       className="max-h-full max-w-full object-contain p-2"
                     />
@@ -222,9 +220,7 @@ const Cart = () => {
                       className="w-24 h-24 flex-shrink-0 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-[#1a1a1a]"
                     >
                       <img
-                        src={`${
-                          import.meta.env.VITE_API_BASE_URL
-                        }/products/image/${item.product.productId}`}
+                        src={item.product.productImageUrl || "/no-image.png"}
                         alt={item.product.title}
                         className="max-h-full max-w-full object-contain p-2"
                       />

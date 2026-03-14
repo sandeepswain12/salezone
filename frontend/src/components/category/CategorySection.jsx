@@ -77,8 +77,8 @@ const CategorySection = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await getCategories({ pageSize: 5 });
-        setCategories(data?.content || []);
+        const data = await getCategories({ pageSize: 20 });
+        setCategories(data || []);
       } catch (err) {
         console.error("Failed to load categories", err);
         setError(true);
@@ -91,7 +91,7 @@ const CategorySection = () => {
   }, []);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-14">
+    <section className="max-w-7xl mx-auto px-4 pt-12 pb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold tracking-tight">Shop by Category</h2>

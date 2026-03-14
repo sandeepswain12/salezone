@@ -31,18 +31,22 @@ export const getProductById = async (productId) => {
 export const searchProducts = async ({
   keyword,
   pageNumber = 0,
-  pageSize = 10,
+  pageSize = 8,
   sortBy = "title",
   sortDir = "asc",
+  minPrice,
+  maxPrice,
+  categoryId,
 }) => {
-  if (!keyword) throw new Error("Keyword required");
-
   const response = await api.get(`/products/search/${keyword}`, {
     params: {
       pageNumber,
       pageSize,
       sortBy,
       sortDir,
+      minPrice,
+      maxPrice,
+      categoryId,
     },
   });
 

@@ -7,9 +7,16 @@ export const getCategories = async ({
   sortBy = "title",
   sortDir = "asc",
 } = {}) => {
-  const response = await publicApi.get("/categories");
+  const response = await publicApi.get("/categories", {
+    params: {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDir,
+    },
+  });
 
-  return response.data;
+  return response.data.content; // important fix
 };
 
 // Get Single Category By ID
