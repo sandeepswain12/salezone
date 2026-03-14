@@ -9,11 +9,11 @@ export const CartProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const { showToast } = useToast();
 
-  const [cart, setCart] = useState(null); // ✅ store full cart
+  const [cart, setCart] = useState(null); // store full cart
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Fetch Cart
+  // Fetch Cart
   const fetchCart = async () => {
     if (!isAuthenticated || !user?.userId) return;
 
@@ -30,7 +30,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // 🔹 Add To Cart
+  // Add To Cart
   const addToCart = async (productId) => {
     if (!user?.userId) {
       showToast("Please login first", "error");
@@ -46,7 +46,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // 🔹 Remove Item
+  // Remove Item
   const removeItem = async (cartItemId) => {
     try {
       await cartService.removeCartItem(user.userId, cartItemId);
@@ -56,7 +56,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // 🔹 Update Quantity
+  // Update Quantity
   const updateQuantity = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return;
 
@@ -64,7 +64,7 @@ export const CartProvider = ({ children }) => {
     const previousItems = [...cartItems];
 
     try {
-      // 🔥 Optimistic UI update
+      // Optimistic UI update
       setCartItems((prev) =>
         prev.map((item) =>
           item.cartItemId === cartItemId
@@ -82,12 +82,12 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       showToast("Failed to update quantity", "error");
 
-      // 🔥 Rollback if failed
+      // Rollback if failed
       setCartItems(previousItems);
     }
   };
 
-  // 🔹 Clear Cart
+  // Clear Cart
   const clearCart = async () => {
     try {
       await cartService.clearCart(user.userId);
@@ -98,7 +98,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // 🔹 Calculations
+  // Calculations
   const totalAmount = cartItems.reduce(
     (total, item) => total + item.totalPrice,
     0
@@ -116,7 +116,7 @@ export const CartProvider = ({ children }) => {
     <CartContext.Provider
       value={{
         cart,
-        cartId: cart?.cartId, // ✅ expose cartId
+        cartId: cart?.cartId, // expose cartId
         cartItems,
         addToCart,
         removeItem,

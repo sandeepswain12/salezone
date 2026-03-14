@@ -4,7 +4,7 @@ const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    // 👇 read theme from localStorage on first load
+    // read theme from localStorage on first load
     return localStorage.getItem("theme") || "light";
   });
 

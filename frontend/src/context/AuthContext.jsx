@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  // 🔥 Restore session on page reload
+  // Restore session on page reload
   useEffect(() => {
     const token = sessionStorage.getItem("accessToken");
     const storedUser = localStorage.getItem("user");
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // 🔐 Login
+  // Login
   const login = async (email, password) => {
     const res = await authService.login(email, password);
 
@@ -45,12 +45,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(res.user));
   };
 
-  // 📝 Signup
+  // Signup
   const signup = async (data) => {
     return await authService.signup(data);
   };
 
-  // 🚪 Logout
+  // Logout
   const logout = async () => {
     try {
       await authService.logout();
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔄 Sync updated user (profile update)
+  // Sync updated user (profile update)
   const updateUserContext = useCallback((updatedUser) => {
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));

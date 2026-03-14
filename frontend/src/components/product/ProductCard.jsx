@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 const ProductCard = ({ product }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation(); // 🔥 IMPORTANT
+  const location = useLocation(); // IMPORTANT
   const { addToCart } = useCart();
   const [imgError, setImgError] = useState(false);
 
@@ -48,7 +48,7 @@ const ProductCard = ({ product }) => {
   const handleNavigation = () => {
     if (hasProductId) {
       navigate(`/product/${product.productId}`, {
-        state: { from: location }, // 🔥 CRITICAL
+        state: { from: location }, // CRITICAL
       });
     }
   };

@@ -1,6 +1,6 @@
 import api from "./api";
 
-// ✅ Get all products
+// Get all products
 export const getProducts = async ({
   pageNumber = 0,
   pageSize = 10,
@@ -19,7 +19,7 @@ export const getProducts = async ({
   return response.data;
 };
 
-// ✅ Get single product by ID
+// Get single product by ID
 export const getProductById = async (productId) => {
   if (!productId) throw new Error("Invalid product ID");
 
@@ -27,7 +27,7 @@ export const getProductById = async (productId) => {
   return response.data;
 };
 
-// ✅ Search products (FIXED for your backend)
+// Search products (FIXED for your backend)
 export const searchProducts = async ({
   keyword,
   pageNumber = 0,

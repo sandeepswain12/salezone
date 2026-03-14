@@ -94,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
         product.setLive(productDto.isLive());
         product.setStock(productDto.isStock());
         product.setProductImageName(productDto.getProductImageName());
+        product.setProductImageUrl(productDto.getProductImageUrl());
 
         Product updatedProduct = productRepository.save(product);
         log.info("LogKey: {} - Product updated in DB product Id: {}",logkey, productId);

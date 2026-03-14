@@ -16,7 +16,7 @@ const ProductGrid = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // ✅ Safe Page Parsing
+  // Safe Page Parsing
   const pageParam = Number(searchParams.get("page"));
   const page = !isNaN(pageParam) && pageParam >= 0 ? pageParam : 0;
 
@@ -25,7 +25,7 @@ const ProductGrid = () => {
 
   const { showToast } = useToast();
 
-  // ✅ Fetch Products
+  // Fetch Products
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -49,12 +49,12 @@ const ProductGrid = () => {
     }
   }, [page, showToast]);
 
-  // ✅ Fetch when page changes
+  // Fetch when page changes
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // ✅ Scroll only on page change (not first load)
+  // Scroll only on page change (not first load)
   useEffect(() => {
     if (isFirstLoad.current) {
       isFirstLoad.current = false;
@@ -67,7 +67,7 @@ const ProductGrid = () => {
     });
   }, [page]);
 
-  // ✅ Preserve Other Query Params
+  // Preserve Other Query Params
   const handlePrev = () => {
     if (page > 0) {
       setSearchParams((prev) => {

@@ -17,7 +17,7 @@ const ProductDetails = () => {
   const [error, setError] = useState(null);
   const [imgError, setImgError] = useState(false);
 
-  // ✅ Fetch Product
+  // Fetch Product
   useEffect(() => {
     if (!productId) return;
 
@@ -40,7 +40,7 @@ const ProductDetails = () => {
     fetchProduct();
   }, [productId]);
 
-  // ✅ Image URL
+  // Image URL
   const imageUrl =
     product && !imgError
       ? `${import.meta.env.VITE_API_BASE_URL}/products/image/${
@@ -48,7 +48,7 @@ const ProductDetails = () => {
         }`
       : "/no-image.png";
 
-  // ✅ Price Formatting
+  // Price Formatting
   const formattedPrice = useMemo(() => {
     if (!product) return "";
     return new Intl.NumberFormat("en-IN", {
@@ -74,7 +74,7 @@ const ProductDetails = () => {
     return Math.round(discount);
   }, [product]);
 
-  // ✅ Back Handler
+  // Back Handler
   const handleBack = () => {
     navigate(-1);
   };
@@ -94,7 +94,7 @@ const ProductDetails = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-8">
-      {/* ✅ IMPROVED BACK BUTTON */}
+      {/* IMPROVED BACK BUTTON */}
       <button
         onClick={handleBack}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg 

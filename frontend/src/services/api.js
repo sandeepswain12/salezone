@@ -8,7 +8,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// 🔐 Access token stored in memory
+// Access token stored in memory
 let accessToken = sessionStorage.getItem("accessToken") || null;
 
 // Queue for pending requests while refreshing
@@ -26,9 +26,7 @@ const subscribeTokenRefresh = (callback) => {
   refreshSubscribers.push(callback);
 };
 
-// ===============================
-// 🔹 Request Interceptor
-// ===============================
+// Request Interceptor
 api.interceptors.request.use(
   (config) => {
     if (accessToken) {
@@ -39,9 +37,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ===============================
-// 🔹 Response Interceptor
-// ===============================
+// Response Interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -88,7 +84,7 @@ api.interceptors.response.use(
         sessionStorage.removeItem("accessToken");
         localStorage.removeItem("user");
 
-        window.location.href = "/login";
+        window.location.href = "/auth";
 
         return Promise.reject(refreshError);
       } finally {

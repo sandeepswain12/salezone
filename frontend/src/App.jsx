@@ -26,7 +26,7 @@ import { setAccessToken } from "./services/api";
 function App() {
   const { theme } = useTheme();
 
-  // 🔥 Restore session on page refresh
+  // Restore session on page refresh
   // useEffect(() => {
   //   const restoreSession = async () => {
   //     try {
@@ -77,7 +77,7 @@ function App() {
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/auth/failure" element={<AuthFailure />} />
 
-          {/* 🔐 Protected Routes */}
+          {/* Protected Routes */}
           <Route
             path="/cart"
             element={

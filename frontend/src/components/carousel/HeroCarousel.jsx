@@ -67,7 +67,7 @@ const HeroCarousel = () => {
     startAutoSlide();
   };
 
-  /* 👉 TOUCH EVENTS FOR MOBILE */
+  /* TOUCH EVENTS FOR MOBILE */
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
   };

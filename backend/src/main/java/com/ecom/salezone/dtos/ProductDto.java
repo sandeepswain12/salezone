@@ -78,6 +78,11 @@ public class ProductDto implements Serializable {
     private String productImageName;
 
     /**
+     * Product image url stored in server/cloud
+     */
+    private String productImageUrl;
+
+    /**
      * Category details of product
      */
     @NotNull(message = "Category is required")

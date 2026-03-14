@@ -1,6 +1,7 @@
 package com.ecom.salezone.controller;
 
 import com.ecom.salezone.dtos.*;
+import com.ecom.salezone.services.CloudnaryImageService;
 import com.ecom.salezone.services.FileService;
 import com.ecom.salezone.services.UserService;
 import com.ecom.salezone.util.LogKeyGenerator;
@@ -8,6 +9,7 @@ import com.ecom.salezone.util.LogKeyGenerator;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,12 @@ public class UserController {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private CloudnaryImageService cloudnaryImageService;
+
+    @Autowired
+    private ModelMapper mapper;
 
     @Value("${user.profile.image.path}")
     private String imageUploadPath;
@@ -173,25 +181,34 @@ public class UserController {
         log.info("LogKey: {} - Upload user image request received | userId={} fileName={}",
                 logKey, userId, image.getOriginalFilename());
 
+        /* Before we store image in application
         String imageName =
                 fileService.uploadFile(image, imageUploadPath, logKey);
 
         UserDto user =
                 userService.getUserById(userId, logKey);
 
-//        user.setImageName(imageName);
-//        userService.updateUser(user, userId, logKey);
+        user.setImageName(imageName);
+        userService.updateUser(user, userId, logKey);*/
+
+        String userImageUrl = cloudnaryImageService.uploadImage(image, logKey);
+
+        UserDto userDto = userService.getUserById(userId, logKey);
+        userDto.setImageName(userImageUrl);
+        UpdateUserRequest updateUserRequest = mapper.map(userDto, UpdateUserRequest.class);
+        userService.updateUser(updateUserRequest, userId, logKey);
+
 
         ImageResponse imageResponse =
                 ImageResponse.builder()
-                        .imageName(imageName)
+                        .imageName(userImageUrl)
                         .success(true)
                         .message("Image uploaded successfully")
                         .status(HttpStatus.CREATED)
                         .build();
 
         log.info("LogKey: {} - User image uploaded successfully | userId={} imageName={}",
-                logKey, userId, imageName);
+                logKey, userId, userImageUrl);
 
         return new ResponseEntity<>(imageResponse, HttpStatus.CREATED);
     }

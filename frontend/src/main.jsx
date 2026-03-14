@@ -13,7 +13,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ThemeProvider>
       <ToastProvider>
         {" "}
-        {/* 🔥 must be above */}
         <AuthProvider>
           <CartProvider>
             {/* <AuthGate> */}

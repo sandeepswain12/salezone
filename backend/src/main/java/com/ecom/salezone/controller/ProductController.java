@@ -4,6 +4,7 @@ import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.ImageResponse;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.dtos.ProductDto;
+import com.ecom.salezone.services.CloudnaryImageService;
 import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.FileService;
 import com.ecom.salezone.services.ProductService;
@@ -36,6 +37,9 @@ public class ProductController {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private CloudnaryImageService cloudnaryImageService;
 
     @Value("${product.image.path}")
     private String imagePath;
@@ -194,25 +198,37 @@ public class ProductController {
         log.info("LogKey: {} - Upload product image request received | productId={} fileName={}",
                 logkey, productId, image.getOriginalFilename());
 
+        /*Before we store images in our application
+
         String fileName =
                 fileService.uploadFile(image, imagePath, logkey);
+
 
         ProductDto productDto =
                 productService.get(productId, logkey);
         productDto.setProductImageName(fileName);
 
         productService.update(productDto, productId, logkey);
+        */
+
+//        Now we are storing images in cloudnary
+        String productImageUrl = cloudnaryImageService.uploadImage(image,logkey);
+
+        ProductDto productDto = productService.get(productId,logkey);
+        productDto.setProductImageUrl(productImageUrl);
+
+        productService.update(productDto, productId, logkey);
 
         ImageResponse response =
                 ImageResponse.builder()
-                        .imageName(fileName)
+                        .imageName(productImageUrl)
                         .message("Product image is successfully uploaded !!")
                         .status(HttpStatus.CREATED)
                         .success(true)
                         .build();
 
         log.info("LogKey: {} - Product image uploaded successfully | productId={} imageName={}",
-                logkey, productId, fileName);
+                logkey, productId, productImageUrl);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

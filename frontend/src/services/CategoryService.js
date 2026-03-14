@@ -1,10 +1,6 @@
 import publicApi from "./publicapi";
 
-/* ================================
-   📂 CATEGORY SERVICES
-================================ */
-
-// 🔹 Get Categories (Paginated)
+// Get Categories (Paginated)
 export const getCategories = async ({
   pageNumber = 0,
   pageSize = 10,
@@ -16,13 +12,13 @@ export const getCategories = async ({
   return response.data;
 };
 
-// 🔹 Get Single Category By ID
+// Get Single Category By ID
 export const getCategoryById = async (categoryId) => {
   const response = await publicApi.get(`/categories/${categoryId}`);
   return response.data;
 };
 
-// 🔹 Get Products By Category (Paginated)
+// Get Products By Category (Paginated)
 export const getProductsByCategory = async ({
   categoryId,
   pageNumber = 0,

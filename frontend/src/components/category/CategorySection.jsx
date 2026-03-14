@@ -16,9 +16,7 @@ import {
   Apple,
 } from "lucide-react";
 
-/* ---------------------------------- */
-/* 🔥 Dynamic Icon Resolver */
-/* ---------------------------------- */
+/* Dynamic Icon Resolver */
 const iconMap = [
   { keywords: ["book"], icon: Book },
   { keywords: ["elect", "laptop", "mobile"], icon: Laptop },
@@ -43,9 +41,7 @@ const resolveIcon = (title = "") => {
   return ShoppingCart;
 };
 
-/* ---------------------------------- */
-/* 🎨 Deterministic Gradient Generator */
-/* ---------------------------------- */
+/* Deterministic Gradient Generator */
 const gradients = [
   "from-blue-500 to-indigo-600",
   "from-purple-500 to-pink-500",
@@ -111,18 +107,18 @@ const CategorySection = () => {
           ${theme === "dark" ? "scrollbar-dark" : "scrollbar-light"}
         `}
       >
-        {/* 🔥 Loading Skeleton */}
+        {/* Loading Skeleton */}
         {loading &&
           Array.from({ length: 5 }).map((_, index) => (
             <CategorySkeleton key={index} theme={theme} />
           ))}
 
-        {/* ❌ Error State */}
+        {/* Error State */}
         {!loading && error && (
           <div className="text-sm text-red-500">Failed to load categories.</div>
         )}
 
-        {/* ✅ Categories */}
+        {/* Categories */}
         {!loading &&
           !error &&
           categories.map((category) => {

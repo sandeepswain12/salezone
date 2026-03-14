@@ -70,6 +70,12 @@ public class Product {
     @Column(name = "p_imagename")
     private String productImageName;
 
+    /**
+     * Product image url stored in server/cloud
+     */
+    @Column(name = "p_imageurl")
+    private String productImageUrl;
+
 //    /**
 //     * Brand of the product (e.g., Apple, Samsung)
 //     */

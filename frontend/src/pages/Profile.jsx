@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateUser } from "../services/userService";
 import { useToast } from "../context/ToastContext";
 import { useTheme } from "../context/ThemeContext";
+import { uploadUserImage } from "../services/userService";
 
 const Profile = () => {
   const { user, loading, updateUserContext } = useAuth();
@@ -20,6 +21,7 @@ const Profile = () => {
 
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const getAvatarColor = (name) => {
     const colors = [
@@ -66,6 +68,48 @@ const Profile = () => {
       ...prev,
       [name]: "",
     }));
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("Image must be under 2MB", "error");
+      return;
+    }
+
+    // preview before upload
+    const previewUrl = URL.createObjectURL(file);
+
+    setFormData((prev) => ({
+      ...prev,
+      imageName: previewUrl,
+    }));
+
+    setUploadingImage(true);
+
+    try {
+      const res = await uploadUserImage(user.userId, file);
+
+      const imageUrl = res.imageName;
+
+      setFormData((prev) => ({
+        ...prev,
+        imageName: imageUrl,
+      }));
+
+      updateUserContext({
+        ...user,
+        imageName: imageUrl,
+      });
+
+      showToast("Profile image updated 🚀", "success");
+    } catch (error) {
+      showToast("Image upload failed ❌", "error");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   // Handle update
@@ -121,29 +165,53 @@ const Profile = () => {
       >
         {/* HEADER */}
         <div className="flex flex-col md:flex-row items-center gap-6 mb-10">
-          {/* {formData.imageName ? (
-            <img
-              src={formData.imageName}
-              alt="Profile"
-              className="w-28 h-28 rounded-full object-cover border-4 border-blue-500 shadow-md"
-            />
-          ) : (
-            <div className="w-28 h-28 rounded-full bg-gray-300 dark:bg-zinc-700 flex items-center justify-center text-xl font-bold">
-              {user.userName?.charAt(0).toUpperCase()}
-            </div>
-          )} */}
-          <div
-            className={`w-28 h-28 rounded-full bg-gradient-to-br ${getAvatarColor(
-              user.userName
-            )} flex items-center justify-center text-4xl font-semibold text-white shadow-xl ring-4 ${
-              theme === "dark" ? "ring-zinc-800" : "ring-white"
-            } transition-transform duration-300 hover:scale-105`}
-          >
-            {user.userName?.charAt(0).toUpperCase()}
-          </div>
-          <div className="text-center md:text-left">
-            <h2 className="text-3xl font-bold">{user.userName}</h2>
-            <p className="opacity-70 mt-1">{user.email}</p>
+          <div className="relative group">
+            {/* IMAGE OR AVATAR */}
+            {formData.imageName ? (
+              <img
+                src={formData.imageName}
+                alt="Profile"
+                className="w-32 h-32 rounded-full object-cover border-4 border-blue-500 shadow-lg transition-transform duration-300 group-hover:scale-105"
+              />
+            ) : (
+              <div
+                className={`w-32 h-32 rounded-full bg-gradient-to-br ${getAvatarColor(
+                  user.userName
+                )} flex items-center justify-center text-4xl font-semibold text-white shadow-xl`}
+              >
+                {user.userName?.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            {/* CAMERA ICON */}
+            <label className="absolute bottom-2 right-2 bg-blue-600 text-white p-2 rounded-full cursor-pointer shadow-md hover:bg-blue-700 transition-all">
+              {uploadingImage ? (
+                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 7h4l2-2h6l2 2h4v13H3V7z"
+                  />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              )}
+
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            </label>
           </div>
         </div>
 
