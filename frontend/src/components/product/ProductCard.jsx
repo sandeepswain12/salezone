@@ -16,10 +16,8 @@ const ProductCard = ({ product }) => {
   const hasProductId = Boolean(product.productId);
 
   const imageUrl =
-    hasProductId && !imgError
-      ? `${import.meta.env.VITE_API_BASE_URL}/products/image/${
-          product.productId
-        }`
+    product.productImageUrl && !imgError
+      ? product.productImageUrl
       : "/no-image.png";
 
   const formattedPrice = useMemo(() => {
