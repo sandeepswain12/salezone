@@ -185,7 +185,7 @@ public class OrderServiceImpl implements OrderService {
                     return new ResourceNotFoundException("User not found !!");
                 });
 
-        List<Order> orders = orderRepository.findByUser(user);
+        List<Order> orders = orderRepository.findByUserOrderByOrderedDateDesc(user);
 
         log.info("LogKey: {} - Orders fetched for user | userId={} count={}",
                 logkey, userId, orders.size());

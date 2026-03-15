@@ -3,10 +3,15 @@ package com.ecom.salezone.services;
 import com.ecom.salezone.dtos.PageableResponse;
 import com.ecom.salezone.dtos.ProductDto;
 
+import java.util.List;
+
 public interface ProductService {
 
     //create
     ProductDto create(ProductDto productDto,String logkey);
+
+    //Bulk create
+    List<ProductDto> createBulk(List<ProductDto> productDtos, String logkey);
 
     //update
     ProductDto update(ProductDto productDto, String productId,String logkey);
@@ -25,7 +30,17 @@ public interface ProductService {
     PageableResponse<ProductDto> getAllLive(int pageNumber, int pageSize, String sortBy, String sortDir,String logkey);
 
     //search product
-    PageableResponse<ProductDto> searchByTitle(String subTitle, int pageNumber, int pageSize, String sortBy, String sortDir,String logkey);
+//    PageableResponse<ProductDto> searchByTitle(String subTitle, int pageNumber, int pageSize, String sortBy, String sortDir,String logkey);
+    PageableResponse<ProductDto> searchProducts(
+            String query,
+            String categoryId,
+            Double minPrice,
+            Double maxPrice,
+            int pageNumber,
+            int pageSize,
+            String sortBy,
+            String sortDir,
+            String logkey);
 
 
     //create product with category

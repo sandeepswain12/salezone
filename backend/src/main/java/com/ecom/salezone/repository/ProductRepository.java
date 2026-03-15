@@ -24,6 +24,28 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     // Fetch products by category
     Page<Product> findByCategory(Category category, Pageable pageable);
 
+    Page<Product> findByTitleContainingAndCategory_CategoryIdAndPriceBetween(
+            String title,
+            String categoryId,
+            Double minPrice,
+            Double maxPrice,
+            Pageable pageable
+    );
+
+    Page<Product> findByTitleContainingAndCategory_CategoryId(
+            String title,
+            String categoryId,
+            Pageable pageable
+    );
+
+    Page<Product> findByTitleContainingAndPriceBetween(
+            String title,
+            Double minPrice,
+            Double maxPrice,
+            Pageable pageable
+    );
+
+
     //other methods
     //custom finder methods
     //query methods

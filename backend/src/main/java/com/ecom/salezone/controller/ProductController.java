@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @RestController
 @RequestMapping("/salezone/ecom/products")
@@ -60,6 +61,25 @@ public class ProductController {
                 logkey, createdProduct);
 
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+    }
+
+
+    @PostMapping("/create/bulk")
+    public ResponseEntity<List<ProductDto>> createProducts(
+            @RequestBody List<ProductDto> productDtos) {
+
+        String logkey = LogKeyGenerator.generateLogKey();
+
+        log.info("LogKey: {} - Bulk create product request received | count={}",
+                logkey, productDtos.size());
+
+        List<ProductDto> createdProducts =
+                productService.createBulk(productDtos, logkey);
+
+        log.info("LogKey: {} - Bulk product creation completed | totalSaved={}",
+                logkey, createdProducts.size());
+
+        return new ResponseEntity<>(createdProducts, HttpStatus.CREATED);
     }
 
     // ================= UPDATE PRODUCT =================
@@ -169,20 +189,22 @@ public class ProductController {
     @GetMapping("/search/{query}")
     public ResponseEntity<PageableResponse<ProductDto>> searchProduct(
             @PathVariable String query,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "title") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
 
         String logkey = LogKeyGenerator.generateLogKey();
-        log.info("LogKey: {} - Search product request received | query={} page={} size={} sortBy={} sortDir={}",
-                logkey, query, pageNumber, pageSize, sortBy, sortDir);
+
+        log.info("LogKey: {} - Search product request | query={} category={} minPrice={} maxPrice={}",
+                logkey, query, categoryId, minPrice, maxPrice);
 
         PageableResponse<ProductDto> response =
-                productService.searchByTitle(query, pageNumber, pageSize, sortBy, sortDir, logkey);
-
-        log.info("LogKey: {} - Product search completed successfully | resultCount={}",
-                logkey, response.getContent().size());
+                productService.searchProducts(query, categoryId, minPrice, maxPrice,
+                        pageNumber, pageSize, sortBy, sortDir, logkey);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

@@ -16,5 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     // Fetch all orders of a specific user
     List<Order> findByUser(User user);
 
+    List<Order> findByUserOrderByOrderedDateDesc(User user);
+
 }
 

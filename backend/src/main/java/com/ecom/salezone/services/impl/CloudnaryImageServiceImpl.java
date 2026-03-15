@@ -28,7 +28,8 @@ public class CloudnaryImageServiceImpl implements CloudnaryImageService {
             return uploadResult.get("secure_url").toString();
 
         } catch (Exception e) {
-            throw new RuntimeException("Image upload failed");
+            e.printStackTrace();   // show real error in logs
+            throw new RuntimeException("Image upload failed", e);
         }
     }
 }

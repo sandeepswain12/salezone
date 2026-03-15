@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -66,6 +67,37 @@ public class ProductServiceImpl implements ProductService {
         log.info("LogKey: {} - Product saved in DB id : {}",logkey, productId);
 
         return mapper.map(saveProduct, ProductDto.class);
+    }
+
+
+    @Override
+    public List<ProductDto> createBulk(List<ProductDto> productDtos, String logkey) {
+
+        log.info("LogKey: {} - Entry into createBulk method | totalProducts={}",
+                logkey, productDtos.size());
+
+        List<Product> products = productDtos.stream().map(dto -> {
+
+            Product product = mapper.map(dto, Product.class);
+
+            String productId = UUID.randomUUID().toString();
+            product.setProductId(productId);
+
+            log.info("LogKey: {} - Product id generated | productId={}",
+                    logkey, productId);
+
+            return product;
+
+        }).toList();
+
+        List<Product> savedProducts = productRepository.saveAll(products);
+
+        log.info("LogKey: {} - All products saved successfully | count={}",
+                logkey, savedProducts.size());
+
+        return savedProducts.stream()
+                .map(product -> mapper.map(product, ProductDto.class))
+                .toList();
     }
 
     // ================= UPDATE PRODUCT =================
@@ -209,26 +241,70 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ================= SEARCH PRODUCT =================
-    @Cacheable(value = "search_products",
-            key = "#subTitle + '_' + #pageNumber",
+    @Cacheable(
+            value = "search_products",
+            key = "#query + '_' + #categoryId + '_' + #minPrice + '_' + #maxPrice + '_' + #pageNumber",
             condition = "@cacheFlags.productCacheEnabled()"
     )
     @Override
-    public PageableResponse<ProductDto> searchByTitle(String subTitle, int pageNumber, int pageSize, String sortBy, String sortDir,String logkey) {
+    public PageableResponse<ProductDto> searchProducts(
+            String query,
+            String categoryId,
+            Double minPrice,
+            Double maxPrice,
+            int pageNumber,
+            int pageSize,
+            String sortBy,
+            String sortDir,
+            String logkey) {
 
-        log.info("LogKey: {} Entry into searchByTitle method | page={} size={} sortBy={} sortDir={}",
-                logkey, pageNumber, pageSize, sortBy, sortDir);
+        log.info("LogKey: {} - Entry into searchProducts", logkey);
 
-        Sort sort = (sortDir.equalsIgnoreCase("desc"))
+        Sort sort = sortDir.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
-        log.debug("LogKey: {} - Products sorted | sortedResult = {}", logkey, sort);
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
-        log.debug("LogKey: {} - Created a pageable obj | sortedResult = {}", logkey, pageable);
 
-        Page<Product> page = productRepository.findByTitleContaining(subTitle, pageable);
-        log.info("LogKey: {} - Search by tile Products fetched form DB | Total products = {}", logkey,page.getNumberOfElements());
+        Page<Product> page;
+
+        // CASE 1: Category + Price
+        if (categoryId != null && minPrice != null && maxPrice != null) {
+
+            page = productRepository
+                    .findByTitleContainingAndCategory_CategoryIdAndPriceBetween(
+                            query, categoryId, minPrice, maxPrice, pageable);
+
+        }
+
+        // CASE 2: Only Category
+        else if (categoryId != null) {
+
+            page = productRepository
+                    .findByTitleContainingAndCategory_CategoryId(
+                            query, categoryId, pageable);
+
+        }
+
+        // CASE 3: Only Price
+        else if (minPrice != null && maxPrice != null) {
+
+            page = productRepository
+                    .findByTitleContainingAndPriceBetween(
+                            query, minPrice, maxPrice, pageable);
+
+        }
+
+        // CASE 4: Default
+        else {
+
+            page = productRepository
+                    .findByTitleContaining(query, pageable);
+
+        }
+
+        log.info("LogKey: {} - Products fetched from DB | count={}",
+                logkey, page.getNumberOfElements());
 
         return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
