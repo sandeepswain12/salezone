@@ -11,6 +11,10 @@ import com.ecom.salezone.services.AuthService;
 import com.ecom.salezone.util.LogKeyGenerator;
 
 import io.jsonwebtoken.JwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,6 +41,41 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * AuthController handles authentication related APIs for the SaleZone E-commerce system.
+ *
+ * This controller provides endpoints for:
+ * - User Registration (Signup)
+ * - User Login with JWT Authentication
+ * - Refreshing Access Tokens using Refresh Tokens
+ * - User Logout and Refresh Token Revocation
+ *
+ * Authentication Flow:
+ * 1. User logs in with email and password.
+ * 2. System generates:
+ *      - Short-lived Access Token (JWT)
+ *      - Long-lived Refresh Token
+ * 3. Refresh Token is stored in HttpOnly Secure Cookie.
+ * 4. Access Token is used for API authentication.
+ * 5. When Access Token expires, client calls /refresh to get a new token.
+ * 6. Logout revokes refresh token and clears cookies.
+ *
+ * Security Features:
+ * - JWT based authentication
+ * - Refresh token rotation
+ * - Refresh token stored in database
+ * - Token revocation support
+ * - HttpOnly secure cookie for refresh token
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
+
+@Tag(
+        name = "Authentication APIs",
+        description = "APIs for user authentication including signup, login, refresh token and logout"
+)
 @RestController
 @RequestMapping("/salezone/ecom/auth")
 @CrossOrigin(origins = "http://localhost:5173/")
@@ -65,9 +104,15 @@ public class AuthController {
     @Autowired
     private CookieService cookieService;
 
-    /**
-     * Handles user signup request.
-     */
+    @Operation(
+            summary = "Register a new user",
+            description = "Creates a new user account in the SaleZone system."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "409", description = "User already exists")
+    })
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signup(@Valid @RequestBody SignupRequestDto userDto) {
 
@@ -82,14 +127,19 @@ public class AuthController {
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
-    /**
-     * Handles login request.
-     * Authenticates user, generates access & refresh tokens,
-     * and stores refresh token in database.
-     */
+    @Operation(
+            summary = "User Login",
+            description = "Authenticates user credentials and returns access token and refresh token."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login successful"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+            @ApiResponse(responseCode = "403", description = "User account disabled")
+    })
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest,
-                                               HttpServletResponse response) {
+    public ResponseEntity<TokenResponse> login(
+            @RequestBody LoginRequest loginRequest,
+            HttpServletResponse response) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -151,10 +201,15 @@ public class AuthController {
         return ResponseEntity.ok(tokenResponse);
     }
 
-    /**
-     * Rotates refresh token and issues new access + refresh tokens.
-     * Validates token from cookie/body/header before rotation.
-     */
+    @Operation(
+            summary = "Refresh Access Token",
+            description = "Generates a new access token using a valid refresh token stored in cookie or request."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+            @ApiResponse(responseCode = "401", description = "Invalid refresh token"),
+            @ApiResponse(responseCode = "403", description = "Refresh token expired or revoked")
+    })
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refreshToken(
             @RequestBody(required = false) RefreshTokenRequest body,
@@ -252,10 +307,14 @@ public class AuthController {
     }
 
 
-    /**
-     * Logs out user.
-     * Revokes refresh token (if present) and clears authentication context.
-     */
+    @Operation(
+            summary = "Logout User",
+            description = "Logs out the user by revoking refresh token and clearing authentication cookies."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Logout successful"),
+            @ApiResponse(responseCode = "401", description = "Invalid token")
+    })
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request,
                                        HttpServletResponse response) {

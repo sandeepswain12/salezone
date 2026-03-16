@@ -26,6 +26,46 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+/**
+ * UserController handles user management operations
+ * in the SaleZone E-commerce system.
+ *
+ * This controller provides APIs for:
+ * - Fetching users
+ * - Searching users
+ * - Updating user profile
+ * - Deleting users
+ * - Uploading user profile images
+ * - Serving user profile images
+ *
+ * Features:
+ * - Pagination support for user listing
+ * - User search functionality
+ * - Profile image upload using Cloudinary
+ * - Profile image retrieval
+ *
+ * Security:
+ * - Some endpoints may require admin privileges.
+ * - Profile update operations are user specific.
+ *
+ * Image Handling:
+ * - Profile images are uploaded to Cloudinary.
+ * - Image URLs are stored in the database.
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
+
+@Tag(
+        name = "User APIs",
+        description = "APIs for managing users in the SaleZone e-commerce system"
+)
 @RestController
 @RequestMapping("/salezone/ecom/users")
 public class UserController {
@@ -48,7 +88,14 @@ public class UserController {
     @Value("${user.profile.image.path}")
     private String imageUploadPath;
 
-    // ================= GET ALL USERS =================
+    @Operation(
+            summary = "Get all users",
+            description = "Fetches all users with pagination and sorting support."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users fetched successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
+    })
     @GetMapping
     public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
             @RequestParam(defaultValue = "0") int pageNumber,
@@ -70,9 +117,18 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // ================= GET USER BY ID =================
+    @Operation(
+            summary = "Get user by ID",
+            description = "Fetches a specific user using the user ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable String userId) {
+    public ResponseEntity<UserDto> getUserById(
+            @PathVariable String userId
+    ) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -88,9 +144,18 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    // ================= GET USER BY EMAIL =================
+    @Operation(
+            summary = "Get user by email",
+            description = "Fetches a user using their registered email address."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
+    public ResponseEntity<UserDto> getUserByEmail(
+            @PathVariable String email
+    ) {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -106,10 +171,17 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    // ================= SEARCH USERS =================
+    @Operation(
+            summary = "Search users",
+            description = "Search users using keywords such as username or email."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users fetched successfully")
+    })
     @GetMapping("/search/{keywords}")
     public ResponseEntity<List<UserDto>> searchUsers(
-            @PathVariable String keywords) {
+            @PathVariable String keywords)
+    {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -125,11 +197,19 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    // ================= UPDATE USER =================
+    @Operation(
+            summary = "Update user",
+            description = "Updates user profile information."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @PutMapping("/update/{userId}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable String userId,
-            @Valid @RequestBody UpdateUserRequest userDto) {
+            @Valid @RequestBody UpdateUserRequest userDto)
+    {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -145,10 +225,18 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    // ================= DELETE USER =================
+    @Operation(
+            summary = "Delete user",
+            description = "Deletes a user from the system."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<ApiResponseMessage> deleteUser(
-            @PathVariable String userId) {
+            @PathVariable String userId)
+    {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -170,11 +258,19 @@ public class UserController {
         return ResponseEntity.ok(message);
     }
 
-    // ================= UPLOAD USER IMAGE =================
+    @Operation(
+            summary = "Upload user profile image",
+            description = "Uploads a user profile image to Cloudinary and updates the user profile."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Image uploaded successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @PostMapping("/image/{userId}")
     public ResponseEntity<ImageResponse> uploadUserImage(
             @RequestParam("userImage") MultipartFile image,
-            @PathVariable String userId) throws IOException {
+            @PathVariable String userId) throws IOException
+    {
 
         String logKey = LogKeyGenerator.generateLogKey();
 
@@ -213,11 +309,19 @@ public class UserController {
         return new ResponseEntity<>(imageResponse, HttpStatus.CREATED);
     }
 
-    // ================= SERVE USER IMAGE =================
+    @Operation(
+            summary = "Serve user image",
+            description = "Streams the user profile image."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Image served successfully"),
+            @ApiResponse(responseCode = "404", description = "Image not found")
+    })
     @GetMapping("/image/{userId}")
     public void serveUserImage(
             @PathVariable String userId,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response) throws IOException
+    {
 
         String logKey = LogKeyGenerator.generateLogKey();
 

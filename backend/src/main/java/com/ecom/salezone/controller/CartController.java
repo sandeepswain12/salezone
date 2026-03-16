@@ -5,13 +5,46 @@ import com.ecom.salezone.dtos.ApiResponseMessage;
 import com.ecom.salezone.dtos.CartDto;
 import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.CartService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+/**
+ * CartController handles all shopping cart related operations
+ * in the SaleZone E-commerce system.
+ *
+ * This controller provides APIs for:
+ * - Adding items to the cart
+ * - Removing items from the cart
+ * - Updating cart item quantity
+ * - Clearing the entire cart
+ * - Fetching the user's cart details
+ *
+ * Features:
+ * - Each user has a unique cart
+ * - Cart items can be added, updated or removed
+ * - Quantity management for cart items
+ * - Complete cart clearing option
+ *
+ * Security:
+ * - APIs typically require authenticated users
+ * - Cart operations are user specific
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
 
+@Tag(
+        name = "Cart APIs",
+        description = "APIs for managing user shopping carts in the SaleZone system"
+)
 @RestController
 @RequestMapping("/salezone/ecom/carts")
 public class CartController {
@@ -22,7 +55,15 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    // ================= ADD ITEM TO CART =================
+    @Operation(
+            summary = "Add item to cart",
+            description = "Adds a product to the user's cart or updates the quantity if the item already exists."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Item added to cart successfully"),
+            @ApiResponse(responseCode = "404", description = "User or product not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload")
+    })
     @PostMapping("/{userId}")
     public ResponseEntity<CartDto> addItemToCart(
             @PathVariable String userId,
@@ -41,7 +82,14 @@ public class CartController {
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
 
-    // ================= REMOVE ITEM FROM CART =================
+    @Operation(
+            summary = "Remove item from cart",
+            description = "Removes a specific item from the user's cart."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Item removed successfully"),
+            @ApiResponse(responseCode = "404", description = "Cart item not found")
+    })
     @DeleteMapping("/{userId}/items/{itemId}")
     public ResponseEntity<ApiResponseMessage> removeItemFromCart(
             @PathVariable String userId,
@@ -66,7 +114,14 @@ public class CartController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ================= UPDATE CART ITEM QUANTITY =================
+    @Operation(
+            summary = "Update cart item quantity",
+            description = "Updates the quantity of a specific item in the user's cart."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cart item quantity updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Cart item not found")
+    })
     @PutMapping("/{userId}/items/{itemId}")
     public ResponseEntity<CartDto> updateCartItemQuantity(
             @PathVariable String userId,
@@ -86,7 +141,14 @@ public class CartController {
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
 
-    // ================= CLEAR CART =================
+    @Operation(
+            summary = "Clear user cart",
+            description = "Removes all items from the user's shopping cart."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cart cleared successfully"),
+            @ApiResponse(responseCode = "404", description = "Cart not found")
+    })
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponseMessage> clearCart(
             @PathVariable String userId) {
@@ -110,7 +172,14 @@ public class CartController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ================= GET CART =================
+    @Operation(
+            summary = "Get user cart",
+            description = "Fetches the complete cart details of a specific user."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cart fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "Cart not found")
+    })
     @GetMapping("/{userId}")
     public ResponseEntity<CartDto> getCart(
             @PathVariable String userId) {

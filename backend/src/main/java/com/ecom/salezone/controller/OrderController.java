@@ -3,6 +3,10 @@ package com.ecom.salezone.controller;
 import com.ecom.salezone.dtos.*;
 import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,17 +17,52 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * OrderController handles order management operations
+ * in the SaleZone E-commerce system.
+ *
+ * This controller provides APIs for:
+ * - Creating new orders
+ * - Updating existing orders
+ * - Removing orders
+ * - Fetching orders of a specific user
+ * - Fetching all orders with pagination
+ *
+ * Features:
+ * - User specific order retrieval
+ * - Paginated order listing
+ * - Order lifecycle management
+ *
+ * Security:
+ * - Orders are user specific
+ * - Some endpoints may require admin privileges
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
+@Tag(
+        name = "Order APIs",
+        description = "APIs for managing customer orders in the SaleZone system"
+)
 @RestController
 @RequestMapping("/salezone/ecom/orders")
 public class OrderController {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(OrderController.class);
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private OrderService orderService;
 
-    // ================= CREATE ORDER =================
+    @Operation(
+            summary = "Create order",
+            description = "Creates a new order using the provided order request payload."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Order created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid order request"),
+            @ApiResponse(responseCode = "404", description = "User or cart not found")
+    })
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {
@@ -41,7 +80,14 @@ public class OrderController {
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
-    // ================= REMOVE ORDER =================
+    @Operation(
+            summary = "Remove order",
+            description = "Deletes an order using the provided order ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order removed successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @DeleteMapping("/{orderId}")
     public ResponseEntity<ApiResponseMessage> removeOrder(
             @PathVariable String orderId) {
@@ -65,7 +111,14 @@ public class OrderController {
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 
-    // ================= GET ORDERS OF USER =================
+    @Operation(
+            summary = "Get orders of user",
+            description = "Fetches all orders belonging to a specific user."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orders fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @GetMapping("/users/{userId}")
     public ResponseEntity<List<OrderDto>> getOrdersOfUser(
             @PathVariable String userId) {
@@ -83,7 +136,13 @@ public class OrderController {
         return new ResponseEntity<>(ordersOfUser, HttpStatus.OK);
     }
 
-    // ================= GET ALL ORDERS (PAGINATED) =================
+    @Operation(
+            summary = "Get all orders",
+            description = "Fetches all orders with pagination and sorting support."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orders fetched successfully")
+    })
     @GetMapping
     public ResponseEntity<PageableResponse<OrderDto>> getOrders(
             @RequestParam(defaultValue = "0") int pageNumber,
@@ -104,7 +163,14 @@ public class OrderController {
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
 
-    // ================= UPDATE ORDER =================
+    @Operation(
+            summary = "Update order",
+            description = "Updates an existing order using the order ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @PutMapping("/{orderId}")
     public ResponseEntity<OrderDto> updateOrder(
             @PathVariable String orderId,

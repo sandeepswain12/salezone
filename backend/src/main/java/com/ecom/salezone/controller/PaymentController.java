@@ -10,6 +10,10 @@ import com.ecom.salezone.util.LogKeyGenerator;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +26,46 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.Map;
 
+/**
+ * PaymentController handles payment processing operations
+ * for the SaleZone E-commerce system.
+ *
+ * This controller integrates with the Razorpay payment gateway
+ * to initiate and verify payments for orders.
+ *
+ * APIs Provided:
+ * - Initiate Razorpay payment for an order
+ * - Verify Razorpay payment signature
+ * - Update order payment status
+ *
+ * Payment Flow:
+ * 1. User places an order.
+ * 2. Client calls initiate-payment API.
+ * 3. Backend creates Razorpay order.
+ * 4. Client completes payment using Razorpay Checkout.
+ * 5. Client sends payment details to capture API.
+ * 6. Backend verifies Razorpay signature.
+ * 7. Order payment status is updated accordingly.
+ *
+ * Features:
+ * - Secure Razorpay integration
+ * - Payment signature verification
+ * - Order ownership validation
+ * - Duplicate payment prevention
+ *
+ * Security:
+ * - Payment is verified using Razorpay signature validation.
+ * - Only the order owner can initiate payment.
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
+
+@Tag(
+        name = "Payment APIs",
+        description = "APIs for processing and verifying payments using Razorpay"
+)
 @RestController
 @RequestMapping("/salezone/ecom/payment")
 public class PaymentController {
@@ -41,9 +85,16 @@ public class PaymentController {
     private String secret;
 
 
-    /**
-     * Creates Razorpay order for an existing order in the system.
-     */
+    @Operation(
+            summary = "Initiate payment",
+            description = "Creates a Razorpay order for an existing order and returns Razorpay order details."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Razorpay order created successfully"),
+            @ApiResponse(responseCode = "200", description = "Razorpay order already exists"),
+            @ApiResponse(responseCode = "400", description = "Unauthorized payment attempt"),
+            @ApiResponse(responseCode = "500", description = "Error creating Razorpay order")
+    })
     @PostMapping("/initiate-payment/{orderId}")
     public ResponseEntity<?> initiatePayment(@PathVariable String orderId, Principal principal) {
 
@@ -110,9 +161,16 @@ public class PaymentController {
     }
 
 
-    /**
-     * Verifies Razorpay payment signature and updates order payment status.
-     */
+    @Operation(
+            summary = "Verify payment",
+            description = "Verifies Razorpay payment signature and updates order payment status."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Payment verified successfully"),
+            @ApiResponse(responseCode = "400", description = "Payment verification failed"),
+            @ApiResponse(responseCode = "404", description = "Order not found"),
+            @ApiResponse(responseCode = "500", description = "Error verifying payment")
+    })
     @PostMapping("/capture/{orderId}")
     public ResponseEntity<?> verifyPayment(
             @RequestBody Map<String, Object> payload,

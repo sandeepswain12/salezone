@@ -8,6 +8,10 @@ import com.ecom.salezone.services.CloudnaryImageService;
 import com.ecom.salezone.util.LogKeyGenerator;
 import com.ecom.salezone.services.FileService;
 import com.ecom.salezone.services.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +29,44 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+/**
+ * ProductController handles product management operations
+ * in the SaleZone E-commerce system.
+ *
+ * This controller provides APIs for:
+ * - Creating products
+ * - Bulk product creation
+ * - Updating products
+ * - Deleting products
+ * - Fetching products
+ * - Searching products
+ * - Uploading product images
+ * - Serving product images
+ *
+ * Features:
+ * - Pagination support
+ * - Product search with filters
+ * - Category based filtering
+ * - Price range filtering
+ * - Image upload via Cloudinary
+ *
+ * Security:
+ * - Product creation/update/delete usually require admin privileges.
+ * - Product browsing APIs are public.
+ *
+ * Image Handling:
+ * - Images are uploaded to Cloudinary.
+ * - Image URLs are stored in the database.
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
+
+@Tag(
+        name = "Product APIs",
+        description = "APIs for managing products in the SaleZone e-commerce system"
+)
 @RestController
 @RequestMapping("/salezone/ecom/products")
 @CrossOrigin(origins = "http://localhost:5173/")
@@ -45,7 +87,14 @@ public class ProductController {
     @Value("${product.image.path}")
     private String imagePath;
 
-    // ================= CREATE PRODUCT =================
+    @Operation(
+            summary = "Create product",
+            description = "Creates a new product in the system."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Product created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid product data")
+    })
     @PostMapping("/create")
     public ResponseEntity<ProductDto> createProduct(
             @RequestBody ProductDto productDto) {
@@ -64,6 +113,13 @@ public class ProductController {
     }
 
 
+    @Operation(
+            summary = "Bulk create products",
+            description = "Creates multiple products in a single request."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Products created successfully")
+    })
     @PostMapping("/create/bulk")
     public ResponseEntity<List<ProductDto>> createProducts(
             @RequestBody List<ProductDto> productDtos) {
@@ -82,7 +138,14 @@ public class ProductController {
         return new ResponseEntity<>(createdProducts, HttpStatus.CREATED);
     }
 
-    // ================= UPDATE PRODUCT =================
+    @Operation(
+            summary = "Update product",
+            description = "Updates an existing product using the product ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @PutMapping("/update/{productId}")
     public ResponseEntity<ProductDto> updateProduct(
             @PathVariable String productId,
@@ -101,7 +164,14 @@ public class ProductController {
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
-    // ================= DELETE PRODUCT =================
+    @Operation(
+            summary = "Delete product",
+            description = "Deletes a product from the system."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @DeleteMapping("/delete/{productId}")
     public ResponseEntity<ApiResponseMessage> delete(
             @PathVariable String productId) {
@@ -125,7 +195,14 @@ public class ProductController {
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 
-    // ================= GET PRODUCT BY ID =================
+    @Operation(
+            summary = "Get product by ID",
+            description = "Fetches product details using product ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDto> getProduct(
             @PathVariable String productId) {
@@ -143,7 +220,13 @@ public class ProductController {
         return new ResponseEntity<>(productDto, HttpStatus.OK);
     }
 
-    // ================= GET ALL PRODUCTS =================
+    @Operation(
+            summary = "Get all products",
+            description = "Fetches all products with pagination and sorting support."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products fetched successfully")
+    })
     @GetMapping
     public ResponseEntity<PageableResponse<ProductDto>> getAll(
             @RequestParam(defaultValue = "0") int pageNumber,
@@ -164,7 +247,13 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ================= GET ALL LIVE PRODUCTS =================
+    @Operation(
+            summary = "Get live products",
+            description = "Fetches only active/live products available for purchase."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Live products fetched successfully")
+    })
     @GetMapping("/live")
     public ResponseEntity<PageableResponse<ProductDto>> getAllLive(
             @RequestParam(defaultValue = "0") int pageNumber,
@@ -185,7 +274,13 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ================= SEARCH PRODUCT =================
+    @Operation(
+            summary = "Search products",
+            description = "Search products using keyword, category filter and price range."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Search results fetched successfully")
+    })
     @GetMapping("/search/{query}")
     public ResponseEntity<PageableResponse<ProductDto>> searchProduct(
             @PathVariable String query,
@@ -209,7 +304,14 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ================= UPLOAD PRODUCT IMAGE =================
+    @Operation(
+            summary = "Upload product image",
+            description = "Uploads a product image to Cloudinary and associates it with the product."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Image uploaded successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @PostMapping("/image/{productId}")
     public ResponseEntity<ImageResponse> uploadProductImage(
             @PathVariable String productId,
@@ -255,7 +357,14 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // ================= SERVE PRODUCT IMAGE =================
+    @Operation(
+            summary = "Serve product image",
+            description = "Streams the product image from server storage."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Image served successfully"),
+            @ApiResponse(responseCode = "404", description = "Image not found")
+    })
     @GetMapping("/image/{productId}")
     public void serveUserImage(
             @PathVariable String productId,
