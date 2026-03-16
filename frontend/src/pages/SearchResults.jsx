@@ -43,8 +43,12 @@ const SearchResults = () => {
         pageNumber: page,
         sortBy: appliedFilters.sortBy,
         sortDir: appliedFilters.sortDir,
-        minPrice: appliedFilters.minPrice || undefined,
-        maxPrice: appliedFilters.maxPrice || undefined,
+        minPrice: appliedFilters.minPrice
+          ? Number(appliedFilters.minPrice)
+          : undefined,
+        maxPrice: appliedFilters.maxPrice
+          ? Number(appliedFilters.maxPrice)
+          : undefined,
         categoryId: appliedFilters.categoryId || undefined,
       });
 
@@ -99,15 +103,13 @@ const SearchResults = () => {
   };
 
   const handleSortChange = (e) => {
-    const value = e.target.value;
+    const [sortBy, sortDir] = e.target.value.split("-");
 
-    if (value === "priceAsc") {
-      setFilters((prev) => ({ ...prev, sortBy: "price", sortDir: "asc" }));
-    } else if (value === "priceDesc") {
-      setFilters((prev) => ({ ...prev, sortBy: "price", sortDir: "desc" }));
-    } else if (value === "newest") {
-      setFilters((prev) => ({ ...prev, sortBy: "createdAt", sortDir: "desc" }));
-    }
+    setFilters((prev) => ({
+      ...prev,
+      sortBy,
+      sortDir,
+    }));
   };
 
   if (loading) return <ProductGridSkeleton />;
@@ -155,12 +157,13 @@ const SearchResults = () => {
           {/* SORT */}
           <select
             className="border rounded-lg px-3 py-2 w-full"
+            value={`${filters.sortBy}-${filters.sortDir}`}
             onChange={handleSortChange}
           >
-            <option value="default">Sort By</option>
-            <option value="priceAsc">Price: Low → High</option>
-            <option value="priceDesc">Price: High → Low</option>
-            <option value="newest">Newest</option>
+            <option value="title-asc">Sort By</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+            <option value="createdAt-desc">Newest</option>
           </select>
 
           {/* MIN PRICE */}
