@@ -7,24 +7,66 @@ import com.ecom.salezone.dtos.UserDto;
 
 import java.util.List;
 
+/**
+ * UserService defines business operations related to
+ * user management in the SaleZone E-commerce system.
+ *
+ * Responsibilities:
+ * - Creating new users
+ * - Updating user profiles
+ * - Deleting users
+ * - Fetching user information
+ * - Searching users
+ * - Validating user existence
+ *
+ * This service acts as the business layer between
+ * controllers and repositories for user-related operations.
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
 public interface UserService {
-    /**
-     * Create a new user
-     */
-    UserDto createUser(SignupRequestDto userDto , String logkey);
 
     /**
-     * Update existing user by userId
+     * Creates a new user in the system.
+     *
+     * @param userDto user registration details
+     * @param logkey unique request identifier used for tracing logs
+     *
+     * @return created user details
+     */
+    UserDto createUser(SignupRequestDto userDto, String logkey);
+
+    /**
+     * Updates an existing user.
+     *
+     * @param userDto updated user details
+     * @param userId ID of the user to update
+     * @param logkey unique request identifier used for tracing logs
+     *
+     * @return updated user details
      */
     UserDto updateUser(UpdateUserRequest userDto, String userId, String logkey);
 
     /**
-     * Delete user by userId
+     * Deletes a user from the system.
+     *
+     * @param userId ID of the user to delete
+     * @param logkey unique request identifier used for tracing logs
      */
     void deleteUser(String userId, String logkey);
 
     /**
-     * Get all users with pagination & sorting
+     * Fetches all users with pagination and sorting.
+     *
+     * @param pageNumber page index
+     * @param pageSize number of records per page
+     * @param sortBy field used for sorting
+     * @param sortDir sorting direction (asc / desc)
+     * @param logkey unique request identifier used for tracing logs
+     *
+     * @return paginated list of users
      */
     PageableResponse<UserDto> getAllUsers(
             int pageNumber,
@@ -35,23 +77,45 @@ public interface UserService {
     );
 
     /**
-     * Get single user by userId
+     * Fetches a user using user ID.
+     *
+     * @param userId ID of the user
+     * @param logkey unique request identifier used for tracing logs
+     *
+     * @return user details
      */
     UserDto getUserById(String userId, String logkey);
 
     /**
-     * Get single user by email
+     * Fetches a user using email address.
+     *
+     * @param email registered user email
+     * @param logkey unique request identifier used for tracing logs
+     *
+     * @return user details
      */
     UserDto getUserByEmail(String email, String logkey);
 
     /**
-     * Search users by keyword (name/email)
+     * Searches users by keyword such as username or email.
+     *
+     * @param keyword search keyword
+     * @param logkey unique request identifier used for tracing logs
+     *
+     * @return list of matching users
      */
     List<UserDto> searchUsers(String keyword, String logkey);
 
     /**
-     * Check whether user exists by email
-     * (used internally for validation)
+     * Checks whether a user exists with the given email.
+     *
+     * Used internally for validation during registration
+     * or profile updates.
+     *
+     * @param email user email
+     * @param logkey unique request identifier used for tracing logs
+     *
+     * @return true if user exists, otherwise false
      */
     boolean existsByEmail(String email, String logkey);
 }

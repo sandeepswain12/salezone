@@ -27,6 +27,34 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Handles successful OAuth2 authentication for the SaleZone application.
+ *
+ * This handler is triggered when a user successfully logs in using
+ * OAuth2 providers such as Google or GitHub.
+ *
+ * Responsibilities:
+ * - Extract user details from OAuth2 provider
+ * - Create a new user if the user does not exist
+ * - Assign default ROLE_USER
+ * - Generate JWT access token
+ * - Generate and store refresh token
+ * - Attach refresh token as secure HTTP-only cookie
+ * - Redirect user to frontend success URL
+ *
+ * Supported OAuth2 Providers:
+ * - Google
+ * - GitHub
+ *
+ * Security Features:
+ * - Uses JWT for stateless authentication
+ * - Refresh tokens stored in database
+ * - Refresh token delivered via secure cookies
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
@@ -41,8 +69,31 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     @Value("${app.auth.frontend.success-redirect}")
     private String frontEndSuccessUrl;
 
+    /**
+     * Called when OAuth2 authentication is successful.
+     *
+     * This method performs the following steps:
+     * 1. Extract user information from OAuth2 provider
+     * 2. Identify provider (Google / GitHub)
+     * 3. Create new user if not already registered
+     * 4. Assign default role (ROLE_USER)
+     * 5. Generate JWT access token
+     * 6. Generate refresh token and store it in database
+     * 7. Attach refresh token in HTTP-only cookie
+     * 8. Redirect user to frontend success page
+     *
+     * @param request HTTP request
+     * @param response HTTP response
+     * @param authentication OAuth2 authentication object
+     * @throws IOException if redirect fails
+     * @throws ServletException if servlet error occurs
+     */
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication
+    ) throws IOException, ServletException {
 
         String logKey = LogKeyGenerator.generateLogKey();
 

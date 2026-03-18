@@ -4,19 +4,40 @@ import com.ecom.salezone.enities.Order;
 import com.ecom.salezone.enities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
-
 /**
- * Repository for Order entity.
+ * Repository interface for managing Order entities.
+ *
+ * Provides database operations for orders including:
+ * - Fetching orders of users
+ * - Sorting orders by date
+ * - Basic CRUD operations
+ *
+ * Extends JpaRepository which automatically provides
+ * standard database operations.
+ *
+ * @author : Sandeep Kumar Swain
+ * @since : 15-03-2026
  */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String> {
 
-    // Fetch all orders of a specific user
+    /**
+     * Fetch all orders belonging to a specific user.
+     *
+     * @param user user entity
+     * @return list of orders
+     */
     List<Order> findByUser(User user);
 
+    /**
+     * Fetch all orders of a user sorted by newest first.
+     *
+     * @param user user entity
+     * @return list of orders ordered by date descending
+     */
     List<Order> findByUserOrderByOrderedDateDesc(User user);
 
 }
-

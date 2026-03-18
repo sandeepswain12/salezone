@@ -11,13 +11,27 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+/**
+ * Implementation of FileService for the SaleZone E-commerce system.
+ *
+ * Provides functionality for:
+ * - Uploading image files to the server
+ * - Retrieving stored files as resources
+ *
+ * Generates unique file names using UUID to avoid collisions
+ * and validates allowed image extensions.
+ *
+ * @author Sandeep Kumar Swain
+ * @version 1.0
+ * @since 15-03-2026
+ */
 @Service
 public class FileServiceImpl implements FileService {
 
     private static final Logger logger =
             LoggerFactory.getLogger(FileServiceImpl.class);
 
-    // ================= UPLOAD FILE =================
+    /* Upload File */
     @Override
     public String uploadFile(MultipartFile file, String path, String logkey) throws IOException {
 
@@ -63,7 +77,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // ================= GET RESOURCE =================
+    /* Get Resource */
     @Override
     public InputStream getResource(String path, String name, String logkey)
             throws FileNotFoundException {

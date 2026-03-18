@@ -27,6 +27,22 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of CartService.
+ *
+ * Handles all cart related business logic such as:
+ * - Adding products to cart
+ * - Updating cart item quantity
+ * - Removing items from cart
+ * - Clearing the cart
+ * - Fetching cart details for a user
+ *
+ * Uses caching to optimize cart retrieval operations.
+ *
+ * @author Sandeep Kumar Swain
+ * @version 1.0
+ * @since 15-03-2026
+ */
 @Service
 public class CartServiceImpl implements CartService {
 
@@ -48,7 +64,7 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private CartItemRepository cartItemRepository;
 
-    // ================= ADD ITEM TO CART =================
+    /* Add Item To Cart */
     @CacheEvict(
             value = "user_cart",
             key = "#userId",
@@ -135,7 +151,7 @@ public class CartServiceImpl implements CartService {
         return mapper.map(updatedCart, CartDto.class);
     }
 
-    // ================= UPDATE CART ITEM QUANTITY =================
+    /* Update Cart Item Quantity */
     @CacheEvict(
             value = "user_cart",
             key = "#userId",
@@ -205,7 +221,7 @@ public class CartServiceImpl implements CartService {
         return mapper.map(cart, CartDto.class);
     }
 
-    // ================= REMOVE ITEM FROM CART =================
+    /* Remove Item From Cart */
     @CacheEvict(
             value = "user_cart",
             key = "#userId",
@@ -230,7 +246,7 @@ public class CartServiceImpl implements CartService {
                 logkey, cartItem);
     }
 
-    // ================= CLEAR CART =================
+    /* Clear Cart */
     @CacheEvict(
             value = "user_cart",
             key = "#userId",
@@ -263,7 +279,7 @@ public class CartServiceImpl implements CartService {
                 logkey, userId);
     }
 
-    // ================= GET CART BY USER =================
+    /* Get Cart By User */
     @Cacheable(
             value = "user_cart",
             key = "#userId",

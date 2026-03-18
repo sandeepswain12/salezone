@@ -9,6 +9,26 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import java.time.Duration;
 
+/**
+ * Redis configuration for the SaleZone application.
+ *
+ * This configuration enables Redis-based caching for the application.
+ * Cached data is stored in Redis with a configurable TTL (Time-To-Live).
+ *
+ * Features:
+ * - Configurable cache expiration
+ * - JSON serialization for cache values
+ * - Null value caching disabled
+ *
+ * Example usage:
+ *
+ * @Cacheable("products")
+ * public ProductDto getProduct(String id)
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 2026
+ */
 @Configuration
 public class RedisConfig {
 

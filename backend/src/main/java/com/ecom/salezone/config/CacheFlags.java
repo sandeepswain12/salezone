@@ -1,53 +1,61 @@
 package com.ecom.salezone.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+/**
+ * Cache feature flags configuration.
+ *
+ * This class controls enabling or disabling cache
+ * at both global and module level.
+ *
+ * Example:
+ *
+ * app.cache.enabled=true
+ * app.cache.products=true
+ * app.cache.categories=false
+ *
+ * If global cache is disabled, all module caches
+ * will automatically be disabled.
+ *
+ * @author : Sandeep Kumar Swain
+ * @since : 15-03-2026
+ */
 @Component
+@ConfigurationProperties(prefix = "app.cache")
 public class CacheFlags {
 
-    @Value("${app.cache.enabled}")
-    private boolean cacheEnabled;
-
-    @Value("${app.cache.products}")
+    private boolean enabled;
     private boolean products;
-
-    @Value("${app.cache.categories}")
     private boolean categories;
-
-    @Value("${app.cache.users}")
     private boolean users;
-
-    @Value("${app.cache.orders}")
     private boolean orders;
-
-    @Value("${app.cache.cart}")
     private boolean cart;
-
-    @Value("${app.cache.loadUser}")
     private boolean loadUser;
 
     public boolean productCacheEnabled() {
-        return cacheEnabled && products;
+        return enabled && products;
     }
 
     public boolean categoryCacheEnabled() {
-        return cacheEnabled && categories;
+        return enabled && categories;
     }
 
     public boolean userCacheEnabled() {
-        return cacheEnabled && users;
+        return enabled && users;
     }
 
     public boolean orderCacheEnabled() {
-        return cacheEnabled && orders;
+        return enabled && orders;
     }
 
     public boolean cartCacheEnabled() {
-        return cacheEnabled && cart;
+        return enabled && cart;
     }
 
     public boolean loadUserCacheEnabled() {
-        return cacheEnabled && loadUser;
+        return enabled && loadUser;
     }
+
+    // getters and setters
 }

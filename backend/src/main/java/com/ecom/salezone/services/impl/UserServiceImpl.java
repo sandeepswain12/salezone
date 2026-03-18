@@ -10,7 +10,6 @@ import com.ecom.salezone.util.Helper;
 import com.ecom.salezone.repository.RoleRepository;
 import com.ecom.salezone.repository.UserRepository;
 import com.ecom.salezone.services.UserService;
-import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +25,27 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of UserService for the SaleZone E-commerce system.
+ *
+ * Provides business logic for managing users including:
+ * - User creation and registration
+ * - Updating user profile information
+ * - Deleting users
+ * - Searching users
+ * - Fetching users with pagination
+ *
+ * Handles password encryption, role assignment,
+ * image management, and caching optimizations.
+ *
+ * @author Sandeep Kumar Swain
+ * @version 1.0
+ * @since 15-03-2026
+ */
 @Service
-//@Transactional
 public class UserServiceImpl implements UserService {
 
     private static final Logger log =
@@ -55,7 +69,7 @@ public class UserServiceImpl implements UserService {
     @Value("${user.profile.image.path}")
     private String imagePath;
 
-    // ================= CREATE USER =================
+    /* Create User */
     @CacheEvict(
             value = {"users","users_page","users_by_email","search_users"},
             condition = "@cacheFlags.userCacheEnabled()",
@@ -96,7 +110,7 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(savedUser, UserDto.class);
     }
 
-    // ================= UPDATE USER =================
+    /* Update User */
     @CacheEvict(
             value = {"users","users_page","users_by_email","search_users"},
             condition = "@cacheFlags.userCacheEnabled()",
@@ -168,7 +182,7 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(exUser, UserDto.class);
     }
 
-    // ================= DELETE USER =================
+    /* Delete User */
     @CacheEvict(value = {"users","users_page","users_by_email","search_users"},
             condition = "@cacheFlags.userCacheEnabled()",
             allEntries = true
@@ -204,7 +218,7 @@ public class UserServiceImpl implements UserService {
         log.info("LogKey: {} - User deleted successfully | userId={}", logKey, userId);
     }
 
-    // ================= GET ALL USERS =================
+    /* Get All Users */
     @Cacheable(
             value = "users_page",
             key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir",
@@ -234,7 +248,7 @@ public class UserServiceImpl implements UserService {
         return Helper.getPageableResponse(page, UserDto.class, logKey);
     }
 
-    // ================= GET USER BY ID =================
+    /* Get User By Id */
     @Cacheable(
             value = "users",
             key = "#userId",
@@ -254,7 +268,7 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(user, UserDto.class);
     }
 
-    // ================= GET USER BY EMAIL =================
+    /* Get User By Email */
     @Cacheable(
             value = "users_by_email",
             key = "#email",
@@ -274,7 +288,7 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(user, UserDto.class);
     }
 
-    // ================= SEARCH USERS =================
+    /* Search Users */
     @Cacheable(
             value = "search_users",
             key = "#keyword",
@@ -294,7 +308,7 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    // ================= CHECK EMAIL EXISTS =================
+    /* Check Email Exists */
     @Override
     public boolean existsByEmail(String email, String logKey) {
 

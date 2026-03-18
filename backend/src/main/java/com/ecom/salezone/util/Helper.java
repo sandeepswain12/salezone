@@ -9,13 +9,41 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class that provides helper methods used across the
+ * SaleZone application.
+ *
+ * Currently this class contains helper functions for converting
+ * Spring Data {@link org.springframework.data.domain.Page} objects
+ * into custom {@link PageableResponse} DTO responses.
+ *
+ * This helps standardize pagination responses returned by APIs.
+ *
+ * Logging with logKey is used to trace request-level operations
+ * for debugging and monitoring.
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
 public class Helper<V> {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(Helper.class);
+    private static final Logger log = LoggerFactory.getLogger(Helper.class);
 
     /**
-     * Converts Page<U> into PageableResponse<V>
+     * Converts a Spring Data {@link Page} of entities into
+     * a {@link PageableResponse} containing DTO objects.
+     *
+     * The method maps entity objects to DTOs using ModelMapper
+     * and copies pagination metadata such as page number,
+     * total pages, and total elements.
+     *
+     * @param page   Spring Data page containing entity objects
+     * @param type   DTO class type for mapping
+     * @param logkey unique request identifier used for logging
+     * @param <U>    Entity type
+     * @param <V>    DTO type
+     * @return pageable response containing mapped DTOs
      */
     public static <U, V> PageableResponse<V> getPageableResponse(
             Page<U> page,

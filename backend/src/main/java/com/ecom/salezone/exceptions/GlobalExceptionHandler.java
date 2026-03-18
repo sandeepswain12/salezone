@@ -24,9 +24,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Global exception handler for the application.
- * Handles all custom and validation-related exceptions
- * and returns consistent error responses to the client.
+ * Global exception handler for the SaleZone application.
+ *
+ * This class centralizes exception handling across all controllers
+ * using Spring's @ControllerAdvice mechanism.
+ *
+ * Responsibilities:
+ * - Handle authentication related exceptions
+ * - Handle validation errors (@Valid failures)
+ * - Handle custom business exceptions
+ * - Handle database constraint violations
+ * - Provide consistent error responses to clients
+ *
+ * Each exception handler logs the error with a unique logKey
+ * for better request tracing and debugging.
+ *
+ * Standardized error responses include:
+ * - HTTP status code
+ * - error message
+ * - request path
+ * - timestamp
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,6 +55,19 @@ public class GlobalExceptionHandler {
     private static final Logger logger =
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    /**
+     * Handles authentication related exceptions such as:
+     * - UsernameNotFoundException
+     * - BadCredentialsException
+     * - CredentialsExpiredException
+     * - DisabledException
+     *
+     * Returns a standardized UNAUTHORIZED error response.
+     *
+     * @param e authentication exception
+     * @param request current HTTP request
+     * @return ApiError response with HTTP 401 status
+     */
     @ExceptionHandler({
             UsernameNotFoundException.class,
             BadCredentialsException.class,
@@ -62,8 +96,14 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles ResourceNotFoundException
-     * Occurs when requested resource does not exist in DB
+     * Handles ResourceNotFoundException.
+     *
+     * This exception occurs when a requested resource
+     * is not found in the database.
+     *
+     * @param ex thrown exception
+     * @param request HTTP request
+     * @return ApiResponseMessage with HTTP 404 status
      */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponseMessage> handleResourceNotFoundException(
@@ -86,8 +126,20 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles validation errors triggered by @Valid
-     * Example: missing fields, invalid input values
+     * Handles validation errors triggered by @Valid annotations.
+     *
+     * Extracts field-level validation errors and returns them
+     * as a map of field -> error message.
+     *
+     * Example:
+     * {
+     *   "email": "Email is required",
+     *   "password": "Password must be at least 8 characters"
+     * }
+     *
+     * @param ex validation exception
+     * @param request HTTP request
+     * @return map containing validation errors with HTTP 400 status
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
@@ -120,8 +172,16 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles custom BadApiRequestException
-     * Used for business validation failures
+     * Handles custom BadApiRequestException.
+     *
+     * Used for business rule violations such as:
+     * - invalid operations
+     * - incorrect input values
+     * - logical errors in requests
+     *
+     * @param ex thrown exception
+     * @param request HTTP request
+     * @return ApiResponseMessage with HTTP 400 status
      */
     @ExceptionHandler(BadApiRequestException.class)
     public ResponseEntity<ApiResponseMessage> handleBadApiRequest(
@@ -145,6 +205,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handles database constraint violations.
+     *
+     * Example scenarios:
+     * - duplicate email
+     * - unique constraint violations
+     * - foreign key constraint errors
+     *
+     * Provides user-friendly error messages instead of
+     * exposing raw database errors.
+     *
+     * @param ex database exception
+     * @param request HTTP request
+     * @return ApiResponseMessage with HTTP 400 status
+     */
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponseMessage> handleDataIntegrityViolation(
             org.springframework.dao.DataIntegrityViolationException ex,

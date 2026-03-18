@@ -9,6 +9,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
+/**
+ * Implementation of CloudnaryImageService for the SaleZone E-commerce system.
+ *
+ * Handles uploading product or user images to Cloudinary cloud storage
+ * and returns the secure URL of the uploaded image.
+ *
+ * Uses Cloudinary Java SDK for file upload operations.
+ *
+ * @author Sandeep Kumar Swain
+ * @version 1.0
+ * @since 15-03-2026
+ */
 @Service
 public class CloudnaryImageServiceImpl implements CloudnaryImageService {
 

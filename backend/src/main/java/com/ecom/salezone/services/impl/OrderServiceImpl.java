@@ -27,6 +27,23 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of OrderService for the SaleZone E-commerce system.
+ *
+ * Handles order management operations including:
+ * - Creating orders from user carts
+ * - Fetching orders by ID
+ * - Fetching user order history
+ * - Updating order information
+ * - Updating payment status
+ * - Deleting orders
+ *
+ * Integrates caching to improve performance for order retrieval.
+ *
+ * @author Sandeep Kumar Swain
+ * @version 1.0
+ * @since 15-03-2026
+ */
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -45,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private CartRepository cartRepository;
 
-    // ================= GET ORDER =================
+    /* Get Order */
     @Cacheable(
             value = "orders",
             key = "#orderId",
@@ -67,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(order, OrderDto.class);
     }
 
-    // ================= CREATE ORDER =================
+    /* Create Order */
     @CacheEvict(
             value = {"orders","orders_page","user_orders"},
             condition = "@cacheFlags.orderCacheEnabled()",
@@ -146,7 +163,7 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(savedOrder, OrderDto.class);
     }
 
-    // ================= REMOVE ORDER =================
+    /* Remove Order */
     @CacheEvict(
             value = {"orders","orders_page","user_orders"},
             condition = "@cacheFlags.orderCacheEnabled()",
@@ -168,7 +185,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("LogKey: {} - Order removed successfully | orderId={}", logkey, orderId);
     }
 
-    // ================= GET ORDERS OF USER =================
+    /* Get Orders Of User */
     @Cacheable(
             value = "user_orders",
             key = "#userId",
@@ -195,7 +212,7 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ================= GET PAGINATED ORDERS =================
+    /* Get Paginated Orders */
     @Cacheable(
             value = "orders_page",
             key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir",
@@ -225,7 +242,7 @@ public class OrderServiceImpl implements OrderService {
         return Helper.getPageableResponse(page, OrderDto.class, logkey);
     }
 
-    // ================= UPDATE ORDER =================
+    /* Update Order */
     @CacheEvict(
             value = {"orders","orders_page","user_orders"},
             condition = "@cacheFlags.orderCacheEnabled()",
@@ -265,6 +282,7 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
+    /* Update Payment Status */
     @CacheEvict(
             value = {"orders","orders_page","user_orders"},
             condition = "@cacheFlags.orderCacheEnabled()",
@@ -284,6 +302,8 @@ public class OrderServiceImpl implements OrderService {
         log.info("LogKey: {} - Payment updated | orderId={} paymentId={}", logKey, orderId, paymentId);
     }
 
+    /* Update Razorpay Order Id */
+    @Override
     public void updateRazorpayOrderId(String orderId, String razorpayOrderId, String logKey) {
 
         Order order = orderRepository.findById(orderId)

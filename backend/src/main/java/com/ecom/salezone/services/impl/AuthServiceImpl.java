@@ -1,6 +1,5 @@
 package com.ecom.salezone.services.impl;
 
-import com.ecom.salezone.controller.AuthController;
 import com.ecom.salezone.dtos.SignupRequestDto;
 import com.ecom.salezone.dtos.UserDto;
 import com.ecom.salezone.services.AuthService;
@@ -11,6 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation of AuthService.
+ *
+ * Provides authentication related business logic
+ * for the SaleZone E-commerce system.
+ */
 @Service
 public class AuthServiceImpl implements AuthService {
 

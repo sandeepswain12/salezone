@@ -8,12 +8,26 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Repository for Cart entity.
+ * Repository interface for managing Cart entities.
+ *
+ * Provides CRUD operations for carts and allows fetching
+ * carts associated with specific users.
+ *
+ * Each user typically has a single cart which contains
+ * items added during shopping.
+ *
+ * @author : Sandeep Kumar Swain
+ * @since : 15-03-2026
  */
 @Repository
 public interface CartRepository extends JpaRepository<Cart, String> {
 
-    // Fetch cart by user
+    /**
+     * Fetch cart associated with a specific user.
+     *
+     * @param user user entity
+     * @return optional cart of the user
+     */
     Optional<Cart> findByUser(User user);
 
 }

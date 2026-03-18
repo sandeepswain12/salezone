@@ -29,6 +29,23 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Implementation of ProductService for the SaleZone E-commerce system.
+ *
+ * Handles all product related business logic including:
+ * - Creating and updating products
+ * - Bulk product creation
+ * - Deleting products and associated images
+ * - Fetching products with pagination and sorting
+ * - Searching products using filters (category, price, keyword)
+ * - Managing product category assignments
+ *
+ * Integrates caching to optimize product retrieval operations.
+ *
+ * @author Sandeep Kumar Swain
+ * @version 1.0
+ * @since 15-03-2026
+ */
 @Service
 public class ProductServiceImpl implements ProductService {
 
@@ -46,7 +63,7 @@ public class ProductServiceImpl implements ProductService {
     @Value("${product.image.path}")
     private String imagePath;
 
-    // ================= CREATE PRODUCT =================
+    /* Create Product */
     @CacheEvict(
             value = {"products","live_products","search_products","category_products"},
             condition = "@cacheFlags.productCacheEnabled()",
@@ -70,6 +87,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    /* Create Bulk Product */
     @Override
     public List<ProductDto> createBulk(List<ProductDto> productDtos, String logkey) {
 
@@ -100,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
-    // ================= UPDATE PRODUCT =================
+    /* Update Product */
     @CacheEvict(
             value = {"products","live_products","search_products","category_products"},
             condition = "@cacheFlags.productCacheEnabled()",
@@ -134,7 +152,7 @@ public class ProductServiceImpl implements ProductService {
         return mapper.map(updatedProduct, ProductDto.class);
     }
 
-    // ================= DELETE PRODUCT =================
+    /* Delete Product */
     @CacheEvict(
             value = {"products","live_products","search_products","category_products"},
             condition = "@cacheFlags.productCacheEnabled()",
@@ -167,7 +185,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("LogKey: {} - Product deleted from DB | product = {}", logkey, product);
     }
 
-    // ================= GET PRODUCT =================
+    /* Get Product */
     @Cacheable(
             value = "products",
             condition = "@cacheFlags.productCacheEnabled()",
@@ -188,7 +206,7 @@ public class ProductServiceImpl implements ProductService {
         return mapper.map(product, ProductDto.class);
     }
 
-    // ================= GET ALL PRODUCTS =================
+    /* Get All Products */
     @Cacheable(
             value = "products",
             key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir",
@@ -214,7 +232,7 @@ public class ProductServiceImpl implements ProductService {
         return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
 
-    // ================= GET ALL LIVE PRODUCTS =================
+    /* Get All Live Products */
     @Cacheable(
             value = "live_products",
             key = "'page_' + #pageNumber + '_size_' + #pageSize",
@@ -240,7 +258,7 @@ public class ProductServiceImpl implements ProductService {
         return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
 
-    // ================= SEARCH PRODUCT =================
+    /* Search Products */
     @Cacheable(
             value = "search_products",
             key = "#query + '_' + #categoryId + '_' + #minPrice + '_' + #maxPrice + '_' + #pageNumber",
@@ -309,7 +327,7 @@ public class ProductServiceImpl implements ProductService {
         return Helper.getPageableResponse(page, ProductDto.class, logkey);
     }
 
-    // ================= CREATE PRODUCT WITH CATEGORY =================
+    /* Create Product With Category */
     @CacheEvict(value = {"products","live_products","search_products","category_products"},
             condition = "@cacheFlags.productCacheEnabled()",
             allEntries = true
@@ -339,7 +357,7 @@ public class ProductServiceImpl implements ProductService {
         return mapper.map(saveProduct, ProductDto.class);
     }
 
-    // ================= UPDATE PRODUCT CATEGORY =================
+    /* Update Product Category */
     @CacheEvict(value = {"products","live_products","search_products","category_products"},
             condition = "@cacheFlags.productCacheEnabled()",
             allEntries = true
@@ -380,7 +398,7 @@ public class ProductServiceImpl implements ProductService {
         return mapper.map(savedProduct, ProductDto.class);
     }
 
-    // ================= GET PRODUCTS BY CATEGORY =================
+    /* Get Products By Category */
     @Cacheable(
             value = "category_products",
             key = "#categoryId + '_' + #pageNumber",

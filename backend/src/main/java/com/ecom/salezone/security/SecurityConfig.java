@@ -29,6 +29,32 @@ import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Security configuration class for the SaleZone E-commerce application.
+ *
+ * This class configures Spring Security for the application including:
+ * - JWT based authentication
+ * - OAuth2 login integration
+ * - CORS configuration
+ * - Password encoding
+ * - Authentication manager setup
+ * - Security filter chain
+ *
+ * Key Features:
+ * - Disables CSRF for stateless API security
+ * - Secures endpoints using JWT authentication
+ * - Allows public access to authentication endpoints
+ * - Configures OAuth2 login success handling
+ * - Custom unauthorized access handling
+ * - Registers JwtAuthenticationFilter in the security filter chain
+ *
+ * This configuration ensures secure access control
+ * for all protected resources in the system.
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
@@ -42,6 +68,20 @@ public class SecurityConfig {
     @Autowired
     private OAuth2SuccessHandler oAuth2SuccessHandler;
 
+    /**
+     * Configures the main Spring Security filter chain.
+     *
+     * This method defines:
+     * - Authorization rules
+     * - JWT authentication filter
+     * - OAuth2 login configuration
+     * - Custom authentication entry point
+     * - CORS support
+     *
+     * @param http HttpSecurity configuration object
+     * @return configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -96,6 +136,14 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Provides the AuthenticationManager bean used for
+     * handling authentication requests.
+     *
+     * @param configuration Spring authentication configuration
+     * @return AuthenticationManager instance
+     * @throws Exception if initialization fails
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
             throws Exception {
@@ -104,6 +152,14 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    /**
+     * Provides PasswordEncoder bean used for encoding
+     * user passwords before storing them in the database.
+     *
+     * BCrypt is used for secure password hashing.
+     *
+     * @return PasswordEncoder implementation
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
 
@@ -111,6 +167,15 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Configures Cross-Origin Resource Sharing (CORS)
+     * to allow requests from the frontend application.
+     *
+     * Allowed origins are loaded from application properties.
+     *
+     * @param corsUrls comma-separated list of allowed frontend URLs
+     * @return CorsConfigurationSource instance
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.front-end-url}") String corsUrls) {

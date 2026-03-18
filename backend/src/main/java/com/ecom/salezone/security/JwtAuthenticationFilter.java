@@ -26,6 +26,33 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * JWT Authentication Filter for the SaleZone application.
+ *
+ * This filter intercepts every incoming HTTP request and performs
+ * JWT-based authentication.
+ *
+ * Responsibilities:
+ * - Extract JWT token from the Authorization header
+ * - Validate the JWT token using JwtService
+ * - Check token type (must be access token)
+ * - Extract user details from token
+ * - Load user from database
+ * - Set authentication in Spring SecurityContext
+ *
+ * Security Flow:
+ * 1. Client sends request with Authorization header (Bearer Token)
+ * 2. Filter extracts the token
+ * 3. Token is validated and parsed
+ * 4. User is authenticated if token is valid
+ * 5. SecurityContext is populated with authenticated user
+ *
+ * This filter runs once per request using OncePerRequestFilter.
+ *
+ * @author : Sandeep Kumar Swain
+ * @version : 1.0
+ * @since : 15-03-2026
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -39,8 +66,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     /**
-     * This filter runs once per request.
-     * It extracts JWT token, validates it and sets authentication in SecurityContext.
+     * Core filter method executed once for every request.
+     *
+     * This method performs JWT authentication by:
+     * - Reading Authorization header
+     * - Extracting Bearer token
+     * - Validating token using JwtService
+     * - Loading user details from database
+     * - Creating Authentication object
+     * - Storing authentication in SecurityContext
+     *
+     * If token is expired or invalid, appropriate error attributes
+     * are set on the request for later handling.
+     *
+     * @param request HTTP request
+     * @param response HTTP response
+     * @param filterChain filter chain for continuing request processing
+     * @throws ServletException if servlet processing fails
+     * @throws IOException if IO error occurs
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -132,7 +175,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Skip filter for authentication endpoints.
+     * Determines whether this filter should be skipped for the request.
+     *
+     * Authentication endpoints are excluded because they
+     * do not require JWT validation.
+     *
+     * @param request HTTP request
+     * @return true if filter should be skipped
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {

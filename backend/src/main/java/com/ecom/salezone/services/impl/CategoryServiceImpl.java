@@ -21,6 +21,21 @@ import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.UUID;
 
+/**
+ * Implementation of CategoryService for the SaleZone E-commerce system.
+ *
+ * Handles business logic related to category management such as:
+ * - Creating new categories
+ * - Updating existing categories
+ * - Deleting categories
+ * - Fetching categories with pagination and sorting
+ *
+ * Integrates caching to optimize category retrieval operations.
+ *
+ * @author Sandeep Kumar Swain
+ * @version 1.0
+ * @since 15-03-2026
+ */
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
@@ -33,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // ================= CREATE CATEGORY =================
+    /* Create Category */
     @CacheEvict(
             value = {"categories","categories_page"},
             condition = "@cacheFlags.categoryCacheEnabled()",
@@ -57,7 +72,7 @@ public class CategoryServiceImpl implements CategoryService {
         return entityToDto(savedCategory);
     }
 
-    // ================= UPDATE CATEGORY =================
+    /* Update Category */
     @CacheEvict(
             value = {"categories","categories_page"},
             condition = "@cacheFlags.categoryCacheEnabled()",
@@ -88,7 +103,7 @@ public class CategoryServiceImpl implements CategoryService {
         return entityToDto(updatedCategory);
     }
 
-    // ================= DELETE CATEGORY =================
+    /* Delete Category */
     @CacheEvict(
             value = {"categories","categories_page"},
             condition = "@cacheFlags.categoryCacheEnabled()",
@@ -113,7 +128,7 @@ public class CategoryServiceImpl implements CategoryService {
                 logkey, categoryId);
     }
 
-    // ================= GET ALL CATEGORIES =================
+    /* Get All Categories */
     @Cacheable(
             value = "categories_page",
             key = "'page_' + #pageNumber + '_size_' + #pageSize + '_sort_' + #sortBy + '_' + #sortDir",
@@ -146,7 +161,7 @@ public class CategoryServiceImpl implements CategoryService {
         return pageableResponse;
     }
 
-    // ================= GET SINGLE CATEGORY =================
+    /* Get Single Category */
     @Cacheable(
             value = "categories",
             key = "#categoryId",
@@ -171,7 +186,7 @@ public class CategoryServiceImpl implements CategoryService {
         return entityToDto(category);
     }
 
-    // ================= MAPPER METHODS =================
+    /* Mapper Methods */
     public Category dtoToEntity(CategoryDto categoryDto) {
         log.debug("LogKey: MAPPING - Converting CategoryDto to Category entity");
         return modelMapper.map(categoryDto, Category.class);
