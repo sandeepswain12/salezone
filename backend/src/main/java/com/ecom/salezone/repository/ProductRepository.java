@@ -1,9 +1,9 @@
 package com.ecom.salezone.repository;
 
-import com.ecom.salezone.enities.Category;
 import com.ecom.salezone.enities.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +17,9 @@ import org.springframework.stereotype.Repository;
  * - Fetching only live products
  * - Pagination support
  *
+ * All query methods use @EntityGraph to eagerly fetch the associated
+ * Category in a single JOIN query — eliminating the N+1 query problem.
+ *
  * Extends JpaRepository which automatically provides
  * standard CRUD database operations.
  *
@@ -27,12 +30,23 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product, String> {
 
     /**
+     * Fetch all products with their categories in a single JOIN query.
+     * Overrides default findAll to add @EntityGraph.
+     *
+     * @param pageable pagination information
+     * @return paginated list of all products with categories
+     */
+    @EntityGraph(attributePaths = {"category"})
+    Page<Product> findAll(Pageable pageable);
+
+    /**
      * Search products by title containing a keyword.
      *
      * @param subTitle keyword to search in product title
      * @param pageable pagination information
      * @return paginated list of matching products
      */
+    @EntityGraph(attributePaths = {"category"})
     Page<Product> findByTitleContaining(String subTitle, Pageable pageable);
 
     /**
@@ -41,16 +55,20 @@ public interface ProductRepository extends JpaRepository<Product, String> {
      * @param pageable pagination information
      * @return paginated list of live products
      */
+    @EntityGraph(attributePaths = {"category"})
     Page<Product> findByLiveTrue(Pageable pageable);
 
     /**
-     * Fetch products belonging to a specific category.
+     * Fetch products belonging to a specific category using categoryId directly.
+     * Replaces findByCategory(Category, Pageable) to avoid extra DB call
+     * for fetching the Category object.
      *
-     * @param category category entity
+     * @param categoryId category ID string
      * @param pageable pagination information
      * @return paginated list of products in the category
      */
-    Page<Product> findByCategory(Category category, Pageable pageable);
+    @EntityGraph(attributePaths = {"category"})
+    Page<Product> findByCategory_CategoryId(String categoryId, Pageable pageable);
 
     /**
      * Search products by title, category and price range.
@@ -62,6 +80,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
      * @param pageable pagination information
      * @return filtered paginated list of products
      */
+    @EntityGraph(attributePaths = {"category"})
     Page<Product> findByTitleContainingAndCategory_CategoryIdAndPriceBetween(
             String title,
             String categoryId,
@@ -78,6 +97,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
      * @param pageable pagination information
      * @return filtered paginated list of products
      */
+    @EntityGraph(attributePaths = {"category"})
     Page<Product> findByTitleContainingAndCategory_CategoryId(
             String title,
             String categoryId,
@@ -93,6 +113,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
      * @param pageable pagination information
      * @return filtered paginated list of products
      */
+    @EntityGraph(attributePaths = {"category"})
     Page<Product> findByTitleContainingAndPriceBetween(
             String title,
             Double minPrice,

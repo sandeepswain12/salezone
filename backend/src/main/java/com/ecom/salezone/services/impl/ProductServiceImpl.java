@@ -415,15 +415,15 @@ public class ProductServiceImpl implements ProductService {
         log.info("LogKey: {} - Entry into getAllOfCategory method | categoryId={} page={} size={} sortBy={} sortDir={}",
                 logkey, categoryId, pageNumber, pageSize, sortBy, sortDir);
 
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> {
-                    log.error("LogKey: {} - Category not found ID: {}",
-                            logkey, categoryId);
-                    return new ResourceNotFoundException("Category of given id not found !!");
-                });
+//        Category category = categoryRepository.findById(categoryId)
+//                .orElseThrow(() -> {
+//                    log.error("LogKey: {} - Category not found ID: {}",
+//                            logkey, categoryId);
+//                    return new ResourceNotFoundException("Category of given id not found !!");
+//                });
 
-        log.info("LogKey: {} - Fetched category from DB | category = {}",
-                logkey, category);
+//        log.info("LogKey: {} - Fetched category from DB | category = {}",
+//                logkey, category);
 
         Sort sort = (sortDir.equalsIgnoreCase("desc"))
                 ? Sort.by(sortBy).descending()
@@ -437,7 +437,7 @@ public class ProductServiceImpl implements ProductService {
         log.debug("LogKey: {} - Created pageable object for category products | pageable = {}",
                 logkey, pageable);
 
-        Page<Product> page = productRepository.findByCategory(category, pageable);
+        Page<Product> page = productRepository.findByCategory_CategoryId(categoryId, pageable);
 
         log.info("LogKey: {} - Products fetched from DB for category | categoryId={} totalProducts={}",
                 logkey, categoryId, page.getNumberOfElements());

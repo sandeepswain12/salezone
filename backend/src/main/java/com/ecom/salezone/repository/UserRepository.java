@@ -2,6 +2,8 @@ package com.ecom.salezone.repository;
 
 import com.ecom.salezone.enities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -50,4 +52,11 @@ public interface UserRepository extends JpaRepository<User, String> {
      * @return list of matching users
      */
     List<User> findByUserNameContaining(String keywords);
+
+    // Only load what Spring Security actually needs for auth
+    @Query("SELECT u FROM User u " +
+            "LEFT JOIN FETCH u.roles " +
+            "LEFT JOIN FETCH u.cart " +
+            "WHERE u.email = :email")
+    Optional<User> findByEmailForAuth(@Param("email") String email);
 }

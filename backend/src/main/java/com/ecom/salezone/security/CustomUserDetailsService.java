@@ -68,7 +68,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("LogKey: {} - loadUserByUsername called | username={}",
                 logKey, username);
 
-        UserDetails userDetails = userRepository.findByEmail(username)
+        UserDetails userDetails = userRepository.findByEmailForAuth(username)
                 .orElseThrow(() -> {
                     log.error("LogKey: {} - User not found | username={}",
                             logKey, username);

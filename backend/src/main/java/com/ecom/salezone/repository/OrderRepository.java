@@ -2,6 +2,7 @@ package com.ecom.salezone.repository;
 
 import com.ecom.salezone.enities.Order;
 import com.ecom.salezone.enities.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -30,6 +31,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
      * @param user user entity
      * @return list of orders
      */
+    @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})
     List<Order> findByUser(User user);
 
     /**
@@ -38,6 +40,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
      * @param user user entity
      * @return list of orders ordered by date descending
      */
+    @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})
     List<Order> findByUserOrderByOrderedDateDesc(User user);
 
 }
