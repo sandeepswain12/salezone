@@ -250,4 +250,16 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(EmailException.class)
+    public ResponseEntity<?> handleEmailException(EmailException ex) {
+
+        logger.error("EmailException occurred: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "success", false,
+                        "message", ex.getMessage()
+                ));
+    }
 }

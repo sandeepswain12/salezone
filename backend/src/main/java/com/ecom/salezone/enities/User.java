@@ -350,20 +350,12 @@ public class User implements UserDetails {
                 "userId='" + userId + '\'' +
                 ", userName='" + userName + '\'' +
                 ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
                 ", gender='" + gender + '\'' +
-                ", about='" + about + '\'' +
-                ", imageName='" + imageName + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", isActive=" + isActive +
                 ", provider=" + provider +
-                ", providerId='" + providerId + '\'' +
                 ", emailVerified=" + emailVerified +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", orders=" + orders +
-                ", roles=" + roles +
-                ", cart=" + cart +
                 '}';
     }
 }

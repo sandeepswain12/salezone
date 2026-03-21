@@ -4,8 +4,10 @@ import com.ecom.salezone.dtos.OrderDto;
 import com.ecom.salezone.dtos.UserDto;
 import com.ecom.salezone.enums.PaymentStatus;
 import com.ecom.salezone.exceptions.BadApiRequestException;
+import com.ecom.salezone.services.EmailService;
 import com.ecom.salezone.services.OrderService;
 import com.ecom.salezone.services.UserService;
+import com.ecom.salezone.util.EmailTemplate;
 import com.ecom.salezone.util.LogKeyGenerator;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
@@ -21,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -78,6 +82,12 @@ public class PaymentController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private EmailTemplate emailTemplate;
+
+    @Autowired
+    private EmailService emailService;
+
     @Value("${razorpayKey}")
     private String key;
 
@@ -101,7 +111,8 @@ public class PaymentController {
         String logKey = LogKeyGenerator.generateLogKey();
         log.info("{} Initiating payment for orderId={}", logKey, orderId);
 
-        UserDto user = userService.getUserByEmail(principal.getName(), logKey);
+        String email = extractEmail(principal);
+        UserDto user = userService.getUserByEmail(email, logKey);
         OrderDto order = orderService.getOrder(orderId, logKey);
 
         // Validate order ownership
@@ -211,6 +222,14 @@ public class PaymentController {
 
                 orderService.updatePaymentStatus(orderId, razorpayPaymentId, PaymentStatus.PAID, logKey);
 
+                OrderDto updatedOrder = orderService.getOrder(orderId, logKey);
+
+                emailService.sendEmail(
+                        updatedOrder.getUser().getEmail(),
+                        "Order Confirmed ✅",
+                        emailTemplate.getOrderSuccessTemplate(updatedOrder)
+                );
+
                 return ResponseEntity.ok(
                         Map.of(
                                 "success", true,
@@ -241,5 +260,14 @@ public class PaymentController {
                             "message", "Error verifying payment"
                     ));
         }
+    }
+
+    private String extractEmail(Principal principal) {
+        if (principal instanceof OAuth2AuthenticationToken oauthToken) {
+            OAuth2User oauthUser = oauthToken.getPrincipal();
+            return oauthUser.getAttribute("email");
+        }
+        // For JWT/username-password auth, getName() already returns email
+        return principal.getName();
     }
 }
