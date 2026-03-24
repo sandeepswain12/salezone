@@ -3,11 +3,15 @@ package com.ecom.salezone.controller;
 import com.ecom.salezone.dtos.*;
 import com.ecom.salezone.enities.RefreshToken;
 import com.ecom.salezone.enities.User;
+import com.ecom.salezone.enums.OtpType;
 import com.ecom.salezone.repository.RefreshTokenRepository;
 import com.ecom.salezone.repository.UserRepository;
 import com.ecom.salezone.security.CookieService;
 import com.ecom.salezone.security.JwtService;
 import com.ecom.salezone.services.AuthService;
+import com.ecom.salezone.services.EmailService;
+import com.ecom.salezone.services.OtpService;
+import com.ecom.salezone.util.EmailTemplate;
 import com.ecom.salezone.util.LogKeyGenerator;
 
 import io.jsonwebtoken.JwtException;
@@ -28,16 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -104,101 +106,192 @@ public class AuthController {
     @Autowired
     private CookieService cookieService;
 
+    @Autowired
+    private OtpService otpService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private EmailTemplate emailTemplate;
+
     @Operation(
             summary = "Register a new user",
-            description = "Creates a new user account in the SaleZone system."
+            description = "Creates account and sends OTP to email for verification."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "201", description = "User registered, OTP sent to email"),
             @ApiResponse(responseCode = "400", description = "Invalid request data"),
             @ApiResponse(responseCode = "409", description = "User already exists")
     })
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@Valid @RequestBody SignupRequestDto userDto) {
+    public ResponseEntity<Map<String, String>> signup(
+            @Valid @RequestBody SignupRequestDto userDto) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-
         log.info("LogKey: {} - Signup request received | email={}", logKey, userDto.getEmail());
 
         UserDto createdUser = authService.registerUser(userDto, logKey);
+        log.info("LogKey: {} - Signup completed, OTP sent | userId={}", logKey, createdUser.getUserId());
 
-        log.info("LogKey: {} - Signup completed | userId={}", logKey, createdUser.getUserId());
-
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "message", "Registration successful. Please check your email for the OTP.",
+                        "email", userDto.getEmail()
+                ));
     }
 
-    @Operation(
-            summary = "User Login",
-            description = "Authenticates user credentials and returns access token and refresh token."
-    )
+    @Operation(summary = "User Login - Step 1",
+            description = "Verifies credentials and sends OTP. Returns a pre-auth token.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login successful"),
+            @ApiResponse(responseCode = "202", description = "OTP sent to email"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials"),
-            @ApiResponse(responseCode = "403", description = "User account disabled")
+            @ApiResponse(responseCode = "403", description = "Account not verified")
     })
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(
+    public ResponseEntity<PreAuthResponse> login(
             @RequestBody LoginRequest loginRequest,
             HttpServletResponse response) {
 
         String logKey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - Login attempt | email={}", logKey, loginRequest.getEmail());
 
-        log.info("LogKey: {} - Login attempt | credential = {}", logKey, loginRequest);
+        // verify credentials
+        authenticate(loginRequest, logKey);
 
-        // Authenticate credentials
-        Authentication authenticate = authenticate(loginRequest, logKey);
-        log.info("LogKey: {} - Login Successful | credential = {}", logKey, authenticate);
-
-        // Fetch user from DB
+        // load user
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> {
-                    log.error("LogKey: {} - Login failed | user not found", logKey);
+                    log.error("LogKey: {} - User not found after auth | email={}", logKey, loginRequest.getEmail());
                     return new BadCredentialsException("Invalid email or password");
                 });
 
-        // Check user status
+        // check account is active (email verified)
         if (!user.isEnabled()) {
-            log.warn("LogKey: {} - Login blocked | user disabled", logKey);
-            throw new DisabledException("User is disabled");
+            log.warn("LogKey: {} - Login blocked | account not active | email={}", logKey, user.getEmail());
+            throw new DisabledException("Account not verified. Please verify your email first.");
         }
 
-        // Create refresh token entry (DB persistence)
-        String jti = UUID.randomUUID().toString();
-        log.info("LogKey: {} - Refresh token id generated = {} ", logKey, jti);
+        // generate pre-auth token (cryptographic proof password was verified)
+        String preAuthToken = jwtService.generatePreAuthToken(user, logKey);
+        log.info("LogKey: {} - Pre-auth token generated | email={}", logKey, user.getEmail());
 
-        RefreshToken refreshTokenEntity = RefreshToken.builder()
-                .jti(jti)
-                .user(user)
-                .createdAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
-                .revoked(false)
-                .build();
+        // generate and send OTP
+        String otp = otpService.generateOtp(user.getEmail(), OtpType.LOGIN, logKey);
+        emailService.sendOtpEmail(user.getEmail(), user.getUserName(), otp, OtpType.LOGIN, logKey);
 
-        refreshTokenRepository.save(refreshTokenEntity);
-        log.info("LogKey: {} - Refresh token data saved successfully in DB = {} ", logKey, refreshTokenEntity);
+        log.info("LogKey: {} - Login OTP sent | email={}", logKey, user.getEmail());
 
-        log.debug("LogKey: {} - Refresh token persisted | jti={}", logKey, jti);
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(new PreAuthResponse(preAuthToken, "OTP sent to your email.", user.getEmail()));
+    }
 
-        // Generate JWT tokens
-        String accessToken = jwtService.generateAccessToken(user,logKey);
-        log.info("LogKey: {} - Access token generated successfully = {} ", logKey, accessToken);
-        String refreshToken = jwtService.generateRefreshToken(user, jti,logKey);
-        log.info("LogKey: {} - Refresh token generated successfully = {} ", logKey, refreshToken);
+    @Operation(summary = "Verify OTP",
+            description = "For LOGIN: verifies pre-auth token + OTP, issues JWT tokens. " +
+                    "For REGISTRATION: verifies OTP, activates account.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OTP verified successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired OTP"),
+            @ApiResponse(responseCode = "401", description = "Invalid pre-auth token")
+    })
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(
+            @Valid @RequestBody OtpVerifyRequest request,
+            HttpServletResponse response) {
 
-        // use cookie service to attach refresh token in cookie
-        cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTtlSeconds(),logKey);
-        cookieService.addNoStoreHeaders(response,logKey);
-        log.info("LogKey: {} - Refresh token attached in cookie = {} ", logKey, refreshToken);
+        String logKey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - OTP verify request | email={} type={}", logKey, request.getEmail(), request.getType());
 
-        // Build response
-        TokenResponse tokenResponse = new TokenResponse();
-        tokenResponse.setAccessToken(accessToken);
-        tokenResponse.setRefreshToken(refreshToken);
-        tokenResponse.setExpiresIn(jwtService.getAccessTtlSeconds());
-        tokenResponse.setUser(modelMapper.map(user, UserDto.class));
-        log.info("LogKey: {} - Login successful | payload = {}", logKey, tokenResponse);
+        // REGISTRATION
+        if (request.getType() == OtpType.REGISTRATION) {
 
-        return ResponseEntity.ok(tokenResponse);
+            otpService.verifyOtp(request.getEmail(), request.getCode(), OtpType.REGISTRATION, logKey);
+
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+            // Activate account and mark email as verified
+            user.setActive(true);
+            user.setEmailVerified(true);
+            userRepository.save(user);
+
+            log.info("LogKey: {} - Account activated + email verified | email={}", logKey, request.getEmail());
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Account verified successfully. You can now login."
+            ));
+        }
+
+        // LOGIN
+        if (request.getType() == OtpType.LOGIN) {
+
+            // preAuthToken must be present
+            if (request.getPreAuthToken() == null || request.getPreAuthToken().isBlank()) {
+                log.warn("LogKey: {} - Pre-auth token missing | email={}", logKey, request.getEmail());
+                throw new BadCredentialsException("Pre-auth token is required for login OTP verification");
+            }
+
+            // Validate signature + expiry + typ=preauth
+            if (!jwtService.isPreAuthToken(request.getPreAuthToken())) {
+                log.warn("LogKey: {} - Invalid pre-auth token | email={}", logKey, request.getEmail());
+                throw new BadCredentialsException("Invalid or expired pre-auth token");
+            }
+
+            // Extract email from signed token — never trust request body alone
+            String emailFromToken = jwtService.getEmail(request.getPreAuthToken());
+
+            // Binding check — email in token must match request
+            if (!emailFromToken.equals(request.getEmail())) {
+                log.warn("LogKey: {} - Pre-auth token email mismatch | tokenEmail={} requestEmail={}",
+                        logKey, emailFromToken, request.getEmail());
+                throw new BadCredentialsException("Token does not match the provided email");
+            }
+
+            // Verify OTP
+            otpService.verifyOtp(request.getEmail(), request.getCode(), OtpType.LOGIN, logKey);
+
+            // Load user
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+            // Create and save refresh token
+            String jti = UUID.randomUUID().toString();
+            RefreshToken refreshTokenEntity = RefreshToken.builder()
+                    .jti(jti)
+                    .user(user)
+                    .createdAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
+                    .revoked(false)
+                    .build();
+            refreshTokenRepository.save(refreshTokenEntity);
+            log.info("LogKey: {} - Refresh token saved | jti={}", logKey, jti);
+
+            // Generate tokens
+            String accessToken = jwtService.generateAccessToken(user, logKey);
+            String refreshToken = jwtService.generateRefreshToken(user, jti, logKey);
+
+            // Attach cookie
+            cookieService.attachRefreshCookie(response, refreshToken,
+                    (int) jwtService.getRefreshTtlSeconds(), logKey);
+            cookieService.addNoStoreHeaders(response, logKey);
+
+            emailService.sendWelcomeEmail(user.getEmail(), user.getUserName(), logKey);
+
+            // Build response
+            TokenResponse tokenResponse = new TokenResponse();
+            tokenResponse.setAccessToken(accessToken);
+            tokenResponse.setRefreshToken(refreshToken);
+            tokenResponse.setExpiresIn(jwtService.getAccessTtlSeconds());
+            tokenResponse.setUser(modelMapper.map(user, UserDto.class));
+
+            log.info("LogKey: {} - Login complete, tokens issued | email={}", logKey, user.getEmail());
+
+            return ResponseEntity.ok(tokenResponse);
+        }
+
+        throw new BadCredentialsException("Invalid OTP type");
     }
 
     @Operation(
@@ -418,18 +511,20 @@ public class AuthController {
      * Authenticates user credentials using Spring Security.
      */
     private Authentication authenticate(LoginRequest loginRequest, String logKey) {
-
         try {
-            log.info("LogKey: {} - Entry into authenticate with login credential = {}", logKey,loginRequest);
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),
                             loginRequest.getPassword()
                     )
             );
+        } catch (LockedException e) {
+            // isActive=false — email not verified yet
+            log.warn("LogKey: {} - Login blocked | account locked | email={}", logKey, loginRequest.getEmail());
+            throw new DisabledException("Account not verified. Please check your email for the OTP.");
         } catch (Exception e) {
             log.error("LogKey: {} - Authentication failed | email={}", logKey, loginRequest.getEmail());
-            throw new BadCredentialsException("Invalid Username or Password");
+            throw new BadCredentialsException("Invalid username or password");
         }
     }
 }
