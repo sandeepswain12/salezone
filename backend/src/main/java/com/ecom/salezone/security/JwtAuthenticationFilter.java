@@ -91,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 🔥 Generate logKey for this request
+        // Generate logKey for this request
         String logKey = LogKeyGenerator.generateLogKey();
 
         String header = request.getHeader("Authorization");
@@ -185,6 +185,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/api/v1/auth");
+        return request.getRequestURI().startsWith("/salezone/ecom/auth");
     }
 }

@@ -171,6 +171,39 @@ public class JwtService {
     }
 
     /**
+     * Generates a short-lived pre-auth token after password verification.
+     * typ=preauth — cannot be used as an access token.
+     * TTL is 5 minutes — enough time to check email and enter OTP.
+     */
+    public String generatePreAuthToken(User user, String logKey) {
+
+        log.info("LogKey: {} - Generating pre-auth token | userId={}", logKey, user.getUserId());
+
+        Instant now = Instant.now();
+
+        return Jwts.builder()
+                .id(UUID.randomUUID().toString())
+                .subject(user.getUserId())
+                .issuer(issuer)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(300)))
+                .claims(Map.of(
+                        "email", user.getEmail(),
+                        "typ", "preauth"
+                ))
+                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    /**
+     * Returns true only if token carries typ=preauth.
+     */
+    public boolean isPreAuthToken(String token) {
+        Claims claims = parse(token).getPayload();
+        return "preauth".equals(claims.get("typ"));
+    }
+
+    /**
      * Parses and validates a signed JWT token.
      *
      * @param token JWT token string

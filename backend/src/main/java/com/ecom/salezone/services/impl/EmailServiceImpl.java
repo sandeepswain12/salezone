@@ -1,13 +1,16 @@
 package com.ecom.salezone.services.impl;
 
+import com.ecom.salezone.enums.OtpType;
 import com.ecom.salezone.exceptions.EmailException;
 import com.ecom.salezone.services.EmailService;
+import com.ecom.salezone.util.EmailTemplate;
 import com.sendgrid.*;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,9 @@ public class EmailServiceImpl implements EmailService {
 
     @Value("${sendgrid.from.email}")
     private String fromEmail;
+
+    @Autowired
+    private EmailTemplate emailTemplate;
 
     @Async
     @Override
@@ -65,5 +71,35 @@ public class EmailServiceImpl implements EmailService {
 
             throw new EmailException("Failed to send email", e);
         }
+    }
+
+    @Async
+    @Override
+    public void sendOtpEmail(String to, String userName, String otp,
+                             OtpType type, String logKey) {
+
+        log.info("LogKey: {} - Sending OTP email | to={} type={}", logKey, to, type);
+
+        String subject = (type == OtpType.REGISTRATION)
+                ? "Verify your SaleZone account"
+                : "Your SaleZone login OTP";
+
+        String body = emailTemplate.getOtpTemplate(userName, otp, type);
+
+        sendEmail(to, subject, body);
+    }
+
+    @Async
+    @Override
+    public void sendWelcomeEmail(String to, String userName, String logKey) {
+
+        log.info("LogKey: {} - Sending welcome email | to={}", logKey, to);
+
+        String subject = "Welcome back to SaleZone! 👋";
+        String body = emailTemplate.getWelcomeBackTemplate(userName);
+
+        sendEmail(to, subject, body);
+
+        log.info("LogKey: {} - Welcome email sent | to={}", logKey, to);
     }
 }
