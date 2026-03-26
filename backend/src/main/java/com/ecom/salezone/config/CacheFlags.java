@@ -1,5 +1,6 @@
 package com.ecom.salezone.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -22,40 +23,50 @@ import org.springframework.stereotype.Component;
  * @since : 15-03-2026
  */
 @Component
-@ConfigurationProperties(prefix = "app.cache")
 public class CacheFlags {
 
-    private boolean enabled;
+    @Value("${app.cache.enabled}")
+    private boolean cacheEnabled;
+
+    @Value("${app.cache.products}")
     private boolean products;
+
+    @Value("${app.cache.categories}")
     private boolean categories;
+
+    @Value("${app.cache.users}")
     private boolean users;
+
+    @Value("${app.cache.orders}")
     private boolean orders;
+
+    @Value("${app.cache.cart}")
     private boolean cart;
+
+    @Value("${app.cache.loadUser}")
     private boolean loadUser;
 
     public boolean productCacheEnabled() {
-        return enabled && products;
+        return cacheEnabled && products;
     }
 
     public boolean categoryCacheEnabled() {
-        return enabled && categories;
+        return cacheEnabled && categories;
     }
 
     public boolean userCacheEnabled() {
-        return enabled && users;
+        return cacheEnabled && users;
     }
 
     public boolean orderCacheEnabled() {
-        return enabled && orders;
+        return cacheEnabled && orders;
     }
 
     public boolean cartCacheEnabled() {
-        return enabled && cart;
+        return cacheEnabled && cart;
     }
 
     public boolean loadUserCacheEnabled() {
-        return enabled && loadUser;
+        return cacheEnabled && loadUser;
     }
-
-    // getters and setters
 }
