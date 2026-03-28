@@ -194,4 +194,120 @@ public class EmailTemplate {
                 frontendUrl
         );
     }
+
+    public String getPasswordResetOtpTemplate(String userName, String otp) {
+
+        return """
+        <div style="background-color:#f5f5f5; padding:20px; font-family:Arial, sans-serif;">
+            <div style="max-width:600px; margin:auto; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+                <div style="background:#e53935; color:white; padding:15px; text-align:center;">
+                    <h2 style="margin:0;">SaleZone 🛒</h2>
+                </div>
+
+                <div style="padding:30px;">
+                    <h3 style="color:#e53935;">Password Reset Request 🔐</h3>
+                    <p>Hi <b>%s</b>,</p>
+                    <p>We received a request to reset your password. Use the OTP below:</p>
+
+                    <div style="text-align:center; margin:30px 0;">
+                        <div style="display:inline-block; background:#f2f2f2; border-radius:10px; padding:20px 40px;">
+                            <h1 style="margin:0; letter-spacing:10px; color:#333; font-size:36px;">%s</h1>
+                        </div>
+                    </div>
+
+                    <p style="color:#e53935; font-weight:bold; text-align:center;">
+                        This code expires in 5 minutes.
+                    </p>
+                    <p style="color:#777; font-size:13px;">
+                        If you did not request a password reset, please ignore this email.
+                        Your password will not be changed.
+                    </p>
+                </div>
+
+                <div style="background:#f9f9f9; padding:15px; text-align:center; font-size:12px; color:#777;">
+                    <p>© 2026 SaleZone. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    """.formatted(userName, otp);
+    }
+
+    public String getPasswordResetLinkTemplate(String userName, String resetLink) {
+
+        return """
+        <div style="background-color:#f5f5f5; padding:20px; font-family:Arial, sans-serif;">
+            <div style="max-width:600px; margin:auto; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+                <div style="background:#e53935; color:white; padding:15px; text-align:center;">
+                    <h2 style="margin:0;">SaleZone 🛒</h2>
+                </div>
+
+                <div style="padding:30px;">
+                    <h3 style="color:#e53935;">Password Reset Link 🔗</h3>
+                    <p>Hi <b>%s</b>,</p>
+                    <p>Click the button below to reset your password. This link is valid for <b>15 minutes</b>.</p>
+
+                    <div style="text-align:center; margin:30px 0;">
+                        <a href="%s"
+                           style="background:#e53935; color:white; padding:14px 28px; text-decoration:none; border-radius:5px; font-size:15px;">
+                           Reset My Password
+                        </a>
+                    </div>
+
+                    <p style="color:#777; font-size:13px; text-align:center;">
+                        Or copy this link: <a href="%s" style="color:#e53935;">%s</a>
+                    </p>
+
+                    <p style="color:#777; font-size:13px;">
+                        If you did not request a password reset, please ignore this email.
+                        Your password will not be changed.
+                    </p>
+                </div>
+
+                <div style="background:#f9f9f9; padding:15px; text-align:center; font-size:12px; color:#777;">
+                    <p>© 2026 SaleZone. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    """.formatted(userName, resetLink, resetLink, resetLink);
+    }
+
+    public String getPasswordChangedTemplate(String userName) {
+
+        return """
+        <div style="background-color:#f5f5f5; padding:20px; font-family:Arial, sans-serif;">
+            <div style="max-width:600px; margin:auto; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+                <div style="background:#4CAF50; color:white; padding:15px; text-align:center;">
+                    <h2 style="margin:0;">SaleZone 🛒</h2>
+                </div>
+
+                <div style="padding:30px;">
+                    <h3 style="color:#4CAF50;">Password Changed Successfully ✅</h3>
+                    <p>Hi <b>%s</b>,</p>
+                    <p>Your SaleZone account password was changed successfully.</p>
+
+                    <div style="background:#fff3e0; border-left:4px solid #e53935; padding:15px; margin:20px 0; border-radius:0 8px 8px 0;">
+                        <p style="margin:0; font-size:13px; color:#555;">
+                            Time: %s<br/>
+                            If you did not make this change, please
+                            <a href="%s/support" style="color:#e53935;">contact support immediately</a>.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="background:#f9f9f9; padding:15px; text-align:center; font-size:12px; color:#777;">
+                    <p>© 2026 SaleZone. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    """.formatted(
+                userName,
+                java.time.format.DateTimeFormatter
+                        .ofPattern("dd MMM yyyy, hh:mm a")
+                        .format(java.time.LocalDateTime.now()),
+                frontendUrl
+        );
+    }
 }
