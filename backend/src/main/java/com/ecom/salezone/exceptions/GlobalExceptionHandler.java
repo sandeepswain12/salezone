@@ -232,7 +232,7 @@ public class GlobalExceptionHandler {
 
         String message = "Database constraint violation";
 
-        // 🔥 Detect duplicate email specifically
+        // Detect duplicate email specifically
         if (ex.getRootCause() != null &&
                 ex.getRootCause().getMessage().contains("users.UK")) {
 
@@ -261,5 +261,24 @@ public class GlobalExceptionHandler {
                         "success", false,
                         "message", ex.getMessage()
                 ));
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ApiError> handleInvalidPasswordException(
+            InvalidPasswordException ex,
+            HttpServletRequest request) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+        logger.warn("LogKey: {} - Invalid password | path={} message={}",
+                logKey, request.getRequestURI(), ex.getMessage());
+
+        ApiError apiError = new ApiError();
+        apiError.setStatus(HttpStatus.BAD_REQUEST.value());
+        apiError.setMessage(ex.getMessage());
+        apiError.setError("Invalid Password");
+        apiError.setPath(request.getRequestURI());
+        apiError.setTimestamp(OffsetDateTime.now());
+
+        return ResponseEntity.badRequest().body(apiError);
     }
 }
