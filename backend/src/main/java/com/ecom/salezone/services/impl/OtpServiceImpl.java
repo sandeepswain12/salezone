@@ -35,6 +35,9 @@ public class OtpServiceImpl implements OtpService {
 
         log.info("LogKey: {} - Generating OTP | email={} type={}", logKey, email, type);
 
+        log.info("LogKey: {} - Generating OTP | email={} type={} type.name()={} type.toString()={}",
+                logKey, email, type, type.name(), type.toString());
+
         otpRepository.deleteAllByEmailAndType(email, type);
 
         String code = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));

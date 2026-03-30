@@ -1,4 +1,21 @@
 package com.ecom.salezone.dtos;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
 public class PasswordResetLinkVerifyRequest {
+
+    @NotBlank(message = "Reset token is required")
+    private String resetToken;
+
+    @NotBlank(message = "New password is required")
+    @Size(min = 8, max = 50)
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).*$",
+            message = "Password must contain uppercase, lowercase, number and special character"
+    )
+    private String newPassword;
 }

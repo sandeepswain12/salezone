@@ -3,7 +3,7 @@ package com.ecom.salezone.services.impl;
 import com.ecom.salezone.enums.OtpType;
 import com.ecom.salezone.exceptions.EmailException;
 import com.ecom.salezone.services.EmailService;
-import com.ecom.salezone.util.EmailTemplate;
+import com.ecom.salezone.util.EmailTemplates;
 import com.sendgrid.*;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
@@ -28,13 +28,13 @@ public class EmailServiceImpl implements EmailService {
     private String fromEmail;
 
     @Autowired
-    private EmailTemplate emailTemplate;
+    private EmailTemplates emailTemplate;
 
     @Async
     @Override
-    public void sendEmail(String to, String subject, String body) {
+    public void sendEmail(String to, String subject, String body, String logKey) {
 
-        log.info("Sending email | to={} subject={}", to, subject);
+        log.info("LogKey: {} - Sending email | to={} subject={}",logKey, to, subject);
 
         Email from = new Email(fromEmail, "SaleZone");
         Email toEmail = new Email(to);
@@ -55,10 +55,10 @@ public class EmailServiceImpl implements EmailService {
             int statusCode = response.getStatusCode();
 
             if (statusCode >= 200 && statusCode < 300) {
-                log.info("Email sent successfully | to={} status={}", to, statusCode);
+                log.info("LogKey: {} - Email sent successfully | to={} status={}",logKey, to, statusCode);
             } else {
-                log.error("Email failed | to={} status={} responseBody={}",
-                        to, statusCode, response.getBody());
+                log.error("LogKey: {} - Email failed | to={} status={} responseBody={}",
+                        logKey, to, statusCode, response.getBody());
 
                 throw new EmailException(
                         "Email sending failed with status: " + statusCode
@@ -66,8 +66,8 @@ public class EmailServiceImpl implements EmailService {
             }
 
         } catch (Exception e) {
-            log.error("Exception while sending email | to={} error={}",
-                    to, e.getMessage(), e);
+            log.error("LogKey: {} - Exception while sending email | to={} error={}",
+                    logKey, to, e.getMessage(), e);
 
             throw new EmailException("Failed to send email", e);
         }
@@ -86,7 +86,7 @@ public class EmailServiceImpl implements EmailService {
 
         String body = emailTemplate.getOtpTemplate(userName, otp, type);
 
-        sendEmail(to, subject, body);
+        sendEmail(to, subject, body, logKey);
     }
 
     @Async
@@ -98,8 +98,37 @@ public class EmailServiceImpl implements EmailService {
         String subject = "Welcome back to SaleZone! 👋";
         String body = emailTemplate.getWelcomeBackTemplate(userName);
 
-        sendEmail(to, subject, body);
+        sendEmail(to, subject, body, logKey);
 
         log.info("LogKey: {} - Welcome email sent | to={}", logKey, to);
+    }
+
+    @Async
+    @Override
+    public void sendPasswordResetOtpEmail(String to, String userName,
+                                          String otp, String logKey) {
+        log.info("LogKey: {} - Sending password reset OTP email | to={}", logKey, to);
+        String body = emailTemplate.getPasswordResetOtpTemplate(userName, otp);
+        sendEmail(to, "Reset your SaleZone password", body, logKey);
+        log.info("LogKey: {} - Password reset OTP email sent | to={}", logKey, to);
+    }
+
+    @Async
+    @Override
+    public void sendPasswordResetLinkEmail(String to, String userName,
+                                           String resetLink, String logKey) {
+        log.info("LogKey: {} - Sending password reset link email | to={}", logKey, to);
+        String body = emailTemplate.getPasswordResetLinkTemplate(userName, resetLink);
+        sendEmail(to, "Reset your SaleZone password", body, logKey);
+        log.info("LogKey: {} - Password reset link email sent | to={}", logKey, to);
+    }
+
+    @Async
+    @Override
+    public void sendPasswordChangedEmail(String to, String userName, String logKey) {
+        log.info("LogKey: {} - Sending password changed confirmation email | to={}", logKey, to);
+        String body = emailTemplate.getPasswordChangedTemplate(userName);
+        sendEmail(to, "Your SaleZone password was changed", body, logKey);
+        log.info("LogKey: {} - Password changed email sent | to={}", logKey, to);
     }
 }

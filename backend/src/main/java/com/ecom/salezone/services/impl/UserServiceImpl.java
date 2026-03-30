@@ -202,16 +202,16 @@ public class UserServiceImpl implements UserService {
 //        refreshTokenRepository.deleteByUser(user);
 //        log.info("LogKey: {} - Refresh tokens deleted for user | userId={}", logKey, userId);
 
-        String fullPath = imagePath + user.getImageName();
-
-        try {
-            Files.delete(Paths.get(fullPath));
-            log.info("LogKey: {} - User image deleted | path={}", logKey, fullPath);
-        } catch (NoSuchFileException ex) {
-            log.warn("LogKey: {} - User image not found | path={}", logKey, fullPath);
-        } catch (IOException e) {
-            log.error("LogKey: {} - Error deleting user image | path={}", logKey, fullPath, e);
-        }
+//        String fullPath = imagePath + user.getImageName();
+//
+//        try {
+//            Files.delete(Paths.get(fullPath));
+//            log.info("LogKey: {} - User image deleted | path={}", logKey, fullPath);
+//        } catch (NoSuchFileException ex) {
+//            log.warn("LogKey: {} - User image not found | path={}", logKey, fullPath);
+//        } catch (IOException e) {
+//            log.error("LogKey: {} - Error deleting user image | path={}", logKey, fullPath, e);
+//        }
 
         userRepository.delete(user);
 

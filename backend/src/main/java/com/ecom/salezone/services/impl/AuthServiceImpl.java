@@ -9,7 +9,7 @@ import com.ecom.salezone.services.AuthService;
 import com.ecom.salezone.services.EmailService;
 import com.ecom.salezone.services.OtpService;
 import com.ecom.salezone.services.UserService;
-import com.ecom.salezone.util.EmailTemplate;
+import com.ecom.salezone.util.EmailTemplates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private EmailService emailService;
 
     @Autowired
-    private EmailTemplate emailTemplate;
+    private EmailTemplates emailTemplate;
 
     @Override
     public UserDto registerUser(SignupRequestDto userDto, String logKey) {

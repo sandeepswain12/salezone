@@ -196,6 +196,39 @@ public class JwtService {
     }
 
     /**
+     * Generates a short-lived password reset token.
+     * typ=pwdreset — 15 minutes TTL.
+     * Cannot be used as access, refresh, or preauth token.
+     */
+    public String generatePwdResetToken(User user, String logKey) {
+
+        log.info("LogKey: {} - Generating pwd-reset token | userId={}", logKey, user.getUserId());
+
+        Instant now = Instant.now();
+
+        return Jwts.builder()
+                .id(UUID.randomUUID().toString())
+                .subject(user.getUserId())
+                .issuer(issuer)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(900))) // 15 minutes
+                .claims(Map.of(
+                        "email", user.getEmail(),
+                        "typ", "pwdreset"
+                ))
+                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    /**
+     * Returns true only if token carries typ=pwdreset.
+     */
+    public boolean isPwdResetToken(String token) {
+        Claims claims = parse(token).getPayload();
+        return "pwdreset".equals(claims.get("typ"));
+    }
+
+    /**
      * Returns true only if token carries typ=preauth.
      */
     public boolean isPreAuthToken(String token) {

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailTemplate {
+public class EmailTemplates {
 
     @Value("${app.cors.front-end-url}")
     private String frontendUrl;
