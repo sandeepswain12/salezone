@@ -4,6 +4,7 @@ import com.ecom.salezone.dtos.*;
 import com.ecom.salezone.enities.RefreshToken;
 import com.ecom.salezone.enities.User;
 import com.ecom.salezone.enums.OtpType;
+import com.ecom.salezone.exceptions.ResourceNotFoundException;
 import com.ecom.salezone.repository.RefreshTokenRepository;
 import com.ecom.salezone.repository.UserRepository;
 import com.ecom.salezone.security.CookieService;
@@ -11,7 +12,7 @@ import com.ecom.salezone.security.JwtService;
 import com.ecom.salezone.services.AuthService;
 import com.ecom.salezone.services.EmailService;
 import com.ecom.salezone.services.OtpService;
-import com.ecom.salezone.util.EmailTemplate;
+import com.ecom.salezone.services.impl.PasswordResetService;
 import com.ecom.salezone.util.LogKeyGenerator;
 
 import io.jsonwebtoken.JwtException;
@@ -80,10 +81,7 @@ import java.util.UUID;
 )
 @RestController
 @RequestMapping("/salezone/ecom/auth")
-@CrossOrigin(origins = "http://localhost:5173/")
 public class AuthController {
-
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -113,7 +111,9 @@ public class AuthController {
     private EmailService emailService;
 
     @Autowired
-    private EmailTemplate emailTemplate;
+    private PasswordResetService passwordResetService;
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @Operation(
             summary = "Register a new user",
@@ -445,6 +445,99 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    //  OTP FLOW
+
+    @Operation(summary = "Request password reset OTP",
+            description = "Sends a 6-digit OTP to the logged-in user's email.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OTP sent"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    @PostMapping("/password-reset/otp/request")
+    public ResponseEntity<Map<String, String>> requestOtpReset(
+            @Valid @RequestBody PasswordResetRequestDto request) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - OTP reset request received", logKey);
+
+        passwordResetService.requestOtpReset(request.getEmail(), logKey);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "If this email is registered, an OTP has been sent."
+        ));
+    }
+
+
+    @Operation(summary = "Verify OTP and reset password",
+            description = "Verifies the OTP and sets the new password.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Password reset successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired OTP")
+    })
+    @PostMapping("/password-reset/otp/verify")
+    public ResponseEntity<Map<String, String>> verifyOtpAndReset(
+            @Valid @RequestBody PasswordResetOtpRequest request) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - OTP reset verify received", logKey);
+
+        passwordResetService.verifyOtpAndReset(
+                request.getEmail(),
+                request.getOtp(),
+                request.getNewPassword(),
+                logKey
+        );
+
+        return ResponseEntity.ok(Map.of("message", "Password reset successful. Please login again."));
+    }
+
+    //  LINK FLOW 
+
+    @Operation(summary = "Request password reset link",
+            description = "Sends a signed reset link to the logged-in user's email. Valid for 15 minutes.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reset link sent"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    @PostMapping("/password-reset/link/request")
+    public ResponseEntity<Map<String, String>> requestLinkReset(
+            @Valid @RequestBody PasswordResetRequestDto request) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - Link reset request received", logKey);
+
+        passwordResetService.requestLinkReset(request.getEmail(), logKey);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "If this email is registered, a reset link has been sent."
+        ));
+    }
+
+
+
+    @Operation(summary = "Verify reset link token and reset password",
+            description = "Validates the signed reset token and sets the new password. " +
+                    "This endpoint is PUBLIC — no access token needed.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Password reset successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired reset token")
+    })
+    @PostMapping("/password-reset/link/verify")
+    public ResponseEntity<Map<String, String>> verifyLinkAndReset(
+            @Valid @RequestBody PasswordResetLinkVerifyRequest request) {
+
+        String logKey = LogKeyGenerator.generateLogKey();
+        log.info("LogKey: {} - Link reset verify received", logKey);
+
+        passwordResetService.verifyLinkAndReset(
+                request.getResetToken(),
+                request.getNewPassword(),
+                logKey
+        );
+
+        return ResponseEntity.ok(Map.of("message", "Password reset successful. Please login again."));
+    }
+
 
     /**
      * Reads refresh token from:
@@ -526,5 +619,21 @@ public class AuthController {
             log.error("LogKey: {} - Authentication failed | email={}", logKey, loginRequest.getEmail());
             throw new BadCredentialsException("Invalid username or password");
         }
+    }
+
+    /**
+     * Extracts the authenticated user from SecurityContext.
+     * JwtAuthenticationFilter stores email as the principal.
+     */
+    private User getAuthenticatedUser(String logKey) {
+        String email = (String) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        log.info("LogKey: {} - Authenticated user email from context | email={}", logKey, email);
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
     }
 }
