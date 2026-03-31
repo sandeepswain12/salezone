@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -31,6 +32,11 @@ import org.springframework.context.annotation.Configuration;
  * @since : 2026
  */
 @Configuration
+@ConditionalOnProperty(
+        name = "app.swagger.enabled",
+        havingValue = "true",
+        matchIfMissing = false   // OFF by default — must explicitly enable
+)
 @OpenAPIDefinition(
         info = @Info(
                 title = "SaleZone E-Commerce Platform API",

@@ -31,18 +31,19 @@ public class OrderUpdateRequest {
      * Updated billing name of the customer.
      * Used when customer edits billing details.
      */
-    private String billingName;
-
-    /**
-     * Updated billing phone number.
-     * Used for delivery and order-related communication.
-     */
-    private String billingPhone;
-
-    /**
-     * Updated billing address for order delivery.
-     */
-    private String billingAddress;
+//    private String billingName;
+//
+//    /**
+//     * Updated billing phone number.
+//     * Used for delivery and order-related communication.
+//     */
+//    private String billingPhone;
+//
+//    /**
+//     * Updated billing address for order delivery.
+//     */
+//    private String billingAddress;
+    private String addressId;
 
     /**
      * Date when the order was delivered to the customer.

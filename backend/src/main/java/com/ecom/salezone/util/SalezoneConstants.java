@@ -3,14 +3,18 @@ package com.ecom.salezone.util;
 public class SalezoneConstants {
     public static final String[] AUTH_PUBLIC_URLS = {
             "/salezone/ecom/auth/**",
+
+            //  REMOVE THIS
+            // "/salezone/ecom/auth/**"
+
             "/salezone/ecom/categories/**",
             "/salezone/ecom/products/**",
+            "/salezone/ecom/wishlist/**",
+            "/salezone/ecom/users/**",
+            "/salezone/ecom/address/**",
 
-            // Swagger Required
             "/v3/api-docs/**",
-            "/v3/api-docs",
-            "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui/**"
     };
 
     public static final String[] AUTH_ADMIN_URLS= {

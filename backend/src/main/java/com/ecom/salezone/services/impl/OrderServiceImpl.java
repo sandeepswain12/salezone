@@ -8,6 +8,7 @@ import com.ecom.salezone.enities.*;
 import com.ecom.salezone.enums.PaymentStatus;
 import com.ecom.salezone.exceptions.BadApiRequestException;
 import com.ecom.salezone.exceptions.ResourceNotFoundException;
+import com.ecom.salezone.repository.AddressRepository;
 import com.ecom.salezone.util.Helper;
 import com.ecom.salezone.repository.CartRepository;
 import com.ecom.salezone.repository.OrderRepository;
@@ -61,6 +62,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
 
     /* Get Order */
     @Cacheable(
@@ -117,10 +121,19 @@ public class OrderServiceImpl implements OrderService {
             throw new BadApiRequestException("Invalid number of items in cart !!");
         }
 
+        Address address = addressRepository.findById(orderDto.getAddressId())
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - Address not found | addressId={}", logkey, orderDto.getAddressId());
+                    return new ResourceNotFoundException("Address not found !!");
+                });
+
+// 🔒 Security check
+        if (!address.getUser().getUserId().equals(userId)) {
+            throw new BadApiRequestException("Address does not belong to user");
+        }
+
         Order order = Order.builder()
-                .billingName(orderDto.getBillingName())
-                .billingPhone(orderDto.getBillingPhone())
-                .billingAddress(orderDto.getBillingAddress())
+                .address(address)   // USE ENTITY
                 .deliveredDate(null)
                 .paymentStatus(orderDto.getPaymentStatus())
                 .orderStatus(orderDto.getOrderStatus())
@@ -128,6 +141,18 @@ public class OrderServiceImpl implements OrderService {
                 .paymentMethod(orderDto.getPaymentMethod())
                 .user(user)
                 .build();
+
+//        Order order = Order.builder()
+//                .billingName(orderDto.getBillingName())
+//                .billingPhone(orderDto.getBillingPhone())
+//                .billingAddress(orderDto.getBillingAddress())
+//                .deliveredDate(null)
+//                .paymentStatus(orderDto.getPaymentStatus())
+//                .orderStatus(orderDto.getOrderStatus())
+//                .orderId(UUID.randomUUID().toString())
+//                .paymentMethod(orderDto.getPaymentMethod())
+//                .user(user)
+//                .build();
 
         AtomicReference<Integer> orderAmount = new AtomicReference<>(0);
 
@@ -261,12 +286,41 @@ public class OrderServiceImpl implements OrderService {
                     return new BadApiRequestException("Invalid update data");
                 });
 
-        order.setBillingName(request.getBillingName());
-        order.setBillingPhone(request.getBillingPhone());
-        order.setBillingAddress(request.getBillingAddress());
-        order.setPaymentStatus(request.getPaymentStatus());
-        order.setOrderStatus(request.getOrderStatus());
-        order.setDeliveredDate(request.getDeliveredDate());
+        // Update Address (if provided)
+        if (request.getAddressId() != null) {
+
+            Address address = addressRepository.findById(request.getAddressId())
+                    .orElseThrow(() -> {
+                        log.error("LogKey: {} - Address not found | addressId={}",
+                                logkey, request.getAddressId());
+                        return new ResourceNotFoundException("Address not found");
+                    });
+
+            // Security check
+            if (!address.getUser().getUserId().equals(order.getUser().getUserId())) {
+                log.error("LogKey: {} - Unauthorized address update | orderId={} addressId={}",
+                        logkey, orderId, request.getAddressId());
+                throw new BadApiRequestException("Address does not belong to user");
+            }
+
+            order.setAddress(address);
+
+            log.info("LogKey: {} - Order address updated | orderId={} addressId={}",
+                    logkey, orderId, address.getId());
+        }
+
+        // Update status fields
+        if (request.getPaymentStatus() != null) {
+            order.setPaymentStatus(request.getPaymentStatus());
+        }
+
+        if (request.getOrderStatus() != null) {
+            order.setOrderStatus(request.getOrderStatus());
+        }
+
+        if (request.getDeliveredDate() != null) {
+            order.setDeliveredDate(request.getDeliveredDate());
+        }
 
         Order updatedOrder = orderRepository.save(order);
 

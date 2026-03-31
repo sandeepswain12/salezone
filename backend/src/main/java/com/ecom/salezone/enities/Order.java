@@ -45,16 +45,20 @@ public class Order {
     /**
      * Billing address for the order
      */
-    @Column(name = "b_address", length = 1000)
-    private String billingAddress;
+//    @Column(name = "b_address", length = 1000)
+//    private String billingAddress;
+//
+//    /**
+//     * Billing phone number
+//     */
+//    @Column(name = "b_phone", length = 15)
+//    private String billingPhone;
+//
+//    private String billingName;
 
-    /**
-     * Billing phone number
-     */
-    @Column(name = "b_phone", length = 15)
-    private String billingPhone;
-
-    private String billingName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", nullable = false)
+    private Address address;
 
     private int orderAmount;
     /**

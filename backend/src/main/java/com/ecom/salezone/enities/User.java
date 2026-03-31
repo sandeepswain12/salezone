@@ -131,6 +131,14 @@ public class User implements UserDetails {
             orphanRemoval = true)
     private List<RefreshToken> refreshTokens;
 
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<Address> addresses = new ArrayList<>();
+
     /**
      * Automatically sets createdAt before insert
      */
@@ -153,6 +161,31 @@ public class User implements UserDetails {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
                 .toList();
+    }
+
+    public User() {
+    }
+
+    public User(String userId, String userName, String email, String password, String gender, String about, String imageName, String phoneNumber, Boolean isActive, Provider provider, String providerId, Boolean emailVerified, LocalDateTime createdAt, LocalDateTime updatedAt, List<Order> orders, Set<Role> roles, Cart cart, List<RefreshToken> refreshTokens, List<Address> addresses) {
+        this.userId = userId;
+        this.userName = userName;
+        this.email = email;
+        this.password = password;
+        this.gender = gender;
+        this.about = about;
+        this.imageName = imageName;
+        this.phoneNumber = phoneNumber;
+        this.isActive = isActive;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.emailVerified = emailVerified;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.orders = orders;
+        this.roles = roles;
+        this.cart = cart;
+        this.refreshTokens = refreshTokens;
+        this.addresses = addresses;
     }
 
 
@@ -294,28 +327,21 @@ public class User implements UserDetails {
         this.providerId = providerId;
     }
 
-    public User() {
+
+    public List<RefreshToken> getRefreshTokens() {
+        return refreshTokens;
     }
 
-    public User(String userId, String userName, String email, String password, String gender, String about, String imageName, String phoneNumber, Boolean isActive, Provider provider, String providerId, Boolean emailVerified, LocalDateTime createdAt, LocalDateTime updatedAt, List<Order> orders, Set<Role> roles, Cart cart, List<RefreshToken> refreshTokens) {
-        this.userId = userId;
-        this.userName = userName;
-        this.email = email;
-        this.password = password;
-        this.gender = gender;
-        this.about = about;
-        this.imageName = imageName;
-        this.phoneNumber = phoneNumber;
-        this.isActive = isActive;
-        this.provider = provider;
-        this.providerId = providerId;
-        this.emailVerified = emailVerified;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.orders = orders;
-        this.roles = roles;
-        this.cart = cart;
+    public void setRefreshTokens(List<RefreshToken> refreshTokens) {
         this.refreshTokens = refreshTokens;
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 
     @Override
@@ -350,12 +376,22 @@ public class User implements UserDetails {
                 "userId='" + userId + '\'' +
                 ", userName='" + userName + '\'' +
                 ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
                 ", gender='" + gender + '\'' +
+                ", about='" + about + '\'' +
+                ", imageName='" + imageName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 ", isActive=" + isActive +
                 ", provider=" + provider +
+                ", providerId='" + providerId + '\'' +
                 ", emailVerified=" + emailVerified +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", orders=" + orders +
+                ", roles=" + roles +
+                ", cart=" + cart +
+                ", refreshTokens=" + refreshTokens +
+                ", addresses=" + addresses +
                 '}';
     }
 }

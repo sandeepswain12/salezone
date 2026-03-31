@@ -7,7 +7,7 @@ import com.ecom.salezone.exceptions.BadApiRequestException;
 import com.ecom.salezone.services.EmailService;
 import com.ecom.salezone.services.OrderService;
 import com.ecom.salezone.services.UserService;
-import com.ecom.salezone.util.EmailTemplate;
+import com.ecom.salezone.util.EmailTemplates;
 import com.ecom.salezone.util.LogKeyGenerator;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
@@ -83,7 +83,7 @@ public class PaymentController {
     private OrderService orderService;
 
     @Autowired
-    private EmailTemplate emailTemplate;
+    private EmailTemplates emailTemplate;
 
     @Autowired
     private EmailService emailService;
@@ -227,7 +227,8 @@ public class PaymentController {
                 emailService.sendEmail(
                         updatedOrder.getUser().getEmail(),
                         "Order Confirmed ✅",
-                        emailTemplate.getOrderSuccessTemplate(updatedOrder)
+                        emailTemplate.getOrderSuccessTemplate(updatedOrder),
+                        logKey
                 );
 
                 return ResponseEntity.ok(
