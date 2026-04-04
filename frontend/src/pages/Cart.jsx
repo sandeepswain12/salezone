@@ -361,14 +361,19 @@ const Cart = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-[90%] max-w-md p-8 rounded-2xl bg-white dark:bg-[#1a1a1a] shadow-xl"
+            className={`w-[90%] max-w-md p-8 rounded-2xl shadow-xl
+    ${theme === "dark" ? "bg-[#1a1a1a] text-white" : "bg-white text-gray-900"}`}
           >
             <div className="flex items-center gap-3 mb-4 text-red-600">
               <AlertTriangle />
               <h2 className="text-xl font-semibold">Clear Cart</h2>
             </div>
 
-            <p className="mb-8 opacity-70">
+            <p
+              className={`mb-8 ${
+                theme === "dark" ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
               This will permanently remove all items from your cart.
             </p>
 
@@ -376,7 +381,12 @@ const Cart = () => {
               <button
                 onClick={() => setShowConfirm(false)}
                 disabled={clearing}
-                className="px-5 py-2 rounded-lg border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                className={`px-5 py-2 rounded-lg border transition
+        ${
+          theme === "dark"
+            ? "border-gray-700 hover:bg-gray-800 text-gray-200"
+            : "border-gray-300 hover:bg-gray-100 text-gray-700"
+        }`}
               >
                 Cancel
               </button>
