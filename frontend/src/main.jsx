@@ -5,6 +5,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { WishlistProvider } from "./context/WishlistContext";
 import AuthGate from "./components/ui/AuthGate";
 import "./index.css";
 
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <CartProvider>
             {/* <AuthGate> */}
-            <App />
+            <WishlistProvider>
+              <App />
+            </WishlistProvider>
             {/* </AuthGate> */}
           </CartProvider>
         </AuthProvider>

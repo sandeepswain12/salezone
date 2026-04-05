@@ -2,15 +2,24 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { isAuthenticated, loading, roles } = useAuth();
+  const { user, loading, roles } = useAuth();
 
-  if (loading) return null;
+  // Wait for auth restore
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
-  if (!isAuthenticated) {
+  // Not logged in
+  if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requiredRole && !roles.includes(requiredRole)) {
+  // Role-based check
+  if (requiredRole && (!roles || !roles.includes(requiredRole))) {
     return <Navigate to="/" replace />;
   }
 

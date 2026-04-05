@@ -8,20 +8,18 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Access token stored in memory
-let accessToken = sessionStorage.getItem("accessToken") || null;
+// Access token in memory only (not read from sessionStorage here)
+let accessToken = null;
 
 // Queue for pending requests while refreshing
 let isRefreshing = false;
 let refreshSubscribers = [];
 
-// Notify all queued requests
 const onRefreshed = (token) => {
-  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers.forEach((cb) => cb(token));
   refreshSubscribers = [];
 };
 
-// Add request to queue
 const subscribeTokenRefresh = (callback) => {
   refreshSubscribers.push(callback);
 };
@@ -46,7 +44,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // If refresh already in progress → wait
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((token) => {
@@ -64,28 +61,22 @@ api.interceptors.response.use(
           {},
           { withCredentials: true }
         );
+        const newToken = res.data.accessToken;
 
-        const newAccessToken = res.data.accessToken;
+        // update memory
+        accessToken = newToken;
+        // cache for same-tab refreshes
+        sessionStorage.setItem("accessToken", newToken);
 
-        // Save token
-        accessToken = newAccessToken;
-        sessionStorage.setItem("accessToken", newAccessToken);
+        onRefreshed(newToken);
 
-        // Notify queued requests
-        onRefreshed(newAccessToken);
-
-        // Retry original request
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        console.log("Session expired. Redirecting to login...");
-
         accessToken = null;
         sessionStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-
         window.location.href = "/auth";
-
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -96,12 +87,15 @@ api.interceptors.response.use(
   }
 );
 
-// Setter for token
 export const setAccessToken = (token) => {
   accessToken = token;
+  if (token) {
+    sessionStorage.setItem("accessToken", token);
+  } else {
+    sessionStorage.removeItem("accessToken");
+  }
 };
 
-// Getter if needed
 export const getAccessToken = () => accessToken;
 
 export default api;

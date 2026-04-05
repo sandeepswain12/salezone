@@ -20,7 +20,7 @@ import AuthSuccess from "./pages/AuthSuccess";
 import AuthFailure from "./pages/AuthFailure";
 import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
-
+import Wishlist from "./pages/Wishlist";
 import { setAccessToken } from "./services/api";
 
 function App() {
@@ -110,6 +110,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <Wishlist />
               </ProtectedRoute>
             }
           />

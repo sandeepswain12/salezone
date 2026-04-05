@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
-import { ShoppingCart, Star, ArrowLeft } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { getProductById } from "../../services/ProductService";
 import ProductDetailsSkeleton from "../skeleton/ProductDetailsSkeleton";
 import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
+import { ShoppingCart, Star, ArrowLeft, Heart } from "lucide-react";
 
 const ProductDetails = () => {
   const { id: productId } = useParams();
@@ -16,6 +17,8 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [imgError, setImgError] = useState(false);
+  const { wishlistIds, toggleWishlist } = useWishlist();
+  const isWishlisted = wishlistIds.has(product?.productId);
 
   // Fetch Product
   useEffect(() => {
@@ -186,20 +189,38 @@ const ProductDetails = () => {
           </div>
 
           {/* ADD TO CART */}
-          <button
-            disabled={product.quantity <= 0}
-            onClick={() => addToCart(product.productId)}
-            className={`mt-auto w-full flex items-center justify-center gap-3
-              py-4 rounded-xl font-semibold text-white transition-all duration-300
-              ${
-                product.quantity <= 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg"
-              }`}
-          >
-            <ShoppingCart size={20} />
-            {product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
-          </button>
+          <div className="flex gap-3 mt-auto">
+            <button
+              disabled={product.quantity <= 0}
+              onClick={() => addToCart(product.productId)}
+              className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl font-semibold text-white transition-all duration-300
+      ${
+        product.quantity <= 0
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg"
+      }`}
+            >
+              <ShoppingCart size={20} />
+              {product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
+            </button>
+
+            <button
+              onClick={() => toggleWishlist(product.productId)}
+              className={`px-5 py-4 rounded-xl border transition-all duration-200
+      ${
+        isWishlisted
+          ? "border-red-400 bg-red-50 dark:bg-red-900/20"
+          : theme === "dark"
+          ? "border-gray-700 hover:border-gray-500"
+          : "border-gray-200 hover:border-gray-400"
+      }`}
+            >
+              <Heart
+                size={20}
+                className={isWishlisted ? "fill-red-500 text-red-500" : ""}
+              />
+            </button>
+          </div>
         </div>
       </div>
     </section>
