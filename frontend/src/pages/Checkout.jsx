@@ -111,6 +111,7 @@ const Checkout = () => {
         handler: async function (response) {
           try {
             setProcessingPayment(true); // show loader
+            window.scrollTo({ top: 0, behavior: "smooth" });
 
             await orderService.capturePayment(order.orderId, {
               razorpayOrderId: response.razorpay_order_id,
