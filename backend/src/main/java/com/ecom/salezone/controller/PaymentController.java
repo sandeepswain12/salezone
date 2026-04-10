@@ -109,7 +109,7 @@ public class PaymentController {
     public ResponseEntity<?> initiatePayment(@PathVariable String orderId, Principal principal) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("{} Initiating payment for orderId={}", logKey, orderId);
+        log.info("LogKey: {} - Initiating payment for orderId={}", logKey, orderId);
 
         String email = extractEmail(principal);
         UserDto user = userService.getUserByEmail(email, logKey);
@@ -117,7 +117,7 @@ public class PaymentController {
 
         // Validate order ownership
         if (!order.getUser().getUserId().equals(user.getUserId())) {
-            log.error("{} Unauthorized payment attempt for orderId={}", logKey, orderId);
+            log.error("LogKey: {} - Unauthorized payment attempt for orderId={}", logKey, orderId);
             throw new BadApiRequestException("Unauthorized payment attempt");
         }
 
@@ -126,7 +126,7 @@ public class PaymentController {
             // Prevent duplicate Razorpay order creation
             if (order.getRazorPayOrderId() != null) {
 
-                log.info("{} Razorpay order already exists for orderId={}", logKey, orderId);
+                log.info("LogKey: {} - Razorpay order already exists for orderId={}", logKey, orderId);
 
                 return ResponseEntity.ok(Map.of(
                         "orderId", order.getOrderId(),
@@ -147,7 +147,7 @@ public class PaymentController {
 
             String razorpayOrderId = razorpayOrder.get("id");
 
-            log.info("{} Razorpay order created | orderId={} razorpayOrderId={}",
+            log.info("LogKey: {} - Razorpay order created | orderId={} razorpayOrderId={}",
                     logKey, orderId, razorpayOrderId);
 
             // Save Razorpay order id
@@ -164,7 +164,7 @@ public class PaymentController {
 
         } catch (Exception e) {
 
-            log.error("{} Error creating Razorpay order for orderId={}", logKey, orderId, e);
+            log.error("LogKey: {} - Error creating Razorpay order for orderId={}", logKey, orderId, e);
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Error creating Razorpay order"));
@@ -188,7 +188,7 @@ public class PaymentController {
             @PathVariable String orderId) {
 
         String logKey = LogKeyGenerator.generateLogKey();
-        log.info("{} Payment verification started for orderId={}", logKey, orderId);
+        log.info("LogKey: {} - Payment verification started for orderId={}", logKey, orderId);
 
         try {
 
@@ -202,7 +202,7 @@ public class PaymentController {
             // Validate order id match
             if (!order.getRazorPayOrderId().equals(razorpayOrderId)) {
 
-                log.error("{} Razorpay order mismatch | orderId={} razorpayOrderId={}",
+                log.error("LogKey: {} - Razorpay order mismatch | orderId={} razorpayOrderId={}",
                         logKey, orderId, razorpayOrderId);
 
                 throw new BadApiRequestException("Invalid payment order");
@@ -217,7 +217,7 @@ public class PaymentController {
 
             if (verified) {
 
-                log.info("{} Payment signature verified | orderId={} paymentId={}",
+                log.info("LogKey: {} - Payment signature verified | orderId={} paymentId={}",
                         logKey, orderId, razorpayPaymentId);
 
                 orderService.updatePaymentStatus(orderId, razorpayPaymentId, PaymentStatus.PAID, logKey);
@@ -227,7 +227,8 @@ public class PaymentController {
                 emailService.sendEmail(
                         updatedOrder.getUser().getEmail(),
                         "Order Confirmed ✅",
-                        emailTemplate.getOrderSuccessTemplate(updatedOrder)
+                        emailTemplate.getOrderSuccessTemplate(updatedOrder),
+                        logKey
                 );
 
                 return ResponseEntity.ok(
@@ -239,8 +240,7 @@ public class PaymentController {
 
             } else {
 
-                log.warn("{} Payment signature verification failed | orderId={}", logKey, orderId);
-
+                log.warn("LogKey: {} - Payment signature verification failed | orderId={}", logKey, orderId);
                 orderService.updatePaymentStatus(orderId, razorpayPaymentId, PaymentStatus.FAILED, logKey);
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -252,7 +252,7 @@ public class PaymentController {
 
         } catch (Exception e) {
 
-            log.error("{} Error verifying payment for orderId={}", logKey, orderId, e);
+            log.error("LogKey: {} - Error verifying payment for orderId={}", logKey, orderId, e);
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(

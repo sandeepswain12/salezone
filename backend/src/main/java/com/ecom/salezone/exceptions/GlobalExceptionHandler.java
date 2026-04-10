@@ -232,7 +232,7 @@ public class GlobalExceptionHandler {
 
         String message = "Database constraint violation";
 
-        // 🔥 Detect duplicate email specifically
+        // Detect duplicate email specifically
         if (ex.getRootCause() != null &&
                 ex.getRootCause().getMessage().contains("users.UK")) {
 

@@ -78,7 +78,6 @@ import java.util.UUID;
 )
 @RestController
 @RequestMapping("/salezone/ecom/auth")
-@CrossOrigin(origins = "http://localhost:5173/")
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);

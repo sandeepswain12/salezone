@@ -91,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 🔥 Generate logKey for this request
+        // Generate logKey for this request
         String logKey = LogKeyGenerator.generateLogKey();
 
         String header = request.getHeader("Authorization");
