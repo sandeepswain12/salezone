@@ -30,7 +30,7 @@ public class Product {
     /**
      * Detailed product description
      */
-    @Column(name = "p_desc", length = 10000)
+    @Column(name = "p_description", length = 10000)
     private String description;
 
     /**
@@ -42,7 +42,7 @@ public class Product {
     /**
      * Discounted price after applying offers
      */
-    @Column(name = "p_d_price")
+    @Column(name = "p_discounted_price")
     private int discountedPrice;
 
     /**
@@ -97,20 +97,20 @@ public class Product {
     /**
      * Date when product was added
      */
-    @Column(name = "p_addeddate", updatable = false)
+    @Column(name = "p_added_at", updatable = false)
     private LocalDateTime addedDate;
 
     /**
      * Date when product was last updated
      */
-    @Column(name = "updated_at")
+    @Column(name = "p_updated_at")
     private LocalDateTime updatedAt;
 
     /**
      * Category to which product belongs
      */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "cg_id", nullable = false)
     private Category category;
 
     /**

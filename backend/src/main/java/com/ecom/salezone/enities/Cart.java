@@ -33,7 +33,7 @@ public class Cart {
      * Each cart belongs to exactly one user
      */
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "u_id", nullable = false)
     private User user;
 
     /**
