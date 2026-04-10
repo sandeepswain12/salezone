@@ -39,27 +39,28 @@ public class Order {
      * (PAID, NOT_PAID, FAILED)
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "p_status")
+    @Column(name = "o_payment_status")
     private PaymentStatus paymentStatus;
 
     /**
      * Billing address for the order
      */
-//    @Column(name = "b_address", length = 1000)
+//    @Column(name = "o_billing_address", length = 1000)
 //    private String billingAddress;
 //
 //    /**
 //     * Billing phone number
 //     */
-//    @Column(name = "b_phone", length = 15)
+//    @Column(name = "o_billing_phone", length = 15)
 //    private String billingPhone;
-//
+//    @Column(name = "o_billing_name", length = 15)
 //    private String billingName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
+    @Column(name = "o_amount")
     private int orderAmount;
     /**
      * Date when order was placed
@@ -70,23 +71,23 @@ public class Order {
     /**
      * Date when order was delivered
      */
-    @Column(name = "d_date")
+    @Column(name = "o_delivered_date")
     private LocalDateTime deliveredDate;
 
     /**
      * Razorpay order ID (used for payment gateway)
      */
-    @Column(name = "r_o_id")
+    @Column(name = "o_razorpay_order_id")
     private String razorpayOrderId;
 
     /**
      * Payment ID received from gateway
      */
-    @Column(name = "p_id")
+    @Column(name = "o_payment_id")
     private String paymentId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "p_method")
+    @Column(name = "o_payment_method")
     private PaymentMethod paymentMethod;
 
     /**

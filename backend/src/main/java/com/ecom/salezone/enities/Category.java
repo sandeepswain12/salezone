@@ -20,25 +20,25 @@ public class Category {
      * UUID or custom generated value recommended
      */
     @Id
-    @Column(name = "c_id")
+    @Column(name = "cg_id")
     private String categoryId;
 
     /**
      * Category title/name (e.g., Electronics, Fashion)
      */
-    @Column(name = "c_title", length = 60, nullable = false)
+    @Column(name = "cg_title", length = 60, nullable = false)
     private String title;
 
     /**
      * Short description of category
      */
-    @Column(name = "c_desc", length = 500)
+    @Column(name = "cg_description", length = 500)
     private String description;
 
     /**
      * Cover image for category (banner image)
      */
-    @Column(name = "c_cover_image", length = 500)
+    @Column(name = "cg_cover_image", length = 500)
     private String coverImage;
 
     /**
@@ -54,13 +54,13 @@ public class Category {
     /**
      * Category creation timestamp
      */
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "cg_created_at", updatable = false)
     private LocalDateTime createdAt;
 
     /**
      * Category last update timestamp
      */
-    @Column(name = "updated_at")
+    @Column(name = "cg_updated_at")
     private LocalDateTime updatedAt;
 
     /**

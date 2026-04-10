@@ -18,27 +18,27 @@ public class CartItem {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "p_id", nullable = false)
     private Product product;
 
     /**
      * Quantity of the product in cart
      */
-    @Column(name = "c_i_quantity", nullable = false)
+    @Column(name = "ci_quantity", nullable = false)
     private int quantity;
 
     /**
      * Total price for this cart item
      * (product price × quantity)
      */
-    @Column(name = "c_i_totalprice", nullable = false)
+    @Column(name = "ci_total_price", nullable = false)
     private int totalPrice;
 
     /**
      * Cart to which this item belongs
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
+    @JoinColumn(name = "c_id", nullable = false)
     private Cart cart;
 
 //    /**

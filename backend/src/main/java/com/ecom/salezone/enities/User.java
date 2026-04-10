@@ -77,29 +77,32 @@ public class User implements UserDetails {
     /**
      * Indicates whether user account is active or blocked
      */
-    @Column(name = "is_active")
+    @Column(name = "u_is_active")
     private Boolean isActive = true;
 
+    @Column(name = "u_provider")
     @Enumerated(EnumType.STRING)
     private Provider provider = Provider.LOCAL;
+
+    @Column(name = "u_provider_id")
     private  String providerId;
 
     /**
      * Indicates whether email is verified
      */
-    @Column(name = "email_verified")
+    @Column(name = "u_email_verified")
     private Boolean emailVerified = false;
 
     /**
      * Timestamp when user was created
      */
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "u_created_at", updatable = false)
     private LocalDateTime createdAt;
 
     /**
      * Timestamp when user was last updated
      */
-    @Column(name = "updated_at")
+    @Column(name = "u_updated_at")
     private LocalDateTime updatedAt;
 
     /**

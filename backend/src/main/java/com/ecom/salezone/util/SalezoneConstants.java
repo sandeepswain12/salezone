@@ -12,6 +12,7 @@ public class SalezoneConstants {
             "/salezone/ecom/wishlist/**",
             "/salezone/ecom/users/**",
             "/salezone/ecom/address/**",
+            "/salezone/ecom/admin/**",
 
             "/v3/api-docs/**",
             "/swagger-ui/**"

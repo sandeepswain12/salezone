@@ -4,6 +4,7 @@ import com.ecom.salezone.enities.Order;
 import com.ecom.salezone.enities.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -42,5 +43,29 @@ public interface OrderRepository extends JpaRepository<Order, String> {
      */
     @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})
     List<Order> findByUserOrderByOrderedDateDesc(User user);
+
+    @Query(value = """
+    SELECT DATE(o.ordered_date), SUM(o.order_amount)
+    FROM orders o
+    WHERE o.o_status = 'DELIVERED'
+    GROUP BY DATE(o.ordered_date)
+    ORDER BY DATE(o.ordered_date)
+""", nativeQuery = true)
+    List<Object[]> getRevenueData();
+
+    @Query(value = """
+    SELECT DATE(o.ordered_date), COUNT(*)
+    FROM orders o
+    GROUP BY DATE(o.ordered_date)
+    ORDER BY DATE(o.ordered_date)
+""", nativeQuery = true)
+    List<Object[]> getOrdersData();
+
+    @Query(value = """
+    SELECT SUM(o.order_amount)
+    FROM orders o
+    WHERE o.order_status = 'DELIVERED'
+""", nativeQuery = true)
+    Double getTotalRevenue();
 
 }
