@@ -1,7 +1,6 @@
-package com.ecom.salezone.config;
+package com.ecom.salezone.cache;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**

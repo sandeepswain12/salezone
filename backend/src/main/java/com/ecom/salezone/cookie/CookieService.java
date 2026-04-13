@@ -1,4 +1,4 @@
-package com.ecom.salezone.security;
+package com.ecom.salezone.cookie;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
