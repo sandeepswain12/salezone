@@ -7,7 +7,7 @@ import com.ecom.salezone.enums.OtpType;
 import com.ecom.salezone.exceptions.ResourceNotFoundException;
 import com.ecom.salezone.repository.RefreshTokenRepository;
 import com.ecom.salezone.repository.UserRepository;
-import com.ecom.salezone.security.CookieService;
+import com.ecom.salezone.cookie.CookieService;
 import com.ecom.salezone.security.JwtService;
 import com.ecom.salezone.services.AuthService;
 import com.ecom.salezone.services.EmailService;
