@@ -41,7 +41,10 @@ public class AddressServiceImpl implements AddressService {
     public AddressDto addAddress(String userId, AddAddressRequest request, String logkey) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - User not found | userId = {}", logkey, userId);
+                    return new ResourceNotFoundException("User not found with given id !!");
+                });
 
         // If new address is default → remove old default
         if (Boolean.TRUE.equals(request.getIsDefault())) {
@@ -63,7 +66,10 @@ public class AddressServiceImpl implements AddressService {
     public List<AddressDto> getUserAddresses(String userId, String logkey) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - User not found | userId = {}", logkey, userId);
+                    return new ResourceNotFoundException("User not found with given id !!");
+                });
 
         return addressRepository.findByUser(user)
                 .stream()
@@ -74,26 +80,75 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void deleteAddress(String userId, String addressId, String logkey) {
 
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+        log.info("LogKey: {} - Delete address request | userId={} addressId={}",
+                logkey, userId, addressId);
 
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - Address not found | addressId={}", logkey, addressId);
+                    return new ResourceNotFoundException("Address not found with given id !!");
+                });
+
+        // SECURITY CHECK
+        if (!address.getUser().getUserId().equals(userId)) {
+            throw new BadApiRequestException("Address does not belong to this user");
+        }
+
+        boolean isDefault = Boolean.TRUE.equals(address.getIsDefault());
+
+        // Delete address
         addressRepository.delete(address);
+
+        // Handle default reassignment
+        if (isDefault) {
+
+            log.info("LogKey: {} - Deleted address was default, assigning new default if available",
+                    logkey);
+
+            List<Address> remainingAddresses = addressRepository.findByUserUserId(userId);
+
+            if (!remainingAddresses.isEmpty()) {
+
+                // Pick first address as default
+                Address newDefault = remainingAddresses.get(0);
+                newDefault.setIsDefault(true);
+
+                addressRepository.save(newDefault);
+
+                log.info("LogKey: {} - New default address assigned | addressId={}",
+                        logkey, newDefault.getId());
+            } else {
+                log.warn("LogKey: {} - No addresses left for user {}", logkey, userId);
+            }
+        }
     }
 
     @Override
     public AddressDto setDefaultAddress(String userId, String addressId, String logkey) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - User not found | userId = {}", logkey, userId);
+                    return new ResourceNotFoundException("User not found with given id !!");
+                });
 
         List<Address> addresses = addressRepository.findByUser(user);
 
         addresses.forEach(addr -> addr.setIsDefault(false));
 
         Address selected = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - Address not found | userId = {}", logkey, addressId);
+                    return new ResourceNotFoundException("Address not found with given id !!");
+                });
+
+        if (!selected.getUser().getUserId().equals(userId)) {
+            throw new BadApiRequestException("Address does not belong to this user");
+        }
 
         selected.setIsDefault(true);
+
+        addressRepository.save(selected);
 
         return mapper.map(selected, AddressDto.class);
     }
@@ -105,8 +160,8 @@ public class AddressServiceImpl implements AddressService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("LogKey: {} - User not found | userId={}", logkey, userId);
-                    return new ResourceNotFoundException("User not found");
+                    log.error("LogKey: {} - User not found | userId = {}", logkey, userId);
+                    return new ResourceNotFoundException("User not found with given id !!");
                 });
 
         Address address = addressRepository
@@ -129,32 +184,37 @@ public class AddressServiceImpl implements AddressService {
                 logkey, userId, addressId, request);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - User not found | userId = {}", logkey, userId);
+                    return new ResourceNotFoundException("User not found with given id !!");
+                });
 
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+                .orElseThrow(() -> {
+                    log.error("LogKey: {} - Address not found | userId = {}", logkey, addressId);
+                    return new ResourceNotFoundException("Address not found with given id !!");
+                });
 
-        // 🔥 SECURITY CHECK (VERY IMPORTANT)
+        //  SECURITY CHECK (VERY IMPORTANT)
         if (!address.getUser().getUserId().equals(userId)) {
             throw new BadApiRequestException("Address does not belong to this user");
         }
 
-        // ⭐ Handle default logic
+        // Handle default logic
         if (Boolean.TRUE.equals(request.getIsDefault())) {
             List<Address> addresses = addressRepository.findByUser(user);
             addresses.forEach(addr -> addr.setIsDefault(false));
             address.setIsDefault(true);
         }
 
-        //  Update fields
-        address.setFullName(request.getFullName());
-        address.setPhoneNumber(request.getPhoneNumber());
-        address.setAddressLine1(request.getAddressLine1());
-        address.setAddressLine2(request.getAddressLine2());
+        address.setName(request.getName());
+        address.setMobile(request.getMobile());
+        address.setPincode(request.getPincode());
+        address.setFullAddress(request.getFullAddress());
+        address.setAddressType(request.getAddressType());
+        address.setIsDefault(request.getIsDefault());
         address.setCity(request.getCity());
         address.setState(request.getState());
-        address.setPincode(request.getPincode());
-        address.setLandmark(request.getLandmark());
 
         Address updated = addressRepository.save(address);
 
