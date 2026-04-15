@@ -134,12 +134,9 @@ public class User implements UserDetails {
             orphanRemoval = true)
     private List<RefreshToken> refreshTokens;
 
-    @OneToMany(
-            mappedBy = "user",
+    @OneToMany(mappedBy = "user",
             cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
+            orphanRemoval = true)
     private List<Address> addresses = new ArrayList<>();
 
     /**
@@ -379,22 +376,8 @@ public class User implements UserDetails {
                 "userId='" + userId + '\'' +
                 ", userName='" + userName + '\'' +
                 ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", gender='" + gender + '\'' +
-                ", about='" + about + '\'' +
-                ", imageName='" + imageName + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", isActive=" + isActive +
-                ", provider=" + provider +
-                ", providerId='" + providerId + '\'' +
                 ", emailVerified=" + emailVerified +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", orders=" + orders +
-                ", roles=" + roles +
-                ", cart=" + cart +
-                ", refreshTokens=" + refreshTokens +
-                ", addresses=" + addresses +
                 '}';
     }
 }
