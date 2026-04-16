@@ -5,6 +5,7 @@ import com.ecom.salezone.enums.PaymentMethod;
 import com.ecom.salezone.enums.PaymentStatus;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class OrderDto {
      * Order lifecycle timestamps
      */
     private LocalDateTime orderedDate;
+    private LocalDate estimatedDeliveryDate;
     private LocalDateTime deliveredDate;
 
     /**

@@ -3,6 +3,7 @@ package com.ecom.salezone.dtos;
 import com.ecom.salezone.enums.OrderStatus;
 import com.ecom.salezone.enums.PaymentMethod;
 import com.ecom.salezone.enums.PaymentStatus;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.time.LocalDateTime;
 
@@ -52,6 +53,19 @@ public class OrderUpdateRequest {
     private LocalDateTime deliveredDate;
 
     private PaymentMethod paymentMethod;
+
+    @NotBlank(message = "Phone number is required !!")
+    private String billingPhone;
+
+    /**
+     * Name of the person to whom
+     * the bill/order is addressed.
+     */
+    @NotBlank(message = "Billing name is required !!")
+    private String billingName;
+
+    @NotBlank(message = "Billing address is required !!")
+    private String billingAddress;
 
 }
 

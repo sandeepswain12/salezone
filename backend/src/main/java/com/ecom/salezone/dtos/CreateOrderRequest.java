@@ -44,7 +44,7 @@ public class CreateOrderRequest {
      * Billing address where the order
      * will be delivered or associated.
      */
-//    @NotBlank(message = "Address is required !!")
+    @NotBlank(message = "Address is required !!")
 //    private String billingAddress;
     private String addressId;
 
@@ -52,15 +52,18 @@ public class CreateOrderRequest {
      * Contact phone number for billing
      * and delivery-related communication.
      */
-    @NotBlank(message = "Phone number is required !!")
+    //@NotBlank(message = "Phone number is required !!")
     private String billingPhone;
 
     /**
      * Name of the person to whom
      * the bill/order is addressed.
      */
-    @NotBlank(message = "Billing name is required !!")
+    //@NotBlank(message = "Billing name is required !!")
     private String billingName;
+
+    //@NotBlank(message = "Billing address is required !!")
+    private String billingAddress;
 
     private PaymentMethod paymentMethod;
 

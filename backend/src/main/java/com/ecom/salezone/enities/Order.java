@@ -6,6 +6,7 @@ import com.ecom.salezone.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,20 +46,20 @@ public class Order {
     /**
      * Billing address for the order
      */
-//    @Column(name = "o_billing_address", length = 1000)
-//    private String billingAddress;
-//
-//    /**
-//     * Billing phone number
-//     */
-//    @Column(name = "o_billing_phone", length = 15)
-//    private String billingPhone;
-//    @Column(name = "o_billing_name", length = 15)
-//    private String billingName;
+    @Column(name = "o_billing_address", length = 1000)
+    private String billingAddress;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false)
-    private Address address;
+    /**
+     * Billing phone number
+     */
+    @Column(name = "o_billing_phone", length = 15)
+    private String billingPhone;
+    @Column(name = "o_billing_name", length = 15)
+    private String billingName;
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "address_id", nullable = false)
+//    private Address address;
 
     @Column(name = "o_amount")
     private int orderAmount;
@@ -67,6 +68,9 @@ public class Order {
      */
     @Column(name = "o_date", updatable = false)
     private LocalDateTime orderedDate;
+
+    @Column(name = "o_estimated_delivery_date")
+    private LocalDate estimatedDeliveryDate;
 
     /**
      * Date when order was delivered
