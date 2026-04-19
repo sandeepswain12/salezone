@@ -20,17 +20,18 @@ public class Wishlist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "w_id", updatable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "u_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "p_id", nullable = false)
     private Product product;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "w_created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
