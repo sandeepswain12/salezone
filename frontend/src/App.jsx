@@ -22,6 +22,7 @@ import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
 import Wishlist from "./pages/Wishlist";
 import { setAccessToken } from "./services/api";
+import SavedAddresses from "./pages/SavedAddresses";
 
 function App() {
   const { theme } = useTheme();
@@ -118,6 +119,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Wishlist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/addresses"
+            element={
+              <ProtectedRoute>
+                <SavedAddresses />
               </ProtectedRoute>
             }
           />
